@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProfessorLookupService, professorCacheKey } from "../src/backgroundService.js";
+import { CACHE_TTL_MS, createProfessorLookupService, professorCacheKey } from "../src/backgroundService.js";
 
 describe("background professor lookup service", () => {
   it("reuses persisted Chrome storage cache before calling Rate My Professors", async () => {
@@ -18,6 +18,64 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("reuses fresh timestamped persisted cache entries", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const cachedRating = {
+      name: "Grace Hopper",
+      rating: 4.8,
+      topComments: ["Useful systems lectures."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Grace Hopper")]: {
+        cachedAt: now - 1000,
+        value: cachedRating,
+      },
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Grace Hopper")).resolves.toEqual(cachedRating);
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
+  it("refreshes stale persisted cache entries before returning Albert data", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const staleRating = {
+      name: "Alan Turing",
+      rating: 3.1,
+      topComments: ["Old comment."],
+    };
+    const freshRating = {
+      name: "Alan Turing",
+      rating: 4.6,
+      topComments: ["Fresh useful comment."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Alan Turing")]: {
+        cachedAt: now - CACHE_TTL_MS - 1,
+        value: staleRating,
+      },
+    });
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Alan Turing")).resolves.toEqual(freshRating);
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Alan Turing");
+    expect(storage.data[professorCacheKey("Alan Turing")]).toEqual({
+      cachedAt: now,
+      value: freshRating,
+    });
+  });
+
   it("persists fresh RMP lookup results for later Albert page scans", async () => {
     const freshRating = {
       name: "Ada Lovelace",
@@ -26,12 +84,16 @@ describe("background professor lookup service", () => {
     };
     const storage = createStorageMock();
     const findProfessorRating = vi.fn(async () => freshRating);
-    const service = createProfessorLookupService({ storage, findProfessorRating });
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const service = createProfessorLookupService({ storage, findProfessorRating, now: () => now });
 
     await expect(service.lookup("Ada Lovelace")).resolves.toEqual(freshRating);
 
     expect(findProfessorRating).toHaveBeenCalledWith("Ada Lovelace");
-    expect(storage.data[professorCacheKey("Ada Lovelace")]).toEqual(freshRating);
+    expect(storage.data[professorCacheKey("Ada Lovelace")]).toEqual({
+      cachedAt: now,
+      value: freshRating,
+    });
   });
 });
 
