@@ -171,11 +171,15 @@ function commentHelpfulScore(rating) {
 }
 
 function compactName(value) {
-  return String(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+  return foldDiacritics(value)
     .toLowerCase()
     .replace(/[^a-z]/g, "");
+}
+
+function foldDiacritics(value) {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function numberOrNull(value) {
@@ -199,6 +203,12 @@ function searchNameVariants(name) {
   const normalized = String(name).trim().replace(/\s+/g, " ");
   const parts = normalized.split(" ").filter((part) => part && !NAME_SUFFIXES.has(part.toLowerCase()));
   const variants = [normalized];
+  const folded = foldDiacritics(normalized);
+
+  if (folded && folded !== normalized) {
+    variants.push(folded);
+  }
+
   const withoutTitleSuffix = parts.join(" ");
 
   if (withoutTitleSuffix && withoutTitleSuffix !== normalized) {

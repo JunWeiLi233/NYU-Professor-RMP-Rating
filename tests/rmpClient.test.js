@@ -702,4 +702,25 @@ describe("Rate My Professors client", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Robert Martin");
   });
+
+  it("retries accented professor searches with folded ASCII names", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [],
+            },
+          },
+        },
+      }),
+    }));
+
+    await findProfessorRating("Jos\u00e9 Garc\u00eda", { fetchImpl });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(fetchImpl.mock.calls[0][1].body).variables.query.text).toBe("Jos\u00e9 Garc\u00eda");
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Jose Garcia");
+  });
 });
