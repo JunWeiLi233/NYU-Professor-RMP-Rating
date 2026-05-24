@@ -147,6 +147,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <strong>${escapeHtml(requestedName)}</strong>
         <div class="nyu-rmp-actions">
           <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
+          <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
           <span class="nyu-rmp-status">No RMP match</span>
         </div>
       </div>
@@ -396,6 +397,14 @@ function refreshLabel(name) {
 
 function retryLabel(name) {
   return `Retry RMP rating for ${name}`;
+}
+
+function searchLabel(name) {
+  return `Search RMP for ${name}`;
+}
+
+function rmpSearchUrl(name) {
+  return `https://www.ratemyprofessors.com/search/professors/1381?q=${encodeURIComponent(name)}`;
 }
 
 function getRatingVerdict(value) {

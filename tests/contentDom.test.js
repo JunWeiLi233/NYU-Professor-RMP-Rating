@@ -145,6 +145,18 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Now found.");
   });
 
+  it("links no-match cards to an RMP professor search for the requested name", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const searchLink = document.querySelector(".nyu-rmp-search");
+    expect(searchLink.textContent).toBe("Search RMP");
+    expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
+    expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
+  });
+
   it("lets students retry an error card after a failed RMP request", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn()
