@@ -162,6 +162,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingsCount = numberOrNull(result.ratingsCount) ?? 0;
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
   const department = String(result.department ?? "").trim();
+  const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const comments = asArray(result.topComments)
     .map((comment) => formatComment(comment))
     .join("");
@@ -179,6 +180,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
+    ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
       <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
@@ -261,6 +263,11 @@ export function injectStyles(document = globalThis.document) {
       color: #64748b;
       font-size: 11px;
       margin: -2px 0 6px;
+    }
+    .nyu-rmp-updated {
+      color: #64748b;
+      font-size: 11px;
+      margin: -3px 0 7px;
     }
     .nyu-rmp-card a,
     .nyu-rmp-refresh,
@@ -393,6 +400,34 @@ function numberOrNull(value) {
   }
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function formatUpdatedAt(value) {
+  const timestamp = numberOrNull(value);
+  if (timestamp == null) {
+    return "";
+  }
+
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const month = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ][date.getUTCMonth()];
+  return `Updated ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
 function asArray(value) {

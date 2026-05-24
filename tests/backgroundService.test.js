@@ -14,7 +14,7 @@ describe("background professor lookup service", () => {
     const findProfessorRating = vi.fn();
     const service = createProfessorLookupService({ storage, findProfessorRating });
 
-    await expect(service.lookup("YAP, CHEE KENG")).resolves.toEqual(cachedRating);
+    await expect(service.lookup("YAP, CHEE KENG")).resolves.toMatchObject(cachedRating);
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
@@ -38,8 +38,37 @@ describe("background professor lookup service", () => {
       now: () => now,
     });
 
-    await expect(service.lookup("Grace Hopper")).resolves.toEqual(cachedRating);
+    await expect(service.lookup("Grace Hopper")).resolves.toEqual({
+      ...cachedRating,
+      cacheUpdatedAt: now - 1000,
+    });
     expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
+  it("returns cache update metadata with professor lookup results", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const cachedRating = {
+      name: "Grace Hopper",
+      rating: 4.8,
+      topComments: ["Useful systems lectures."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Grace Hopper")]: {
+        cachedAt: now - 1000,
+        value: cachedRating,
+      },
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Grace Hopper")).resolves.toEqual({
+      ...cachedRating,
+      cacheUpdatedAt: now - 1000,
+    });
   });
 
   it("refreshes stale persisted cache entries before returning Albert data", async () => {
@@ -67,7 +96,10 @@ describe("background professor lookup service", () => {
       now: () => now,
     });
 
-    await expect(service.lookup("Alan Turing")).resolves.toEqual(freshRating);
+    await expect(service.lookup("Alan Turing")).resolves.toEqual({
+      ...freshRating,
+      cacheUpdatedAt: now,
+    });
 
     expect(findProfessorRating).toHaveBeenCalledWith("Alan Turing");
     expect(storage.data[professorCacheKey("Alan Turing")]).toEqual({
@@ -98,9 +130,15 @@ describe("background professor lookup service", () => {
       now: () => currentTime,
     });
 
-    await expect(service.lookup("Donald Knuth")).resolves.toEqual(firstRating);
+    await expect(service.lookup("Donald Knuth")).resolves.toEqual({
+      ...firstRating,
+      cacheUpdatedAt: currentTime,
+    });
     currentTime += CACHE_TTL_MS + 1;
-    await expect(service.lookup("Donald Knuth")).resolves.toEqual(refreshedRating);
+    await expect(service.lookup("Donald Knuth")).resolves.toEqual({
+      ...refreshedRating,
+      cacheUpdatedAt: currentTime,
+    });
 
     expect(findProfessorRating).toHaveBeenCalledTimes(2);
     expect(storage.data[professorCacheKey("Donald Knuth")]).toEqual({
@@ -132,7 +170,10 @@ describe("background professor lookup service", () => {
     const second = service.lookup("Barbara Liskov");
     resolveLookup(rating);
 
-    await expect(Promise.all([first, second])).resolves.toEqual([rating, rating]);
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      { ...rating, cacheUpdatedAt: now },
+      { ...rating, cacheUpdatedAt: now },
+    ]);
 
     expect(findProfessorRating).toHaveBeenCalledTimes(1);
     expect(storage.data[professorCacheKey("Barbara Liskov")]).toEqual({
@@ -152,7 +193,10 @@ describe("background professor lookup service", () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const service = createProfessorLookupService({ storage, findProfessorRating, now: () => now });
 
-    await expect(service.lookup("Ada Lovelace")).resolves.toEqual(freshRating);
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual({
+      ...freshRating,
+      cacheUpdatedAt: now,
+    });
 
     expect(findProfessorRating).toHaveBeenCalledWith("Ada Lovelace");
     expect(storage.data[professorCacheKey("Ada Lovelace")]).toEqual({
@@ -181,9 +225,9 @@ describe("background professor lookup service", () => {
       .mockResolvedValueOnce(refreshedRating);
     const service = createProfessorLookupService({ storage, findProfessorRating });
 
-    await expect(service.lookup("Ada Lovelace")).resolves.toEqual(firstRating);
+    await expect(service.lookup("Ada Lovelace")).resolves.toMatchObject(firstRating);
     await expect(service.clearCache()).resolves.toEqual(2);
-    await expect(service.lookup("Ada Lovelace")).resolves.toEqual(refreshedRating);
+    await expect(service.lookup("Ada Lovelace")).resolves.toMatchObject(refreshedRating);
 
     expect(storage.data).toEqual({
       [professorCacheKey("Ada Lovelace")]: expect.objectContaining({ value: refreshedRating }),
@@ -217,7 +261,10 @@ describe("background professor lookup service", () => {
       now: () => now,
     });
 
-    await expect(service.lookup("Chee Yap", { forceRefresh: true })).resolves.toEqual(refreshedRating);
+    await expect(service.lookup("Chee Yap", { forceRefresh: true })).resolves.toEqual({
+      ...refreshedRating,
+      cacheUpdatedAt: now,
+    });
 
     expect(findProfessorRating).toHaveBeenCalledWith("Chee Yap");
     expect(storage.data[professorCacheKey("Chee Yap")]).toEqual({

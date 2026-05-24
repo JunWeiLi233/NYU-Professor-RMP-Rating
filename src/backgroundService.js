@@ -20,19 +20,19 @@ export function createProfessorLookupService({
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
       if (!forceRefresh && memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
-        return memoryEntry.value;
+        return withCacheMetadata(memoryEntry.value, memoryEntry.cachedAt);
       }
 
       if (!forceRefresh) {
         const cached = await readStoredRating(storage, key, currentTime);
         if (cached.status === "fresh") {
           memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
-          return cached.value;
+          return withCacheMetadata(cached.value, cached.cachedAt);
         }
 
         if (cached.status === "legacy") {
           memoryCache.set(key, createStoredRating(cached.value, currentTime));
-          return cached.value;
+          return withCacheMetadata(cached.value, currentTime);
         }
       }
 
@@ -93,5 +93,12 @@ async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating
   const storedResult = createStoredRating(result, currentTime);
   memoryCache.set(key, storedResult);
   await storage.set({ [key]: storedResult });
-  return result;
+  return withCacheMetadata(result, currentTime);
+}
+
+function withCacheMetadata(value, cachedAt) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  return { ...value, cacheUpdatedAt: cachedAt };
 }
