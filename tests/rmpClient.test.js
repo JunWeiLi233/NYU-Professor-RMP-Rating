@@ -211,6 +211,19 @@ describe("Rate My Professors client", () => {
     );
   });
 
+  it("wraps malformed RMP JSON responses as request failures", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => {
+        throw new SyntaxError("Unexpected token < in JSON");
+      },
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).rejects.toThrow(
+      "Rate My Professors response was not valid JSON",
+    );
+  });
+
   it("aborts RMP requests that exceed the lookup timeout", async () => {
     vi.useFakeTimers();
     const fetchImpl = vi.fn((_url, options) => {

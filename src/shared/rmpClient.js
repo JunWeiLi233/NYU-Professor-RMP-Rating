@@ -89,7 +89,12 @@ async function searchTeachers(name, fetchImpl, timeoutMs) {
     throw new Error(`Rate My Professors request failed with ${response.status}`);
   }
 
-  const payload = await response.json();
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Rate My Professors response was not valid JSON");
+  }
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
     const message = payload.errors.map((error) => error?.message).filter(Boolean).join("; ");
     throw new Error(`Rate My Professors request failed: ${message || "GraphQL error"}`);
