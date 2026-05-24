@@ -9,6 +9,10 @@ export function startAlbertRmpEnhancer({
   window = globalThis.window,
   lookupProfessor,
 } = {}) {
+  if (!isAlbertPage(window?.location)) {
+    return null;
+  }
+
   injectStyles(document);
   scanAlbertPageOnce({ document, lookupProfessor });
 
@@ -21,6 +25,12 @@ export function startAlbertRmpEnhancer({
 
   observer.observe(document.body, { childList: true, subtree: true });
   return observer;
+}
+
+function isAlbertPage(location) {
+  const hostname = String(location?.hostname ?? "").toLowerCase();
+  const pathname = String(location?.pathname ?? "").toLowerCase();
+  return hostname === "albert.nyu.edu" || hostname.startsWith("albert.") || pathname.includes("albert");
 }
 
 export function scanAlbertPageOnce({ document = globalThis.document, lookupProfessor }) {

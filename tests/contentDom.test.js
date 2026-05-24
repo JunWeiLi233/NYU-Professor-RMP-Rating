@@ -1,8 +1,50 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
-import { scanAlbertPageOnce } from "../src/contentDom.js";
+import { scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
 
 describe("Albert content DOM injection", () => {
+  it("does not scan unrelated NYU pages at startup", () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn();
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("https://www.nyu.edu/academics.html"),
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+
+    expect(observer).toBeNull();
+    expect(lookupProfessor).not.toHaveBeenCalled();
+    expect(observe).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
+  it("scans Albert pages at startup", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    expect(observer).not.toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(observe).toHaveBeenCalledWith(document.body, { childList: true, subtree: true });
+  });
+
   it("injects one RMP card per Albert instructor and updates it with rating data", async () => {
     document.body.innerHTML = `
       <table>
