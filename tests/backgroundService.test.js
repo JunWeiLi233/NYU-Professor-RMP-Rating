@@ -272,6 +272,34 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("does not populate memory cache when persisting a fresh lookup fails", async () => {
+    const firstRating = {
+      name: "Ada Lovelace",
+      rating: 4.7,
+      topComments: ["Storage failed before this could persist."],
+    };
+    const secondRating = {
+      name: "Ada Lovelace",
+      rating: 4.9,
+      topComments: ["Second lookup after storage recovers."],
+    };
+    const storage = createStorageMock();
+    storage.set = vi.fn()
+      .mockRejectedValueOnce(new Error("storage unavailable"))
+      .mockImplementationOnce(async function set(items) {
+        Object.assign(storage.data, items);
+      });
+    const findProfessorRating = vi.fn()
+      .mockResolvedValueOnce(firstRating)
+      .mockResolvedValueOnce(secondRating);
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Ada Lovelace")).rejects.toThrow("storage unavailable");
+    await expect(service.lookup("Ada Lovelace")).resolves.toMatchObject(secondRating);
+
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+  });
+
   it("clears persisted and in-memory professor cache entries", async () => {
     const firstRating = {
       name: "Ada Lovelace",

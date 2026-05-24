@@ -95,8 +95,8 @@ function isFreshCacheEntry(entry, currentTime) {
 async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }) {
   const result = await findProfessorRating(name);
   const storedResult = createStoredRating(result, currentTime);
-  memoryCache.set(key, storedResult);
   await storage.set({ [key]: storedResult });
+  memoryCache.set(key, storedResult);
   return withCacheMetadata(result, currentTime);
 }
 
