@@ -11,6 +11,12 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("GRACE B. HOPPER")).toBe("Grace B. Hopper");
   });
 
+  it("ignores Albert placeholder instructor names", () => {
+    expect(normalizeInstructorName("Instructor: No Instructor Assigned")).toBe("");
+    expect(normalizeInstructorName("No instructor assigned")).toBe("");
+    expect(extractInstructorNamesFromText("Instructor: No Instructor Assigned")).toEqual([]);
+  });
+
   it("extracts unique professor names from an Albert shopping-cart style block", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

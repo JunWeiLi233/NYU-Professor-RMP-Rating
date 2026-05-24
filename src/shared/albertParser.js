@@ -1,4 +1,10 @@
-const STAFF_TERMS = new Set(["staff", "tba", "to be announced", "department"]);
+const STAFF_TERMS = new Set([
+  "staff",
+  "tba",
+  "to be announced",
+  "department",
+  "no instructor assigned",
+]);
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -7,7 +13,7 @@ export function normalizeInstructorName(value) {
 
   const withoutLabel = value
     .replace(/\((primary instructor|instructor|lecture|recitation)\)/gi, "")
-    .replace(/\b(instructor|instructors|instructor\(s\)|professor|prof)\s*[:.]?\s*/gi, "")
+    .replace(/^(?:instructor\(s\)|instructors?|professor|prof)\s*[:.]?\s*/i, "")
     .replace(/\s+/g, " ")
     .trim();
 
