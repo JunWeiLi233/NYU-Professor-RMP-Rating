@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "build": "vite build"
+    "build": "vite build",
+    "verify:package": "node scripts/verify-extension-package.js dist"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
