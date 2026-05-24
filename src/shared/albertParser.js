@@ -95,6 +95,12 @@ function titleCaseName(value) {
           .map(capitalizeToken)
           .join("-");
       }
+      if (token.includes("'")) {
+        return token
+          .split("'")
+          .map(capitalizeToken)
+          .join("'");
+      }
       return capitalizeToken(token);
     })
     .join(" ");
