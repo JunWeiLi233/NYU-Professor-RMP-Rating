@@ -213,7 +213,7 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   container.className = ROOT_CLASS;
 
   const pendingLookups = [];
-  for (const name of names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean)) {
+  for (const name of uniqueNames(names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean))) {
     const card = createRatingShell(document, name);
     container.append(card);
     const pendingLookup = loadRatingCard({ card, name, lookupProfessor });
@@ -226,6 +226,18 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     element.insertAdjacentElement("afterend", container);
   }
   return pendingLookups;
+}
+
+function uniqueNames(names) {
+  const seen = new Set();
+  return names.filter((name) => {
+    const key = compactName(name);
+    if (!key || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {

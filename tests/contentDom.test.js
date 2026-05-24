@@ -573,6 +573,53 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("deduplicates repeated instructor names inside the same Albert instructor cell", async () => {
+    document.body.innerHTML = `<div>Instructor(s): Ada Lovelace; Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Clear systems explanations."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
+  it("deduplicates repeated instructor names inside adjacent Albert cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor(s)</th>
+            <td>Ada Lovelace; Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Clear systems explanations."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("injects ratings when Albert splits the instructor label and name into adjacent cells", async () => {
     document.body.innerHTML = `
       <table>
