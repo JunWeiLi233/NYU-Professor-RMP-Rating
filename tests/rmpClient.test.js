@@ -215,6 +215,42 @@ describe("Rate My Professors client", () => {
     });
   });
 
+  it("ignores null RMP teacher rating tags in partial GraphQL results", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci01",
+                    legacyId: 654,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [null, { tagName: "" }, { tagName: "Clear grading criteria" }],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Grace Hopper", { fetchImpl })).resolves.toMatchObject({
+      name: "Grace Hopper",
+      tags: ["Clear grading criteria"],
+    });
+  });
+
   it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

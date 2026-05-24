@@ -137,7 +137,7 @@ function toProfessorRating(teacher, requestedName) {
     difficulty: numberOrNull(teacher.avgDifficulty),
     ratingsCount: Number(teacher.numRatings ?? 0),
     wouldTakeAgain: numberOrNull(teacher.wouldTakeAgainPercent),
-    tags: teacher.teacherRatingTags?.map((tag) => tag.tagName).filter(Boolean).slice(0, 3) ?? [],
+    tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
     url: teacher.legacyId
       ? `https://www.ratemyprofessors.com/professor/${teacher.legacyId}`
