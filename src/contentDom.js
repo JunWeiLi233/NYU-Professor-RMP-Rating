@@ -3,6 +3,7 @@ import { extractInstructorNamesFromText, normalizeInstructorName, splitInstructo
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
+const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 
 export function startAlbertRmpEnhancer({
   document = globalThis.document,
@@ -298,7 +299,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
   const ratingsCount = nonNegativeCount(result.ratingsCount);
-  const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
+  const rmpUrl = safeRmpUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
@@ -664,6 +665,20 @@ function searchLabel(name) {
 
 function rmpSearchUrl(name) {
   return `https://www.ratemyprofessors.com/search/professors/1381?q=${encodeURIComponent(name)}`;
+}
+
+function safeRmpUrl(value) {
+  try {
+    const url = new URL(String(value ?? ""));
+    const host = url.hostname.toLowerCase();
+    if (url.protocol === "https:" && (host === "www.ratemyprofessors.com" || host === "ratemyprofessors.com")) {
+      return url.href;
+    }
+  } catch {
+    return DEFAULT_RMP_URL;
+  }
+
+  return DEFAULT_RMP_URL;
 }
 
 function getRatingVerdict(value) {
