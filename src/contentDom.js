@@ -309,7 +309,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
       <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
-      <span>${ratingsCount} ratings</span>
+      <span>${escapeHtml(formatRatingsCount(ratingsCount))}</span>
       <span>Difficulty ${formatScore(result.difficulty)}</span>
       ${result.wouldTakeAgain == null ? "" : `<span>${Math.round(result.wouldTakeAgain)}% take again</span>`}
     </div>
@@ -491,6 +491,10 @@ export function injectStyles(document = globalThis.document) {
 
 function formatScore(value) {
   return value == null ? "N/A" : Number(value).toFixed(1);
+}
+
+function formatRatingsCount(value) {
+  return `${value} ${value === 1 ? "rating" : "ratings"}`;
 }
 
 function escapeHtml(value) {
