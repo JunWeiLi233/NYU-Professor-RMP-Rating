@@ -12,6 +12,7 @@ const STAFF_TERMS = new Set([
   "none",
 ]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "iii", "iv", "v"]);
+const SURNAME_PARTICLES = new Set(["de", "del", "della", "di", "du", "la", "le", "van", "von"]);
 const TITLE_NAME_SUFFIXES = new Map([
   ["jr", "Jr"],
   ["jr.", "Jr."],
@@ -126,7 +127,20 @@ function pairAlbertLastFirstParts(parts) {
 }
 
 function looksLikeAlbertLastFirst(lastName, firstNames) {
-  return /^[A-Za-z][A-Za-z'-]+$/.test(lastName) && /^[A-Za-z][A-Za-z'. -]+$/.test(firstNames);
+  return looksLikeLastName(lastName) && /^[A-Za-z][A-Za-z'. -]+$/.test(firstNames);
+}
+
+function looksLikeLastName(value) {
+  if (/^[A-Za-z][A-Za-z'-]+$/.test(value)) {
+    return true;
+  }
+
+  const parts = value.split(/\s+/).filter(Boolean);
+  return parts.length > 1 && SURNAME_PARTICLES.has(parts[0].toLowerCase()) && parts.every(isNameToken);
+}
+
+function isNameToken(value) {
+  return /^[A-Za-z][A-Za-z'-]+$/.test(value);
 }
 
 function titleCaseName(value) {

@@ -80,6 +80,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands Albert last-name-first names with surname particles", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: Van Rossum, Guido
+      Instructor(s): DE SOUZA, MARIA
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Guido Van Rossum",
+      "Maria De Souza",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
