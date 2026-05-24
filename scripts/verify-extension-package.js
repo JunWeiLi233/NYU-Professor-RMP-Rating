@@ -22,6 +22,11 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (!manifest.content_scripts?.some((contentScript) => contentScript.matches?.includes("https://albert.nyu.edu/*"))) {
     throw new Error("Albert content script match is required");
   }
+  if (!manifest.content_scripts?.some((contentScript) =>
+    contentScript.matches?.includes("https://albert.nyu.edu/*") && contentScript.all_frames === true
+  )) {
+    throw new Error("Albert content script must run in all frames");
+  }
 
   await assertFileExists(join(distDir, manifest.background?.service_worker ?? ""), "background service worker is missing");
   await assertFileExists(join(distDir, manifest.action?.default_popup ?? ""), "popup html is missing");
