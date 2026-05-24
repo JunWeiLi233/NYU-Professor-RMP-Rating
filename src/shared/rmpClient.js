@@ -135,7 +135,7 @@ function toProfessorRating(teacher, requestedName) {
     department: teacher.department ?? "",
     rating: numberOrNull(teacher.avgRating),
     difficulty: numberOrNull(teacher.avgDifficulty),
-    ratingsCount: Number(teacher.numRatings ?? 0),
+    ratingsCount: numberOrNull(teacher.numRatings) ?? 0,
     wouldTakeAgain: numberOrNull(teacher.wouldTakeAgainPercent),
     tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
@@ -162,7 +162,7 @@ function teacherScore(target, teacher) {
   if (/computer|cs|courant/i.test(teacher.department ?? "")) {
     score += 10;
   }
-  score += Math.min(Number(teacher.numRatings ?? 0), 50) / 10;
+  score += Math.min(numberOrNull(teacher.numRatings) ?? 0, 50) / 10;
   return score;
 }
 
