@@ -1,6 +1,7 @@
 export async function initPopup({
   document = globalThis.document,
   storage = globalThis.chrome?.storage?.local,
+  runtime = globalThis.chrome?.runtime,
 } = {}) {
   const status = document.getElementById("status");
   const clearButton = document.getElementById("clear-cache");
@@ -19,9 +20,16 @@ export async function initPopup({
 
   if (clearButton) {
     clearButton.addEventListener("click", async () => {
-      const cached = await getProfessorCacheKeys(storage);
-      if (cached.length > 0) {
-        await storage.remove(cached);
+      if (runtime?.sendMessage) {
+        const response = await runtime.sendMessage({ type: "NYU_RMP_CLEAR_CACHE" });
+        if (!response?.ok) {
+          throw new Error(response?.error ?? "Cache clear failed");
+        }
+      } else {
+        const cached = await getProfessorCacheKeys(storage);
+        if (cached.length > 0) {
+          await storage.remove(cached);
+        }
       }
       status.textContent = "Cache cleared";
       clearButton.disabled = true;

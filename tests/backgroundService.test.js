@@ -160,16 +160,55 @@ describe("background professor lookup service", () => {
       value: freshRating,
     });
   });
+
+  it("clears persisted and in-memory professor cache entries", async () => {
+    const firstRating = {
+      name: "Ada Lovelace",
+      rating: 4.7,
+      topComments: ["Clear explanations."],
+    };
+    const refreshedRating = {
+      name: "Ada Lovelace",
+      rating: 3.2,
+      topComments: ["Newer RMP data."],
+    };
+    const storage = createStorageMock({
+      "professor:grace hopper": { cachedAt: 1, value: { name: "Grace Hopper" } },
+      "settings:theme": "system",
+    });
+    const findProfessorRating = vi.fn()
+      .mockResolvedValueOnce(firstRating)
+      .mockResolvedValueOnce(refreshedRating);
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual(firstRating);
+    await expect(service.clearCache()).resolves.toEqual(2);
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual(refreshedRating);
+
+    expect(storage.data).toEqual({
+      [professorCacheKey("Ada Lovelace")]: expect.objectContaining({ value: refreshedRating }),
+      "settings:theme": "system",
+    });
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+  });
 });
 
 function createStorageMock(initialData = {}) {
   return {
     data: { ...initialData },
     async get(key) {
+      if (key === null) {
+        return { ...this.data };
+      }
       return { [key]: this.data[key] };
     },
     async set(items) {
       Object.assign(this.data, items);
+    },
+    async remove(keys) {
+      for (const key of keys) {
+        delete this.data[key];
+      }
     },
   };
 }

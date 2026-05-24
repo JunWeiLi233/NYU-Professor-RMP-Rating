@@ -5,13 +5,21 @@ const professorLookupService = createProfessorLookupService({
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message?.type !== "NYU_RMP_FIND_PROFESSOR") {
-    return false;
+  if (message?.type === "NYU_RMP_FIND_PROFESSOR") {
+    professorLookupService.lookup(message.name)
+      .then((result) => sendResponse({ ok: true, result }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+
+    return true;
   }
 
-  professorLookupService.lookup(message.name)
-    .then((result) => sendResponse({ ok: true, result }))
-    .catch((error) => sendResponse({ ok: false, error: error.message }));
+  if (message?.type === "NYU_RMP_CLEAR_CACHE") {
+    professorLookupService.clearCache()
+      .then((cleared) => sendResponse({ ok: true, cleared }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
 
-  return true;
+    return true;
+  }
+
+  return false;
 });

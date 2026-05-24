@@ -29,13 +29,14 @@ describe("extension popup controller", () => {
       "professor:grace hopper": { value: { name: "Grace Hopper" } },
       "settings:theme": "system",
     });
+    const runtime = createRuntimeMock();
 
-    await initPopup({ document, storage });
+    await initPopup({ document, storage, runtime });
     document.getElementById("clear-cache").click();
     await flushPromises();
 
-    expect(storage.remove).toHaveBeenCalledWith(["professor:ada lovelace", "professor:grace hopper"]);
-    expect(storage.data).toEqual({ "settings:theme": "system" });
+    expect(runtime.sendMessage).toHaveBeenCalledWith({ type: "NYU_RMP_CLEAR_CACHE" });
+    expect(storage.remove).not.toHaveBeenCalled();
     expect(document.getElementById("status").textContent).toBe("Cache cleared");
   });
 });
@@ -51,6 +52,12 @@ function createStorageMock(initialData = {}) {
         delete this.data[key];
       }
     }),
+  };
+}
+
+function createRuntimeMock() {
+  return {
+    sendMessage: vi.fn(async () => ({ ok: true, cleared: 2 })),
   };
 }
 
