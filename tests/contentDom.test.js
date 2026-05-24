@@ -382,6 +382,22 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("ignores hidden Albert instructor templates during scans", async () => {
+    document.body.innerHTML = `
+      <div hidden>Instructor: Hidden Template</div>
+      <div aria-hidden="true">Instructor: Hidden Aria</div>
+      <div style="display: none;">Instructor: Hidden Display</div>
+      <div>Instructor: Ada Lovelace</div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("removes injected cards and processed markers when the overlay is disabled", async () => {
     document.body.innerHTML = `<div id="instructor">Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

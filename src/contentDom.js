@@ -97,7 +97,21 @@ function findInstructorTargetsForElement(element) {
 }
 
 function isUnprocessedVisibleCandidate(element) {
-  return element.dataset.nyuRmpProcessed !== "true" && !element.closest(`.${ROOT_CLASS}`);
+  return element.dataset.nyuRmpProcessed !== "true" && !element.closest(`.${ROOT_CLASS}`) && isElementVisible(element);
+}
+
+function isElementVisible(element) {
+  return !element.closest("[hidden], [aria-hidden='true']") && !hasHiddenInlineStyle(element);
+}
+
+function hasHiddenInlineStyle(element) {
+  for (let node = element; node; node = node.parentElement) {
+    const style = node.style;
+    if (style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse") {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isInstructorLabel(text) {
