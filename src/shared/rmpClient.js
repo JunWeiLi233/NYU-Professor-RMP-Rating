@@ -133,10 +133,10 @@ function toProfessorRating(teacher, requestedName) {
     name,
     matchConfidence: compactName(name) === compactName(requestedName) ? "exact" : "fuzzy",
     department: teacher.department ?? "",
-    rating: numberOrNull(teacher.avgRating),
-    difficulty: numberOrNull(teacher.avgDifficulty),
+    rating: nonNegativeNumberOrNull(teacher.avgRating),
+    difficulty: nonNegativeNumberOrNull(teacher.avgDifficulty),
     ratingsCount: numberOrNull(teacher.numRatings) ?? 0,
-    wouldTakeAgain: numberOrNull(teacher.wouldTakeAgainPercent),
+    wouldTakeAgain: nonNegativeNumberOrNull(teacher.wouldTakeAgainPercent),
     tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
     url: teacher.legacyId
@@ -176,6 +176,11 @@ function numberOrNull(value) {
   }
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function nonNegativeNumberOrNull(value) {
+  const number = numberOrNull(value);
+  return number == null || number < 0 ? null : number;
 }
 
 function searchNameVariants(name) {

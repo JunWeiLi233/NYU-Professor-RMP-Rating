@@ -177,6 +177,43 @@ describe("Rate My Professors client", () => {
     expect(result.wouldTakeAgain).toBeNull();
   });
 
+  it("treats negative unavailable RMP metrics as missing values", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci03",
+                    legacyId: 890,
+                    firstName: "Alan",
+                    lastName: "Turing",
+                    department: "Computer Science",
+                    avgRating: -1,
+                    avgDifficulty: -1,
+                    numRatings: 0,
+                    wouldTakeAgainPercent: -1,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Alan Turing", { fetchImpl });
+
+    expect(result.rating).toBeNull();
+    expect(result.difficulty).toBeNull();
+    expect(result.wouldTakeAgain).toBeNull();
+  });
+
   it("keeps invalid RMP rating counts as zero instead of NaN", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
