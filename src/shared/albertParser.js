@@ -6,6 +6,8 @@ const STAFF_TERMS = new Set([
   "department",
   "not assigned",
   "no instructor assigned",
+  "n/a",
+  "none",
 ]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "iii", "iv", "v"]);
 const TITLE_NAME_SUFFIXES = new Map([
@@ -33,7 +35,7 @@ export function normalizeInstructorName(value) {
   }
 
   const normalized = titleCaseName(withoutLabel.replace(/[;|]+$/g, "").trim());
-  if (!normalized || STAFF_TERMS.has(normalized.toLowerCase())) {
+  if (!normalized || isPlaceholderInstructor(normalized)) {
     return "";
   }
 
@@ -70,6 +72,10 @@ export function extractInstructorNamesFromText(text) {
 
 export function splitInstructorList(value) {
   const cleaned = stripInstructorRoleAnnotations(value);
+  if (isPlaceholderInstructor(cleaned)) {
+    return [];
+  }
+
   const semicolonParts = cleaned
     .split(/\s*(?:;|\/|\band\b)\s*/i)
     .map((part) => part.trim())
@@ -95,6 +101,10 @@ export function splitInstructorList(value) {
 
 function stripInstructorRoleAnnotations(value) {
   return String(value ?? "").replace(INSTRUCTOR_ROLE_PATTERN, "").replace(/\s+/g, " ").trim();
+}
+
+function isPlaceholderInstructor(value) {
+  return STAFF_TERMS.has(String(value ?? "").trim().toLowerCase());
 }
 
 function pairAlbertLastFirstParts(parts) {
