@@ -48,6 +48,16 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
   return { targets, pendingLookups };
 }
 
+export function removeAlbertRmpEnhancements(document = globalThis.document) {
+  for (const root of document.querySelectorAll(`.${ROOT_CLASS}`)) {
+    root.remove();
+  }
+
+  for (const element of document.querySelectorAll("[data-nyu-rmp-processed]")) {
+    delete element.dataset.nyuRmpProcessed;
+  }
+}
+
 function createScanLookupCache(lookupProfessor) {
   const lookups = new Map();
   return (name, options = {}) => {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
-import { scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
+import { removeAlbertRmpEnhancements, scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
 
 describe("Albert content DOM injection", () => {
   it("does not scan unrelated NYU pages at startup", () => {
@@ -380,6 +380,28 @@ describe("Albert content DOM injection", () => {
 
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
+  });
+
+  it("removes injected cards and processed markers when the overlay is disabled", async () => {
+    document.body.innerHTML = `<div id="instructor">Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.getElementById("instructor").dataset.nyuRmpProcessed).toBe("true");
+
+    removeAlbertRmpEnhancements(document);
+
+    expect(document.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(document.getElementById("instructor").dataset.nyuRmpProcessed).toBeUndefined();
   });
 
   it("reuses one RMP lookup for duplicate instructors during the same scan", async () => {
