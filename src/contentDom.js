@@ -152,7 +152,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     return;
   }
 
-  const ratingClass = result.rating >= 4 ? "good" : result.rating >= 3 ? "mixed" : "weak";
+  const ratingVerdict = getRatingVerdict(result.rating);
+  const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
   const ratingsCount = numberOrNull(result.ratingsCount) ?? 0;
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
@@ -174,6 +175,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     </div>
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
+      <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
       <span>${ratingsCount} ratings</span>
       <span>Difficulty ${formatScore(result.difficulty)}</span>
       ${result.wouldTakeAgain == null ? "" : `<span>${Math.round(result.wouldTakeAgain)}% take again</span>`}
@@ -263,6 +265,13 @@ export function injectStyles(document = globalThis.document) {
       color: #475569;
       font-size: 12px;
     }
+    .nyu-rmp-score-row .nyu-rmp-verdict {
+      border: 1px solid #d8e0ea;
+      border-radius: 999px;
+      color: #334155;
+      font-size: 11px;
+      padding: 2px 7px;
+    }
     .nyu-rmp-tags span {
       background: #eef2f7;
       border: 1px solid #d8e0ea;
@@ -349,10 +358,27 @@ function normalizeComment(comment) {
 }
 
 function numberOrNull(value) {
+  if (value == null || value === "") {
+    return null;
+  }
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function getRatingVerdict(value) {
+  const rating = numberOrNull(value);
+  if (rating == null) {
+    return { className: "weak", label: "No rating" };
+  }
+  if (rating >= 4) {
+    return { className: "good", label: "Strong rating" };
+  }
+  if (rating >= 3) {
+    return { className: "mixed", label: "Mixed rating" };
+  }
+  return { className: "weak", label: "Low rating" };
 }
