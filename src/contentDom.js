@@ -296,8 +296,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     return;
   }
 
-  const rating = nonNegativeNumberOrNull(result.rating);
-  const difficulty = nonNegativeNumberOrNull(result.difficulty);
+  const rating = rmpScaleNumberOrNull(result.rating);
+  const difficulty = rmpScaleNumberOrNull(result.difficulty);
   const wouldTakeAgain = percentNumberOrNull(result.wouldTakeAgain);
   const ratingVerdict = getRatingVerdict(rating);
   const ratingClass = ratingVerdict.className;
@@ -531,6 +531,11 @@ function percentNumberOrNull(value) {
   return number == null || number > 100 ? null : number;
 }
 
+function rmpScaleNumberOrNull(value) {
+  const number = nonNegativeNumberOrNull(value);
+  return number == null || number > 5 ? null : number;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -607,8 +612,8 @@ function normalizeComment(comment) {
   return {
     text: comment?.text ?? "",
     helpfulRating: nonNegativeNumberOrNull(comment?.helpfulRating),
-    clarityRating: nonNegativeNumberOrNull(comment?.clarityRating),
-    difficultyRating: nonNegativeNumberOrNull(comment?.difficultyRating),
+    clarityRating: rmpScaleNumberOrNull(comment?.clarityRating),
+    difficultyRating: rmpScaleNumberOrNull(comment?.difficultyRating),
   };
 }
 

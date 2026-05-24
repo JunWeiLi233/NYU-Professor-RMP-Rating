@@ -122,8 +122,8 @@ function toProfessorRating(teacher, requestedName) {
     .map((rating) => ({
       text: rating.comment.trim(),
       helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
-      clarityRating: nonNegativeNumberOrNull(rating.clarityRating),
-      difficultyRating: nonNegativeNumberOrNull(rating.difficultyRating),
+      clarityRating: rmpScaleNumberOrNull(rating.clarityRating),
+      difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
     }))
     .filter(Boolean)
     .slice(0, 2) ?? [];
@@ -133,8 +133,8 @@ function toProfessorRating(teacher, requestedName) {
     name,
     matchConfidence: compactName(name) === compactName(requestedName) ? "exact" : "fuzzy",
     department: teacher.department ?? "",
-    rating: nonNegativeNumberOrNull(teacher.avgRating),
-    difficulty: nonNegativeNumberOrNull(teacher.avgDifficulty),
+    rating: rmpScaleNumberOrNull(teacher.avgRating),
+    difficulty: rmpScaleNumberOrNull(teacher.avgDifficulty),
     ratingsCount: nonNegativeCount(teacher.numRatings),
     wouldTakeAgain: percentNumberOrNull(teacher.wouldTakeAgainPercent),
     tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
@@ -198,6 +198,11 @@ function nonNegativeNumberOrNull(value) {
 function percentNumberOrNull(value) {
   const number = nonNegativeNumberOrNull(value);
   return number == null || number > 100 ? null : number;
+}
+
+function rmpScaleNumberOrNull(value) {
+  const number = nonNegativeNumberOrNull(value);
+  return number == null || number > 5 ? null : number;
 }
 
 function nonNegativeCount(value) {

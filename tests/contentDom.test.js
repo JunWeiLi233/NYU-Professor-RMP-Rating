@@ -306,6 +306,34 @@ describe("Albert content DOM injection", () => {
     expect(scoreRowText).not.toContain("125% take again");
   });
 
+  it("renders cached RMP scale metrics above 5 as unavailable values", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 6.2,
+      difficulty: 8.4,
+      ratingsCount: 12,
+      tags: [],
+      topComments: [
+        {
+          text: "Cached comment with impossible metadata.",
+          clarityRating: 7,
+          difficultyRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const scoreRowText = document.querySelector(".nyu-rmp-score-row").textContent;
+    expect(document.querySelector(".nyu-rmp-score").textContent).toBe("N/A");
+    expect(scoreRowText).toContain("Difficulty N/A");
+    expect(document.body.textContent).not.toContain("6.2");
+    expect(document.body.textContent).not.toContain("Difficulty 8.4");
+    expect(document.querySelector(".nyu-rmp-comment-meta")).toBeNull();
+  });
+
   it("keeps long useful comments compact until expanded", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const longComment = [

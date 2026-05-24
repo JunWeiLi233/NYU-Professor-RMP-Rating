@@ -193,6 +193,55 @@ describe("Rate My Professors client", () => {
     ]);
   });
 
+  it("normalizes out-of-range RMP scale metrics as missing values", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xMg==",
+                    legacyId: 137,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 6.2,
+                    avgDifficulty: 8.4,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Helpful comment with impossible metadata.",
+                            helpfulRating: 4,
+                            clarityRating: 7,
+                            difficultyRating: 8,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.rating).toBeNull();
+    expect(result.difficulty).toBeNull();
+    expect(result.topComments[0].clarityRating).toBeNull();
+    expect(result.topComments[0].difficultyRating).toBeNull();
+  });
+
   it("orders useful comments with malformed helpfulness after valid helpful comments", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
