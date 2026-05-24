@@ -210,6 +210,45 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("does not reuse a normal in-flight lookup for force refresh requests", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const cachedRating = {
+      name: "Ada Lovelace",
+      rating: 4.2,
+      topComments: ["Initial lookup."],
+    };
+    const refreshedRating = {
+      name: "Ada Lovelace",
+      rating: 4.9,
+      topComments: ["Forced refresh lookup."],
+    };
+    const pendingLookups = [];
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(() => new Promise((resolve) => {
+      pendingLookups.push(resolve);
+    }));
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    const normalLookup = service.lookup("Ada Lovelace");
+    await Promise.resolve();
+    await Promise.resolve();
+    const forcedLookup = service.lookup("Ada Lovelace", { forceRefresh: true });
+    await Promise.resolve();
+    pendingLookups[0](cachedRating);
+    pendingLookups[1](refreshedRating);
+
+    await expect(Promise.all([normalLookup, forcedLookup])).resolves.toEqual([
+      { ...cachedRating, cacheUpdatedAt: now },
+      { ...refreshedRating, cacheUpdatedAt: now },
+    ]);
+
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+  });
+
   it("persists fresh RMP lookup results for later Albert page scans", async () => {
     const freshRating = {
       name: "Ada Lovelace",

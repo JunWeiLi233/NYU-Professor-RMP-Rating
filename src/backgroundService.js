@@ -39,12 +39,13 @@ export function createProfessorLookupService({
         }
       }
 
-      if (!inFlightLookups.has(key)) {
-        inFlightLookups.set(key, fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }));
+      const inFlightKey = forceRefresh ? `${key}:force` : key;
+      if (!inFlightLookups.has(inFlightKey)) {
+        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }));
       }
 
-      return inFlightLookups.get(key).finally(() => {
-        inFlightLookups.delete(key);
+      return inFlightLookups.get(inFlightKey).finally(() => {
+        inFlightLookups.delete(inFlightKey);
       });
     },
     async clearCache() {
