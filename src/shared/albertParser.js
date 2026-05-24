@@ -12,6 +12,8 @@ const TITLE_NAME_SUFFIXES = new Map([
   ["sr", "Sr"],
   ["sr.", "Sr."],
 ]);
+const INSTRUCTOR_ROLE_PATTERN =
+  /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -19,7 +21,7 @@ export function normalizeInstructorName(value) {
   }
 
   const withoutLabel = value
-    .replace(/\((primary instructor|instructor|lecture|recitation)\)/gi, "")
+    .replace(INSTRUCTOR_ROLE_PATTERN, "")
     .replace(/^(?:instructor\(s\)|instructors?|professor|prof)\s*[:.]?\s*/i, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -65,7 +67,8 @@ export function extractInstructorNamesFromText(text) {
 }
 
 export function splitInstructorList(value) {
-  const semicolonParts = value
+  const cleaned = stripInstructorRoleAnnotations(value);
+  const semicolonParts = cleaned
     .split(/\s*(?:;|\/|\band\b)\s*/i)
     .map((part) => part.trim())
     .filter(Boolean);
@@ -74,15 +77,37 @@ export function splitInstructorList(value) {
     return semicolonParts.flatMap(splitInstructorList);
   }
 
-  const commaParts = value.split(/\s*,\s*/).map((part) => part.trim()).filter(Boolean);
+  const commaParts = cleaned.split(/\s*,\s*/).map((part) => part.trim()).filter(Boolean);
   if (commaParts.length === 2 && looksLikeAlbertLastFirst(commaParts[0], commaParts[1])) {
     return [`${commaParts[1]} ${commaParts[0]}`];
   }
+  if (commaParts.length > 2) {
+    return pairAlbertLastFirstParts(commaParts);
+  }
 
-  return value
+  return cleaned
     .split(/\s*,\s*/)
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+function stripInstructorRoleAnnotations(value) {
+  return String(value ?? "").replace(INSTRUCTOR_ROLE_PATTERN, "").replace(/\s+/g, " ").trim();
+}
+
+function pairAlbertLastFirstParts(parts) {
+  const names = [];
+  for (let index = 0; index < parts.length; index += 1) {
+    const current = parts[index];
+    const next = parts[index + 1];
+    if (next && looksLikeAlbertLastFirst(current, next)) {
+      names.push(`${next} ${current}`);
+      index += 1;
+    } else {
+      names.push(current);
+    }
+  }
+  return names;
 }
 
 function looksLikeAlbertLastFirst(lastName, firstNames) {

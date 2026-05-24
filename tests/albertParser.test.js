@@ -50,4 +50,18 @@ describe("Albert instructor parsing", () => {
       "Alan Turing",
     ]);
   });
+
+  it("ignores Albert role annotations when parsing last-name-first names", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: YAP, CHEE KENG (Lecture)
+      Instructor(s): HOPPER, GRACE B. (Recitation), Alan Turing (Primary)
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
 });
