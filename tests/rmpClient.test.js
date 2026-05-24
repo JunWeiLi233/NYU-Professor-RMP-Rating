@@ -140,6 +140,43 @@ describe("Rate My Professors client", () => {
     expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7]);
   });
 
+  it("keeps missing RMP numeric fields as null instead of fake zeroes", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0z",
+                    legacyId: 789,
+                    firstName: "Edsger",
+                    lastName: "Dijkstra",
+                    department: "Computer Science",
+                    avgRating: null,
+                    avgDifficulty: null,
+                    numRatings: 3,
+                    wouldTakeAgainPercent: null,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Edsger Dijkstra", { fetchImpl });
+
+    expect(result.rating).toBeNull();
+    expect(result.difficulty).toBeNull();
+    expect(result.wouldTakeAgain).toBeNull();
+  });
+
   it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
