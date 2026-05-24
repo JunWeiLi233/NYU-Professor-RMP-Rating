@@ -3,6 +3,7 @@ const STAFF_TERMS = new Set([
   "tba",
   "tbd",
   "to be announced",
+  "to be determined",
   "department",
   "not assigned",
   "no instructor assigned",
