@@ -1,0 +1,14 @@
+{
+  "name": "nyu-professor-rmp-rating",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^7.2.4",
+    "vitest": "^4.0.13"
+  }
+}

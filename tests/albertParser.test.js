@@ -1,0 +1,44 @@
+import { describe, expect, it } from "vitest";
+import {
+  extractInstructorNamesFromText,
+  normalizeInstructorName,
+} from "../src/shared/albertParser.js";
+
+describe("Albert instructor parsing", () => {
+  it("normalizes Albert instructor labels into searchable names", () => {
+    expect(normalizeInstructorName("Instructor:  Staff")).toBe("");
+    expect(normalizeInstructorName("Prof. Ada Lovelace (Primary Instructor)")).toBe("Ada Lovelace");
+    expect(normalizeInstructorName("GRACE B. HOPPER")).toBe("Grace B. Hopper");
+  });
+
+  it("extracts unique professor names from an Albert shopping-cart style block", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Lecture 001
+      Instructor: Ada Lovelace
+      Also listed as Department Consent Required
+      Instructor(s): Grace B. Hopper, Alan Turing
+      Instructor: Ada Lovelace
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+
+  it("understands Albert last-name-first instructor formatting", () => {
+    const text = `
+      CSCI-UA 102 Data Structures
+      Instructor: YAP, CHEE KENG
+      Instructor(s): Grace B. Hopper, Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+});
