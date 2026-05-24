@@ -311,6 +311,8 @@ describe("Albert content DOM injection", () => {
     expect(commentText.textContent.endsWith("...")).toBe(true);
     expect(toggle.textContent).toBe("Show more");
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.getAttribute("aria-controls")).toBe(commentText.id);
+    expect(commentText.id).toMatch(/^nyu-rmp-comment-/);
 
     toggle.click();
 

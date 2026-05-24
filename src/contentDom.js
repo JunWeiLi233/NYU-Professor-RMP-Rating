@@ -4,6 +4,7 @@ const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
+let nextCardId = 0;
 
 export function startAlbertRmpEnhancer({
   document = globalThis.document,
@@ -258,6 +259,7 @@ function isTableCell(element) {
 function createRatingShell(document, name) {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
+  card.dataset.nyuRmpCardId = String(++nextCardId);
   setCardLoading(card, name, "Checking RMP");
   return card;
 }
@@ -304,7 +306,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
   const comments = asArray(result.topComments)
-    .map((comment) => formatComment(comment))
+    .map((comment, index) => formatComment(comment, commentTextId(card, index)))
     .join("");
   const tags = asArray(result.tags)
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
@@ -531,7 +533,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function formatComment(comment) {
+function formatComment(comment, textId) {
   const normalized = normalizeComment(comment);
   if (!normalized.text) {
     return "";
@@ -547,12 +549,13 @@ function formatComment(comment) {
 
   return `
     <li>
-      <p class="nyu-rmp-comment-text">${escapeHtml(preview)}</p>
+      <p class="nyu-rmp-comment-text" id="${escapeHtml(textId)}">${escapeHtml(preview)}</p>
       ${isTruncated ? `
         <button
           class="nyu-rmp-comment-toggle"
           type="button"
           aria-expanded="false"
+          aria-controls="${escapeHtml(textId)}"
           data-preview-text="${escapeHtml(preview)}"
           data-full-text="${escapeHtml(normalized.text)}"
         >Show more</button>
@@ -560,6 +563,10 @@ function formatComment(comment) {
       ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
   `;
+}
+
+function commentTextId(card, index) {
+  return `nyu-rmp-comment-${card.dataset.nyuRmpCardId || "0"}-${index + 1}`;
 }
 
 function wireCommentToggleActions(card) {
