@@ -146,7 +146,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <div class="nyu-rmp-card-head">
         <strong>${escapeHtml(requestedName)}</strong>
         <div class="nyu-rmp-actions">
-          <button class="nyu-rmp-refresh" type="button">Refresh</button>
+          <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
           <span class="nyu-rmp-status">No RMP match</span>
         </div>
       </div>
@@ -172,7 +172,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(professorName)}</strong>
       <div class="nyu-rmp-actions">
-        <button class="nyu-rmp-refresh" type="button">Refresh</button>
+        <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
         <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer">RMP</a>
       </div>
     </div>
@@ -195,7 +195,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(requestedName)}</strong>
       <div class="nyu-rmp-actions">
-        <button class="nyu-rmp-refresh" type="button">Retry</button>
+        <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(retryLabel(requestedName))}">Retry</button>
         <span class="nyu-rmp-status">${escapeHtml(message || "RMP lookup failed")}</span>
       </div>
     </div>
@@ -388,6 +388,14 @@ function numberOrNull(value) {
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function refreshLabel(name) {
+  return `Refresh RMP rating for ${name}`;
+}
+
+function retryLabel(name) {
+  return `Retry RMP rating for ${name}`;
 }
 
 function getRatingVerdict(value) {

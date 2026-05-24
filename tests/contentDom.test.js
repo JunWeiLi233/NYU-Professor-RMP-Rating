@@ -170,6 +170,41 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Recovered.");
   });
 
+  it("labels refresh controls with the requested professor name", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Ada Lovelace</div>
+      <div>Instructor: Grace Hopper</div>
+      <div>Instructor: Alan Turing</div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => {
+      if (name === "Ada Lovelace") {
+        return {
+          name,
+          rating: 4.7,
+          difficulty: 2.4,
+          ratingsCount: 38,
+          tags: [],
+          topComments: [],
+          url: "https://www.ratemyprofessors.com/professor/123",
+        };
+      }
+      if (name === "Grace Hopper") {
+        return null;
+      }
+      throw new Error("RMP lookup failed");
+    });
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const labels = Array.from(document.querySelectorAll(".nyu-rmp-refresh"))
+      .map((button) => button.getAttribute("aria-label"));
+    expect(labels).toEqual([
+      "Refresh RMP rating for Ada Lovelace",
+      "Refresh RMP rating for Grace Hopper",
+      "Retry RMP rating for Alan Turing",
+    ]);
+  });
+
   it("does not duplicate cards when Albert mutates the same processed row", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);
