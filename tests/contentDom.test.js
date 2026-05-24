@@ -120,6 +120,31 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card a").href).toBe("https://www.ratemyprofessors.com/");
   });
 
+  it("lets students refresh a no-match card without rescanning Albert", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        name: "Ada Lovelace",
+        department: "Computer Science",
+        rating: 4.7,
+        difficulty: 2.4,
+        ratingsCount: 38,
+        wouldTakeAgain: 92,
+        tags: [],
+        topComments: ["Now found."],
+        url: "https://www.ratemyprofessors.com/professor/123",
+      });
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.querySelector(".nyu-rmp-refresh").click();
+    await flushPromises();
+
+    expect(lookupProfessor).toHaveBeenLastCalledWith("Ada Lovelace", { forceRefresh: true });
+    expect(document.querySelector(".nyu-rmp-score").textContent).toBe("4.7");
+    expect(document.body.textContent).toContain("Now found.");
+  });
+
   it("does not duplicate cards when Albert mutates the same processed row", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);

@@ -146,9 +146,13 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     card.innerHTML = `
       <div class="nyu-rmp-card-head">
         <strong>${escapeHtml(requestedName)}</strong>
-        <span class="nyu-rmp-status">No RMP match</span>
+        <div class="nyu-rmp-actions">
+          <button class="nyu-rmp-refresh" type="button">Refresh</button>
+          <span class="nyu-rmp-status">No RMP match</span>
+        </div>
       </div>
     `;
+    wireRefreshAction(card, requestedName, lookupProfessor);
     return;
   }
 
@@ -183,7 +187,11 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
   `;
-  card.querySelector(".nyu-rmp-refresh").addEventListener("click", () => {
+  wireRefreshAction(card, requestedName, lookupProfessor);
+}
+
+function wireRefreshAction(card, requestedName, lookupProfessor) {
+  card.querySelector(".nyu-rmp-refresh")?.addEventListener("click", () => {
     loadRatingCard({ card, name: requestedName, lookupProfessor, forceRefresh: true });
   });
 }
