@@ -5,7 +5,10 @@ export async function initContentScript({
   lookupProfessor,
 } = {}) {
   const settings = await chrome.storage.local.get("settings:overlayEnabled");
-  let observer = startOverlay(settings["settings:overlayEnabled"] !== false);
+  let observer = null;
+  if (settings["settings:overlayEnabled"] !== false) {
+    observer = startOverlay();
+  }
 
   chrome.storage.onChanged?.addListener((changes, areaName) => {
     if (areaName !== "local" || !changes["settings:overlayEnabled"]) {
@@ -14,7 +17,7 @@ export async function initContentScript({
 
     const enabled = changes["settings:overlayEnabled"].newValue !== false;
     if (enabled && !observer) {
-      observer = startOverlay(true);
+      observer = startOverlay();
       return;
     }
 
@@ -25,10 +28,10 @@ export async function initContentScript({
     }
   });
 
-  function startOverlay(enabled) {
+  function startOverlay() {
     return startAlbertRmpEnhancer({
       lookupProfessor,
-      enabled,
+      enabled: true,
     });
   }
 }

@@ -38,6 +38,31 @@ describe("content script controller", () => {
     expect(observer.disconnect).toHaveBeenCalled();
     expect(removeAlbertRmpEnhancements).toHaveBeenCalled();
   });
+
+  it("does not start while disabled, then starts when re-enabled", async () => {
+    const chrome = createChromeMock({ "settings:overlayEnabled": false });
+    const observer = { disconnect: vi.fn() };
+    const startAlbertRmpEnhancer = vi.fn(() => observer);
+
+    await initContentScript({
+      chrome,
+      startAlbertRmpEnhancer,
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    expect(startAlbertRmpEnhancer).not.toHaveBeenCalled();
+
+    chrome.storage.onChanged.listener({
+      "settings:overlayEnabled": { oldValue: false, newValue: true },
+    }, "local");
+
+    expect(startAlbertRmpEnhancer).toHaveBeenCalledTimes(1);
+    expect(startAlbertRmpEnhancer).toHaveBeenCalledWith({
+      lookupProfessor: expect.any(Function),
+      enabled: true,
+    });
+  });
 });
 
 function createChromeMock(settings = {}) {
