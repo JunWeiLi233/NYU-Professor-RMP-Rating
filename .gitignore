@@ -1,4 +1,5 @@
 node_modules/
 dist/
+.omx/
 .DS_Store
 npm-debug.log*
