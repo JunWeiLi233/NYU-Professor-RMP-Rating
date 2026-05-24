@@ -5,6 +5,7 @@ const STAFF_TERMS = new Set([
   "department",
   "no instructor assigned",
 ]);
+const NAME_SUFFIXES = new Set(["jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v"]);
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -86,6 +87,9 @@ function titleCaseName(value) {
   return value
     .split(" ")
     .map((token) => {
+      if (NAME_SUFFIXES.has(token.toLowerCase())) {
+        return token.replace(/\.$/, "").toUpperCase() + (token.endsWith(".") ? "." : "");
+      }
       if (/^[A-Z]\.$/.test(token)) {
         return token;
       }
