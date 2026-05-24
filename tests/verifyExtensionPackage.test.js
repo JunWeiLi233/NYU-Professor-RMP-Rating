@@ -49,6 +49,25 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the Albert content script does not match blank child frames", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        content_scripts: [
+          {
+            matches: ["https://albert.nyu.edu/*"],
+            js: ["content.js"],
+            run_at: "document_idle",
+            all_frames: true,
+          },
+        ],
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("Albert content script must match blank child frames");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when a content script contains top-level await", async () => {
     const dist = await createPackageDist({
       files: {
@@ -76,6 +95,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
         js: ["content.js"],
         run_at: "document_idle",
         all_frames: true,
+        match_about_blank: true,
       },
     ],
     host_permissions: ["https://www.ratemyprofessors.com/*"],

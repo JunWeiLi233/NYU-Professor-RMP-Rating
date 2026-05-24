@@ -27,6 +27,11 @@ export async function verifyExtensionPackage(distDir = "dist") {
   )) {
     throw new Error("Albert content script must run in all frames");
   }
+  if (!manifest.content_scripts?.some((contentScript) =>
+    contentScript.matches?.includes("https://albert.nyu.edu/*") && contentScript.match_about_blank === true
+  )) {
+    throw new Error("Albert content script must match blank child frames");
+  }
 
   await assertFileExists(join(distDir, manifest.background?.service_worker ?? ""), "background service worker is missing");
   await assertFileExists(join(distDir, manifest.action?.default_popup ?? ""), "popup html is missing");
