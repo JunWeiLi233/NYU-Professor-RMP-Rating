@@ -53,6 +53,7 @@ describe("Rate My Professors client", () => {
 
     await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toMatchObject({
       name: "Ada Lovelace",
+      matchConfidence: "exact",
       rating: 4.7,
       difficulty: 2.4,
       ratingsCount: 38,
@@ -236,6 +237,7 @@ describe("Rate My Professors client", () => {
     const result = await findProfessorRating("Chee Keng Yap", { fetchImpl });
 
     expect(result.name).toBe("Chee Yap");
+    expect(result.matchConfidence).toBe("fuzzy");
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Chee Yap");
   });

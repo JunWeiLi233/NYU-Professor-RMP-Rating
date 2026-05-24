@@ -164,7 +164,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
-  const matchNote = formatMatchNote(professorName, requestedName);
+  const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
   const comments = asArray(result.topComments)
     .map((comment) => formatComment(comment))
     .join("");
@@ -483,12 +483,13 @@ function formatUpdatedAt(value) {
   return `Updated ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
 }
 
-function formatMatchNote(professorName, requestedName) {
+function formatMatchNote(professorName, requestedName, matchConfidence) {
   const requested = String(requestedName ?? "").trim();
   if (!requested || compactName(professorName) === compactName(requested)) {
     return "";
   }
-  return `Albert: ${requested}`;
+  const prefix = matchConfidence === "fuzzy" ? "Fuzzy RMP match - " : "";
+  return `${prefix}Albert: ${requested}`;
 }
 
 function compactName(value) {

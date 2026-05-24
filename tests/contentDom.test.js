@@ -126,6 +126,7 @@ describe("Albert content DOM injection", () => {
       rating: 2.1,
       difficulty: 4.5,
       ratingsCount: 92,
+      matchConfidence: "fuzzy",
       topComments: [],
       url: "https://www.ratemyprofessors.com/professor/419998",
     }));
@@ -133,7 +134,9 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.querySelector(".nyu-rmp-card strong").textContent).toBe("Chee Yap");
-    expect(document.querySelector(".nyu-rmp-match-note").textContent).toBe("Albert: Chee Keng Yap");
+    expect(document.querySelector(".nyu-rmp-match-note").textContent).toBe(
+      "Fuzzy RMP match - Albert: Chee Keng Yap",
+    );
   });
 
   it("refreshes a professor card with a cache-bypassing lookup", async () => {

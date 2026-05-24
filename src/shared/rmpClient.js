@@ -43,7 +43,7 @@ export async function findProfessorRating(name, options = {}) {
     const teachers = await searchTeachers(queryText, fetchImpl);
     const bestMatch = pickBestTeacher(name, teachers);
     if (bestMatch && teacherScore(compactName(name), bestMatch) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
-      return toProfessorRating(bestMatch);
+      return toProfessorRating(bestMatch, name);
     }
   }
 
@@ -87,7 +87,7 @@ export function pickBestTeacher(name, teachers) {
     })[0] ?? null;
 }
 
-function toProfessorRating(teacher) {
+function toProfessorRating(teacher, requestedName) {
   const name = `${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`.trim();
   const comments = teacher?.ratings?.edges
     ?.map((edge) => edge?.node)
@@ -105,6 +105,7 @@ function toProfessorRating(teacher) {
   return {
     id: teacher.id,
     name,
+    matchConfidence: compactName(name) === compactName(requestedName) ? "exact" : "fuzzy",
     department: teacher.department ?? "",
     rating: numberOrNull(teacher.avgRating),
     difficulty: numberOrNull(teacher.avgDifficulty),
