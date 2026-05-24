@@ -1,0 +1,37 @@
+export async function initPopup({
+  document = globalThis.document,
+  storage = globalThis.chrome?.storage?.local,
+} = {}) {
+  const status = document.getElementById("status");
+  const clearButton = document.getElementById("clear-cache");
+  if (!status || !storage) {
+    return;
+  }
+
+  async function refreshStatus() {
+    const cached = await getProfessorCacheKeys(storage);
+    status.textContent = cached.length === 1 ? "1 professor cached" : `${cached.length} professors cached`;
+    if (clearButton) {
+      clearButton.disabled = cached.length === 0;
+    }
+    return cached;
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener("click", async () => {
+      const cached = await getProfessorCacheKeys(storage);
+      if (cached.length > 0) {
+        await storage.remove(cached);
+      }
+      status.textContent = "Cache cleared";
+      clearButton.disabled = true;
+    });
+  }
+
+  await refreshStatus();
+}
+
+async function getProfessorCacheKeys(storage) {
+  const items = await storage.get(null);
+  return Object.keys(items).filter((key) => key.startsWith("professor:"));
+}
