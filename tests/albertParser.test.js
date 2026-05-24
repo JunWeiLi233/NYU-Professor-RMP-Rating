@@ -81,6 +81,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands accented Albert last-name-first instructor formatting", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: GARCÍA, JOSÉ
+      Instructor(s): Núñez, Ana María
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "José García",
+      "Ana María Núñez",
+    ]);
+  });
+
   it("understands Albert last-name-first names with surname particles", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

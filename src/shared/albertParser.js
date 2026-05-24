@@ -127,11 +127,11 @@ function pairAlbertLastFirstParts(parts) {
 }
 
 function looksLikeAlbertLastFirst(lastName, firstNames) {
-  return looksLikeLastName(lastName) && /^[A-Za-z][A-Za-z'. -]+$/.test(firstNames);
+  return looksLikeLastName(lastName) && /^\p{L}[\p{L}'. -]+$/u.test(firstNames);
 }
 
 function looksLikeLastName(value) {
-  if (/^[A-Za-z][A-Za-z'-]+$/.test(value)) {
+  if (/^\p{L}[\p{L}'-]+$/u.test(value)) {
     return true;
   }
 
@@ -144,7 +144,7 @@ function looksLikeLastName(value) {
 }
 
 function isNameToken(value) {
-  return /^[A-Za-z][A-Za-z'-]+$/.test(value);
+  return /^\p{L}[\p{L}'-]+$/u.test(value);
 }
 
 function isNameSuffix(value) {
