@@ -80,7 +80,10 @@ export function pickBestTeacher(name, teachers) {
 function toProfessorRating(teacher) {
   const name = `${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`.trim();
   const comments = teacher?.ratings?.edges
-    ?.map((edge) => edge?.node?.comment?.trim())
+    ?.map((edge) => edge?.node)
+    .filter((rating) => rating?.comment?.trim())
+    .sort((left, right) => Number(right.helpfulRating ?? 0) - Number(left.helpfulRating ?? 0))
+    .map((rating) => rating.comment.trim())
     .filter(Boolean)
     .slice(0, 2) ?? [];
 

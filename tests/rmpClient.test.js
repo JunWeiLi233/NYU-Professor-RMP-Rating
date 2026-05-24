@@ -64,4 +64,63 @@ describe("Rate My Professors client", () => {
       url: "https://www.ratemyprofessors.com/professor/123",
     });
   });
+
+  it("orders top comments by helpfulness before returning them to Albert", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0y",
+                    legacyId: 456,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Fine lecture, but the review is not very detailed.",
+                            helpfulRating: 1,
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "The systems explanations are precise and the labs are fair.",
+                            helpfulRating: 19,
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "Office hours make the projects much easier to reason about.",
+                            helpfulRating: 7,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments).toEqual([
+      "The systems explanations are precise and the labs are fair.",
+      "Office hours make the projects much easier to reason about.",
+    ]);
+  });
 });
