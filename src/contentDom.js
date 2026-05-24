@@ -197,6 +197,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
       <strong>${escapeHtml(requestedName)}</strong>
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(retryLabel(requestedName))}">Retry</button>
+        <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
         <span class="nyu-rmp-status">${escapeHtml(message || "RMP lookup failed")}</span>
       </div>
     </div>
