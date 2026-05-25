@@ -116,8 +116,8 @@ export function pickBestTeacher(name, teachers) {
 
 function toProfessorRating(teacher, requestedName) {
   const name = `${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`.trim();
-  const comments = teacher?.ratings?.edges
-    ?.map((edge) => edge?.node)
+  const comments = asArray(teacher?.ratings?.edges)
+    .map((edge) => edge?.node)
     .filter((rating) => rating?.comment?.trim())
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .filter(uniqueCommentText)
@@ -139,7 +139,7 @@ function toProfessorRating(teacher, requestedName) {
     difficulty: rmpScaleNumberOrNull(teacher.avgDifficulty),
     ratingsCount: nonNegativeCount(teacher.numRatings),
     wouldTakeAgain: percentNumberOrNull(teacher.wouldTakeAgainPercent),
-    tags: teacher.teacherRatingTags?.map((tag) => normalizeTagName(tag?.tagName)).filter(Boolean).slice(0, 3) ?? [],
+    tags: asArray(teacher.teacherRatingTags).map((tag) => normalizeTagName(tag?.tagName)).filter(Boolean).slice(0, 3),
     topComments: comments,
     url: teacher.legacyId
       ? `https://www.ratemyprofessors.com/professor/${teacher.legacyId}`
@@ -173,6 +173,10 @@ function teacherScore(target, teacher) {
 
 function normalizeTagName(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
 }
 
 function commentHelpfulScore(rating) {

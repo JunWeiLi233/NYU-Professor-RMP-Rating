@@ -653,6 +653,44 @@ describe("Rate My Professors client", () => {
     });
   });
 
+  it("keeps professor ratings when RMP returns non-array comment or tag collections", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xNQ==",
+                    legacyId: 249,
+                    firstName: "Ada",
+                    lastName: "Lovelace",
+                    department: "Computer Science",
+                    avgRating: 4.7,
+                    avgDifficulty: 2.4,
+                    numRatings: 38,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: { tagName: "Clear grading criteria" },
+                    ratings: { edges: { node: { comment: "Malformed edge shape." } } },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toMatchObject({
+      name: "Ada Lovelace",
+      rating: 4.7,
+      tags: [],
+      topComments: [],
+    });
+  });
+
   it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
