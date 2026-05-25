@@ -273,6 +273,8 @@ function createRatingShell(document, name) {
 
 function setCardLoading(card, name, status) {
   card.className = "nyu-rmp-card is-loading";
+  card.setAttribute("aria-busy", "true");
+  card.setAttribute("aria-label", `${status} rating for ${name}`);
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong></strong>
@@ -285,8 +287,10 @@ function setCardLoading(card, name, status) {
 
 function updateRatingCard(card, result, { requestedName = "Professor", lookupProfessor } = {}) {
   card.classList.remove("is-loading");
+  card.removeAttribute("aria-busy");
   if (!result) {
     card.classList.add("is-empty");
+    card.setAttribute("aria-label", `No RMP match for ${requestedName}`);
     card.innerHTML = `
       <div class="nyu-rmp-card-head">
         <strong>${escapeHtml(requestedName)}</strong>
@@ -322,6 +326,10 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .join("");
 
   card.classList.add(`rating-${ratingClass}`);
+  card.setAttribute(
+    "aria-label",
+    `RMP rating for ${professorName}: ${formatRatingSummary(rating)}, ${formatRatingsCount(ratingsCount)}`,
+  );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(professorName)}</strong>
@@ -349,6 +357,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
 
 function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
   card.className = "nyu-rmp-card is-error";
+  card.removeAttribute("aria-busy");
+  card.setAttribute("aria-label", `RMP lookup failed for ${requestedName}: ${message || "RMP lookup failed"}`);
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(requestedName)}</strong>
@@ -526,6 +536,10 @@ function formatScore(value) {
 
 function formatRatingLabel(value) {
   return value == null ? "RMP rating unavailable" : `RMP rating ${formatScore(value)} out of 5`;
+}
+
+function formatRatingSummary(value) {
+  return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
 function formatRatingsCount(value) {

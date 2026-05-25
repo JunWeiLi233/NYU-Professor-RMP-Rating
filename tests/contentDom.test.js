@@ -132,6 +132,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Avoid if you dislike fast lectures.");
   });
 
+  it("labels injected rating cards with a concise accessible summary", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    const mounted = scanAlbertPageOnce({ document, lookupProfessor });
+    const card = document.querySelector(".nyu-rmp-card");
+
+    expect(card.getAttribute("aria-busy")).toBe("true");
+    expect(card.getAttribute("aria-label")).toBe("Checking RMP rating for Ada Lovelace");
+
+    await Promise.all(mounted.pendingLookups);
+
+    expect(card.hasAttribute("aria-busy")).toBe(false);
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings");
+  });
+
   it("renders useful-comment metadata from RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
