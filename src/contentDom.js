@@ -346,6 +346,7 @@ function cellLabelAttributeText(element) {
     "data-column-title",
     "data-column-name",
     "data-columnname",
+    "data-ps-columnid",
     "data-ps-columnname",
     "data-field",
     "data-field-id",
@@ -376,7 +377,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-column", "data-column-name", "data-columnname", "data-ps-columnname", "id", "name"].includes(attributeName);
+  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-column", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
