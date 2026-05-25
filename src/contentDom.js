@@ -18,6 +18,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "aria-hidden",
     "aria-label",
     "aria-labelledby",
+    "aria-owns",
     "aria-selected",
     "aria-value",
     "aria-valuetext",
@@ -458,7 +459,8 @@ function activeDescendantText(element) {
 }
 
 function selectedControlledOptionText(element) {
-  const controlledElementId = element.getAttribute("aria-controls")?.trim();
+  const controlledElementId = element.getAttribute("aria-controls")?.trim()
+    || element.getAttribute("aria-owns")?.trim();
   if (!controlledElementId) {
     return "";
   }
