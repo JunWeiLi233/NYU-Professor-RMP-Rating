@@ -47,6 +47,8 @@ const ACADEMIC_CREDENTIAL_PATTERN =
   /(?:,?\s*(?:ph\.?\s*d\.?|m\.?\s*d\.?|m\.?\s*f\.?\s*a\.?|m\.?\s*b\.?\s*a\.?|j\.?\s*d\.?))+\.?\s*$/i;
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
+const PLACEHOLDER_ANNOTATION_PATTERN =
+  /\((?:staff|tba|tbd|to be announced|to be assigned|to be determined|unassigned|not assigned|not available|no instructor assigned|n\/a|none)\)/gi;
 const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|\.|-|\u2013|\u2014)`;
 const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:(?:primary\s+)?instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)`;
 const INSTRUCTOR_LABEL_WITH_SEPARATOR_PATTERN = new RegExp(
@@ -65,6 +67,7 @@ export function normalizeInstructorName(value) {
 
   const withoutLabel = value
     .replace(INSTRUCTOR_ROLE_PATTERN, "")
+    .replace(PLACEHOLDER_ANNOTATION_PATTERN, "")
     .replace(new RegExp(String.raw`^(?:${INSTRUCTOR_LABEL_PATTERN}|professor|prof)\s*(?:${INSTRUCTOR_SEPARATOR_PATTERN}|[.:])?\s*`, "i"), "")
     .replace(/^(?:dr|doctor)\.?\s+/i, "")
     .replace(/\s+/g, " ")
@@ -199,7 +202,11 @@ export function isLikelyInstructorName(value) {
 }
 
 function stripInstructorRoleAnnotations(value) {
-  return String(value ?? "").replace(INSTRUCTOR_ROLE_PATTERN, "").replace(/\s+/g, " ").trim();
+  return String(value ?? "")
+    .replace(INSTRUCTOR_ROLE_PATTERN, "")
+    .replace(PLACEHOLDER_ANNOTATION_PATTERN, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function stripAcademicCredentials(value) {

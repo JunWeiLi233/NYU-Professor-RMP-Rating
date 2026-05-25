@@ -36,6 +36,8 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("Courant Staff")).toBe("");
     expect(normalizeInstructorName("Staff TBA")).toBe("");
     expect(normalizeInstructorName("TBA Staff")).toBe("");
+    expect(normalizeInstructorName("Staff (TBA)")).toBe("");
+    expect(normalizeInstructorName("TBA (Staff)")).toBe("");
     expect(extractInstructorNamesFromText("Instructor: No Instructor Assigned")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: TBD")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: To Be Determined")).toEqual([]);
@@ -47,6 +49,8 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Instructor: None")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Department Staff")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Staff TBA")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Staff (TBA)")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: TBA (Staff)")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor(s) TBA")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor Consent Required")).toEqual([]);
     expect(extractInstructorNamesFromText("Professor Consent Required")).toEqual([]);
@@ -54,6 +58,11 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Faculty Permission Required")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Permission Required")).toEqual([]);
     expect(extractInstructorNamesFromText("Teacher: Permission Required")).toEqual([]);
+  });
+
+  it("strips placeholder annotations from real Albert instructor names", () => {
+    expect(normalizeInstructorName("Instructor: Ada Lovelace (TBA)")).toBe("Ada Lovelace");
+    expect(extractInstructorNamesFromText("Instructor: Ada Lovelace (Staff)")).toEqual(["Ada Lovelace"]);
   });
 
   it("extracts unique professor names from an Albert shopping-cart style block", () => {

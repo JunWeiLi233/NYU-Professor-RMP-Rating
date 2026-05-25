@@ -856,7 +856,8 @@ describe("Albert content DOM injection", () => {
       <div>Instructor: Staff TBA</div>
       <div>Instructor: To Be Assigned</div>
       <div>Instructor: Not Available</div>
-      <div>Instructor: Ada Lovelace</div>
+      <div>Instructor: Staff (TBA)</div>
+      <div>Instructor: Ada Lovelace (Staff)</div>
     `;
     const lookupProfessor = vi.fn(async () => null);
 
@@ -867,6 +868,8 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).not.toHaveBeenCalledWith("Staff Tba");
     expect(lookupProfessor).not.toHaveBeenCalledWith("To Be Assigned");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Not Available");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Staff (tba)");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Ada Lovelace (staff)");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
