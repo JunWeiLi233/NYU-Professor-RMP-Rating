@@ -347,27 +347,43 @@ function referencedHeaderText(element) {
 }
 
 function columnHeaderText(element) {
-  const row = element.closest("tr");
-  const table = element.closest("table");
-  if (!row || !table) {
+  const row = rowForCell(element);
+  const rowGroup = rowGroupForCell(element);
+  if (!row || !rowGroup) {
     return "";
   }
 
-  const cellIndex = visibleTableCells(row).indexOf(element);
+  const cellIndex = visibleRowCells(row).indexOf(element);
   if (cellIndex < 0) {
     return "";
   }
 
-  const headerRow = Array.from(table.querySelectorAll("tr"))
+  const headerRow = Array.from(rowGroup.querySelectorAll("tr, [role='row']"))
     .filter((candidateRow) => candidateRow !== row && (candidateRow.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING))
-    .find((candidateRow) => visibleTableCells(candidateRow).some((cell) => cell.tagName === "TH"));
-  const headerCell = headerRow ? visibleTableCells(headerRow)[cellIndex] : null;
-  return headerCell?.tagName === "TH" ? visibleTextSegments(headerCell).join(" ") : "";
+    .find((candidateRow) => visibleRowCells(candidateRow).some(isColumnHeaderCell));
+  const headerCell = headerRow ? visibleRowCells(headerRow)[cellIndex] : null;
+  return headerCell && isColumnHeaderCell(headerCell) ? visibleTextSegments(headerCell).join(" ") : "";
 }
 
-function visibleTableCells(row) {
+function rowForCell(element) {
+  return element.closest("tr") ?? element.closest("[role='row']");
+}
+
+function rowGroupForCell(element) {
+  return element.closest("table") ?? element.closest("[role='grid'], [role='table'], [role='treegrid']");
+}
+
+function visibleRowCells(row) {
   return Array.from(row.children)
-    .filter((child) => ["TD", "TH"].includes(child.tagName) && isElementVisible(child));
+    .filter((child) => isRowCell(child) && isElementVisible(child));
+}
+
+function isRowCell(element) {
+  return ["TD", "TH"].includes(element.tagName) || isAriaCell(element) || isColumnHeaderCell(element);
+}
+
+function isColumnHeaderCell(element) {
+  return element.tagName === "TH" || element.getAttribute("role")?.trim().toLowerCase() === "columnheader";
 }
 
 function formControlValue(element) {
@@ -511,10 +527,10 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
 }
 
 function isTableCell(element) {
-  return ["TD", "TH", "DD"].includes(element.tagName) || isAriaDataCell(element);
+  return ["TD", "TH", "DD"].includes(element.tagName) || isAriaCell(element);
 }
 
-function isAriaDataCell(element) {
+function isAriaCell(element) {
   return ["cell", "gridcell"].includes(element.getAttribute("role")?.trim().toLowerCase());
 }
 
