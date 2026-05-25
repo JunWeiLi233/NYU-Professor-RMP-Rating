@@ -116,6 +116,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names from period-separated Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor. YAP, CHEE KENG
+      Instructor(s). Grace B. Hopper
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+    ]);
+  });
+
   it("extracts instructor names from dash-variant Albert labels", () => {
     const text = [
       "CSCI-UA 201 Computer Systems Organization",
@@ -221,6 +234,22 @@ describe("Albert instructor parsing", () => {
       "Instructor -",
       "YAP, CHEE KENG",
       "Instructor(s) \u2013",
+      "Grace B. Hopper",
+      "Section Status Open",
+    ].join("\n");
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+    ]);
+  });
+
+  it("extracts instructor names that continue after standalone labels with periods", () => {
+    const text = [
+      "CSCI-UA 201 Computer Systems Organization",
+      "Instructor.",
+      "YAP, CHEE KENG",
+      "Instructor(s).",
       "Grace B. Hopper",
       "Section Status Open",
     ].join("\n");

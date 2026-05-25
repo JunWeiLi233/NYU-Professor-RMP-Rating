@@ -929,6 +929,34 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("injects ratings when adjacent Albert instructor labels include a trailing period", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor.</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Period-terminated labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Period-terminated labels should render.");
+  });
+
   it("injects ratings when adjacent Albert instructor labels include trailing dash separators", async () => {
     document.body.innerHTML = `
       <table>
@@ -978,6 +1006,25 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Hyphen-separated labels should render.");
+  });
+
+  it("injects ratings when Albert instructor labels use a period separator", async () => {
+    document.body.innerHTML = `<div>Instructor. YAP, CHEE KENG</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Period-separated labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Period-separated labels should render.");
   });
 
   it("injects ratings when Albert instructor labels use a dash variant separator", async () => {
