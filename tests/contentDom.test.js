@@ -2264,6 +2264,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA active descendant should render.");
   });
 
+  it("injects ratings when active instructor options expose names in aria-label", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-activedescendant="active-instructor"></div>
+      <div role="listbox">
+        <div id="active-instructor" role="option" aria-label="YAP, CHEE KENG"></div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Labeled active descendants should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Labeled active descendants should render.");
+  });
+
   it("injects ratings when ARIA comboboxes control selected instructor options", async () => {
     document.body.innerHTML = `
       <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>

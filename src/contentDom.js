@@ -464,7 +464,7 @@ function activeDescendantText(element) {
 
   const activeDescendant = element.ownerDocument?.getElementById(activeDescendantId);
   return activeDescendant && isElementVisible(activeDescendant)
-    ? visibleTextSegments(activeDescendant).join(" ")
+    ? instructorNameSegments(activeDescendant).join(" ")
     : "";
 }
 
