@@ -152,12 +152,16 @@ function teacherScore(target, teacher) {
   const lastName = compactName(teacher.lastName ?? "");
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
   const nameWithoutMiddleParts = compactFirstLastWithoutMiddleParts(teacher.firstName, teacher.lastName);
+  const nameWithoutSuffix = compactNameWithoutSuffix(teacher.firstName, teacher.lastName);
   if (!name) {
     return 0;
   }
   let score = 0;
   if (name === target) {
     score += 100;
+  }
+  if (nameWithoutSuffix && nameWithoutSuffix === target) {
+    score += 95;
   }
   if (nameWithoutMiddleParts && nameWithoutMiddleParts === target) {
     score += 95;
@@ -205,6 +209,15 @@ function compactFirstLastWithoutMiddleParts(firstName, lastName) {
 
   const first = firstParts[0];
   return first ? `${first}${last}` : "";
+}
+
+function compactNameWithoutSuffix(firstName, lastName) {
+  const parts = [...nameParts(firstName), ...nameParts(lastName)];
+  if (parts.length < 3 || !NAME_SUFFIXES.has(parts[parts.length - 1])) {
+    return "";
+  }
+
+  return parts.slice(0, -1).join("");
 }
 
 function nameParts(value) {

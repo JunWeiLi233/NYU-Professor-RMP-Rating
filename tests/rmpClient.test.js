@@ -953,6 +953,42 @@ describe("Rate My Professors client", () => {
     expect(result.matchConfidence).toBe("fuzzy");
   });
 
+  it("matches RMP professor names that include a suffix when Albert omits it", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "suffix",
+                    legacyId: 444,
+                    firstName: "Robert",
+                    lastName: "Martin Jr.",
+                    department: "Computer Science",
+                    avgRating: 4.2,
+                    avgDifficulty: 3.3,
+                    numRatings: 18,
+                    wouldTakeAgainPercent: 82,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Robert Martin", { fetchImpl });
+
+    expect(result.name).toBe("Robert Martin Jr.");
+    expect(result.matchConfidence).toBe("fuzzy");
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
