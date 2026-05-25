@@ -79,9 +79,11 @@ const ALBERT_OBSERVER_OPTIONS = {
     "inert",
     "name",
     "role",
+    "selected",
     "slot",
     "style",
     "title",
+    "value",
   ],
 };
 let nextCardId = 0;

@@ -107,7 +107,7 @@ describe("Albert content DOM injection", () => {
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: expect.arrayContaining(["aria-colindex", "aria-label", "aria-labelledby", "aria-describedby", "class", "data-instructor-name", "data-label", "data-name", "data-tooltip", "headers", "hidden", "role", "style", "title"]),
+      attributeFilter: expect.arrayContaining(["aria-colindex", "aria-label", "aria-labelledby", "aria-describedby", "class", "data-instructor-name", "data-label", "data-name", "data-tooltip", "headers", "hidden", "role", "selected", "style", "title", "value"]),
     }));
   });
 
