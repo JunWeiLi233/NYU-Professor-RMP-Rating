@@ -790,7 +790,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-title", "data-text", "data-full-text", "data-tooltip", "data-original-title", "data-display", "data-display-name", "data-name"]) {
+  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-title", "data-caption", "data-text", "data-full-text", "data-tooltip", "data-original-title", "data-display", "data-display-name", "data-name"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
