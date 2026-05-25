@@ -123,7 +123,7 @@ function toProfessorRating(teacher, requestedName) {
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .filter(uniqueCommentText)
     .map((rating) => ({
-      text: rating.comment.trim(),
+      text: decodeHtmlEntities(rating.comment).trim(),
       helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
       clarityRating: rmpScaleNumberOrNull(rating.clarityRating),
       difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
@@ -213,7 +213,43 @@ function uniqueCommentText(rating, _index, ratings) {
 }
 
 function compactCommentText(value) {
-  return String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+  return decodeHtmlEntities(value).trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function decodeHtmlEntities(value) {
+  const namedEntities = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: "\"",
+  };
+
+  return String(value ?? "").replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, token) => {
+    const normalized = token.toLowerCase();
+    if (normalized.startsWith("#x")) {
+      return codePointEntity(normalized.slice(2), 16) ?? entity;
+    }
+    if (normalized.startsWith("#")) {
+      return codePointEntity(normalized.slice(1), 10) ?? entity;
+    }
+    return Object.prototype.hasOwnProperty.call(namedEntities, normalized)
+      ? namedEntities[normalized]
+      : entity;
+  });
+}
+
+function codePointEntity(value, radix) {
+  const codePoint = Number.parseInt(value, radix);
+  if (!Number.isFinite(codePoint)) {
+    return null;
+  }
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return null;
+  }
 }
 
 function compactFirstLastWithoutMiddleParts(firstName, lastName) {
