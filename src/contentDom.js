@@ -359,6 +359,7 @@ function cellLabelAttributeText(element) {
     "title",
     "id",
     "name",
+    "class",
   ]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value) {
@@ -377,7 +378,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-column", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name"].includes(attributeName);
+  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-column", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name", "class"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
