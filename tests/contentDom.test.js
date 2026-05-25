@@ -2217,6 +2217,28 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA combobox instructor values should render.");
   });
 
+  it("injects ratings when ARIA value controls expose instructor names through aria-valuetext", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-valuetext="YAP, CHEE KENG"></div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["ARIA value text should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("ARIA value text should render.");
+  });
+
   it("injects ratings when Albert renders instructor text directly in a heading", async () => {
     document.body.innerHTML = `<h3>Instructor: YAP, CHEE KENG</h3>`;
     const lookupProfessor = vi.fn(async (name) => ({

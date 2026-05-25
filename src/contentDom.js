@@ -16,6 +16,8 @@ const ALBERT_OBSERVER_OPTIONS = {
     "aria-hidden",
     "aria-label",
     "aria-labelledby",
+    "aria-value",
+    "aria-valuetext",
     "class",
     "data-automation-id",
     "data-automationid",
@@ -409,7 +411,7 @@ function instructorNamesFromAriaValueControl(element) {
     return [];
   }
 
-  return visibleTextSegments(element)
+  return ariaValueControlSegments(element)
     .flatMap(splitInstructorList)
     .filter(isLikelyInstructorName)
     .map(normalizeInstructorName)
@@ -428,6 +430,14 @@ function isInstructorLabeledAriaValueControl(element) {
     ariaLabelledByText(element),
     ariaDescribedByText(element),
   ].some((value) => value && isInstructorLabel(String(value)));
+}
+
+function ariaValueControlSegments(element) {
+  return [
+    element.getAttribute("aria-valuetext")?.trim(),
+    element.getAttribute("aria-value")?.trim(),
+    ...visibleTextSegments(element),
+  ].filter(Boolean);
 }
 
 function instructorNamesFromHeaderedCell(element) {
