@@ -80,7 +80,7 @@ export function splitInstructorList(value) {
   }
 
   const semicolonParts = cleaned
-    .split(/\s*(?:;|\/|\band\b)\s*/i)
+    .split(/\s*(?:;|\/|&|\band\b)\s*/i)
     .map((part) => part.trim())
     .filter(Boolean);
 
