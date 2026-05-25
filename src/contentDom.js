@@ -271,7 +271,7 @@ function setCardLoading(card, name, status) {
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong></strong>
-      <span class="nyu-rmp-status">${escapeHtml(status)}</span>
+      ${statusMarkup(status)}
     </div>
     <div class="nyu-rmp-skeleton"></div>
   `;
@@ -288,7 +288,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <div class="nyu-rmp-actions">
           <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
           <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
-          <span class="nyu-rmp-status">No RMP match</span>
+          ${statusMarkup("No RMP match")}
         </div>
       </div>
     `;
@@ -350,11 +350,15 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(retryLabel(requestedName))}">Retry</button>
         <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
-        <span class="nyu-rmp-status">${escapeHtml(message || "RMP lookup failed")}</span>
+        ${statusMarkup(message || "RMP lookup failed")}
       </div>
     </div>
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
+}
+
+function statusMarkup(message) {
+  return `<span class="nyu-rmp-status" role="status" aria-live="polite" aria-atomic="true">${escapeHtml(message)}</span>`;
 }
 
 function wireRefreshAction(card, requestedName, lookupProfessor) {

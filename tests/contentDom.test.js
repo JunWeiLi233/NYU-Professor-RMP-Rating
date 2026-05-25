@@ -516,6 +516,31 @@ describe("Albert content DOM injection", () => {
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
   });
 
+  it("announces loading, no-match, and error status updates politely", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Ada Lovelace</div>
+      <div>Instructor: Grace Hopper</div>
+      <div>Instructor: Alan Turing</div>
+    `;
+    const lookupProfessor = vi.fn((name) => {
+      if (name === "Ada Lovelace") {
+        return new Promise(() => {});
+      }
+      if (name === "Grace Hopper") {
+        return Promise.resolve(null);
+      }
+      return Promise.reject(new Error("RMP lookup failed"));
+    });
+
+    scanAlbertPageOnce({ document, lookupProfessor });
+    await flushPromises();
+
+    const statuses = Array.from(document.querySelectorAll(".nyu-rmp-status"));
+    expect(statuses.map((status) => status.getAttribute("role"))).toEqual(["status", "status", "status"]);
+    expect(statuses.map((status) => status.getAttribute("aria-live"))).toEqual(["polite", "polite", "polite"]);
+    expect(statuses.map((status) => status.getAttribute("aria-atomic"))).toEqual(["true", "true", "true"]);
+  });
+
   it("lets students retry an error card after a failed RMP request", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn()
