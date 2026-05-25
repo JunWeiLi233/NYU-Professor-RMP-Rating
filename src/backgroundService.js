@@ -110,7 +110,7 @@ function isTimestampedCacheEntry(value) {
 }
 
 function isFreshCacheEntry(entry, currentTime) {
-  return currentTime - entry.cachedAt <= CACHE_TTL_MS;
+  return entry.cachedAt <= currentTime && currentTime - entry.cachedAt <= CACHE_TTL_MS;
 }
 
 async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }) {

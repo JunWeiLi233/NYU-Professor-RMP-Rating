@@ -230,6 +230,43 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("refreshes future-dated persisted cache entries instead of trusting clock-skewed data", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const futureCachedRating = {
+      name: "Alan Turing",
+      rating: 3.1,
+      topComments: ["Future-dated stale comment."],
+    };
+    const freshRating = {
+      name: "Alan Turing",
+      rating: 4.6,
+      topComments: ["Clock-skew refresh comment."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Alan Turing")]: {
+        cachedAt: now + 60_000,
+        value: futureCachedRating,
+      },
+    });
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Alan Turing")).resolves.toEqual({
+      ...freshRating,
+      cacheUpdatedAt: now,
+    });
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Alan Turing");
+    expect(storage.data[professorCacheKey("Alan Turing")]).toEqual({
+      cachedAt: now,
+      value: freshRating,
+    });
+  });
+
   it("refreshes stale in-memory cache entries while the service worker stays alive", async () => {
     let currentTime = new Date("2026-05-24T12:00:00Z").getTime();
     const firstRating = {
