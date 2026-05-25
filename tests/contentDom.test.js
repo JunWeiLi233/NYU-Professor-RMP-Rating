@@ -1160,8 +1160,37 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Adjacent professor labels should render.");
   });
 
+  it("injects ratings when Albert rows use faculty labels", async () => {
+    document.body.innerHTML = `<div>Faculty: YAP, CHEE KENG</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Faculty labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Faculty labels should render.");
+  });
+
   it("does not treat whitespace instructor metadata as a professor name", async () => {
     document.body.innerHTML = `<div>Instructor Consent Required</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
+  it("does not treat whitespace professor metadata as a professor name", async () => {
+    document.body.innerHTML = `<div>Professor Consent Required</div>`;
     const lookupProfessor = vi.fn(async () => null);
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
