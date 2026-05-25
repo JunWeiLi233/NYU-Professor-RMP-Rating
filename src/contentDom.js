@@ -169,7 +169,7 @@ function isInstructorLabel(text) {
 
 function findAdjacentInstructorTarget(element) {
   const candidateElements = [
-    findNextVisibleSiblingWithText(element),
+    findNextVisibleInstructorSibling(element),
     element.parentElement?.querySelector("[data-instructor-name]"),
   ].filter((candidate) => candidate && isElementVisible(candidate));
 
@@ -187,13 +187,15 @@ function findAdjacentInstructorTarget(element) {
   return null;
 }
 
-function findNextVisibleSiblingWithText(element) {
+function findNextVisibleInstructorSibling(element) {
   for (let sibling = element.nextElementSibling; sibling; sibling = sibling.nextElementSibling) {
     if (!isElementVisible(sibling)) {
       continue;
     }
     const segments = visibleTextSegments(sibling);
-    if (segments.length > 0 && !segments.every(isInstructorSeparatorOnlyText)) {
+    if (segments.length > 0
+      && !segments.every(isInstructorSeparatorOnlyText)
+      && segments.flatMap(splitInstructorList).some(isLikelyInstructorName)) {
       return sibling;
     }
   }
