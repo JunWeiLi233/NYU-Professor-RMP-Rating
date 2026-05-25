@@ -355,6 +355,9 @@ function cellLabelAttributeText(element) {
     "data-fieldname",
     "data-ps-fieldid",
     "data-ps-fieldname",
+    "data-pnlfldid",
+    "data-pnlfldname",
+    "data-pnlfld",
     "aria-label",
     "title",
     "id",
@@ -390,7 +393,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-column", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name", "class", "data-testid", "data-test-id", "data-qa", "data-cy", "data-e2e", "data-automation-id", "data-automationid", "data-slot", "slot", "data-name", "data-key", "data-field-key"].includes(attributeName);
+  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-fieldid", "data-ps-fieldname", "data-pnlfldid", "data-pnlfldname", "data-pnlfld", "data-column", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name", "class", "data-testid", "data-test-id", "data-qa", "data-cy", "data-e2e", "data-automation-id", "data-automationid", "data-slot", "slot", "data-name", "data-key", "data-field-key"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
