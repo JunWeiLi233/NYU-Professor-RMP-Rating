@@ -1113,6 +1113,16 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Whitespace-separated labels should render.");
   });
 
+  it("does not treat whitespace instructor metadata as a professor name", async () => {
+    document.body.innerHTML = `<div>Instructor Consent Required</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
   it("injects ratings when Albert instructor labels use a period separator", async () => {
     document.body.innerHTML = `<div>Instructor. YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

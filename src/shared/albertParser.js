@@ -102,7 +102,8 @@ export function extractInstructorNamesFromText(text) {
     const whitespaceMatch = trimmedLine.match(INSTRUCTOR_LABEL_WITH_WHITESPACE_NAMES_PATTERN);
     if (whitespaceMatch) {
       readingContinuationNames = false;
-      addInstructorPieces(whitespaceMatch[1].trim(), { names, seen });
+      const inlineNames = splitInstructorList(whitespaceMatch[1].trim()).filter(isLikelyInstructorContinuation);
+      addInstructorPieces(inlineNames, { names, seen });
       continue;
     }
 
