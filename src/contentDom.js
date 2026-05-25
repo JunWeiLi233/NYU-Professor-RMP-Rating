@@ -309,9 +309,16 @@ function instructorNamesFromHeaderedCell(element) {
 }
 
 function isInstructorHeaderedCell(element) {
-  return referencedHeaderText(element)
+  return cellHeaderText(element)
     .split("\n")
     .some(isInstructorLabel);
+}
+
+function cellHeaderText(element) {
+  return [
+    referencedHeaderText(element),
+    columnHeaderText(element),
+  ].filter(Boolean).join("\n");
 }
 
 function referencedHeaderText(element) {
@@ -326,6 +333,30 @@ function referencedHeaderText(element) {
     .map((headerElement) => visibleTextSegments(headerElement).join(" "))
     .filter(Boolean)
     .join("\n");
+}
+
+function columnHeaderText(element) {
+  const row = element.closest("tr");
+  const table = element.closest("table");
+  if (!row || !table) {
+    return "";
+  }
+
+  const cellIndex = visibleTableCells(row).indexOf(element);
+  if (cellIndex < 0) {
+    return "";
+  }
+
+  const headerRow = Array.from(table.querySelectorAll("tr"))
+    .filter((candidateRow) => candidateRow !== row && (candidateRow.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING))
+    .find((candidateRow) => visibleTableCells(candidateRow).some((cell) => cell.tagName === "TH"));
+  const headerCell = headerRow ? visibleTableCells(headerRow)[cellIndex] : null;
+  return headerCell?.tagName === "TH" ? visibleTextSegments(headerCell).join(" ") : "";
+}
+
+function visibleTableCells(row) {
+  return Array.from(row.children)
+    .filter((child) => ["TD", "TH"].includes(child.tagName) && isElementVisible(child));
 }
 
 function formControlValue(element) {

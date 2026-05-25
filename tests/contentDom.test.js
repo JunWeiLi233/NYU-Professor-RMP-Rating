@@ -2218,6 +2218,43 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Header-referenced instructor cells should render.");
   });
 
+  it("injects ratings when Albert labels instructor table cells through column headers", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Column-header instructor cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Column-header instructor cells should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
