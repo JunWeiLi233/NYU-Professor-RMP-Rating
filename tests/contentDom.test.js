@@ -868,6 +868,11 @@ describe("Albert content DOM injection", () => {
       <div>Instructor: Pending Assignment</div>
       <div>Instructor: Department TBD</div>
       <div>Instructor: No Faculty Assigned</div>
+      <div>Instructor: Department Contact</div>
+      <div>Instructor: Contact Department</div>
+      <div>Instructor: Ask Department</div>
+      <div>Instructor: See Advisor</div>
+      <div>Instructor: Online Course</div>
       <div>Instructor: Multiple Instructors</div>
       <div>Instructor: Various Instructors</div>
       <div>Instructor: To Be Named</div>
@@ -888,6 +893,11 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).not.toHaveBeenCalledWith("Pending Assignment");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Department Tbd");
     expect(lookupProfessor).not.toHaveBeenCalledWith("No Faculty Assigned");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Department Contact");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Contact Department");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Ask Department");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("See Advisor");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Online Course");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Multiple Instructors");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Various Instructors");
     expect(lookupProfessor).not.toHaveBeenCalledWith("To Be Named");

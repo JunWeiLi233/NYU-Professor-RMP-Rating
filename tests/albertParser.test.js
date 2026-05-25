@@ -37,6 +37,11 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("None")).toBe("");
     expect(normalizeInstructorName("Department TBD")).toBe("");
     expect(normalizeInstructorName("No Faculty Assigned")).toBe("");
+    expect(normalizeInstructorName("Department Contact")).toBe("");
+    expect(normalizeInstructorName("Contact Department")).toBe("");
+    expect(normalizeInstructorName("Ask Department")).toBe("");
+    expect(normalizeInstructorName("See Advisor")).toBe("");
+    expect(normalizeInstructorName("Online Course")).toBe("");
     expect(normalizeInstructorName("Multiple Instructors")).toBe("");
     expect(normalizeInstructorName("Various Instructors")).toBe("");
     expect(normalizeInstructorName("See Department")).toBe("");
@@ -60,6 +65,11 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Instructor: None")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Department TBD")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: No Faculty Assigned")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Department Contact")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Contact Department")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Ask Department")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: See Advisor")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Online Course")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Multiple Instructors")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Various Instructors")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: See Department")).toEqual([]);
