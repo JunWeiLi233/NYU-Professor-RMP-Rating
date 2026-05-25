@@ -1585,6 +1585,25 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Sentence punctuation should not affect lookup.");
   });
 
+  it("strips trailing role annotations from Albert instructor names", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace - Primary</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Role annotations should not affect lookup."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Ada Lovelace - Primary");
+    expect(document.body.textContent).toContain("Role annotations should not affect lookup.");
+  });
+
   it("injects ratings when Albert uses definition-list instructor labels", async () => {
     document.body.innerHTML = `
       <dl>

@@ -97,6 +97,11 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Instructor: Ada Lovelace (Staff)")).toEqual(["Ada Lovelace"]);
   });
 
+  it("strips trailing role annotations from real Albert instructor names", () => {
+    expect(normalizeInstructorName("Instructor: Ada Lovelace - Primary")).toBe("Ada Lovelace");
+    expect(extractInstructorNamesFromText("Instructor: Ada Lovelace - Lecture")).toEqual(["Ada Lovelace"]);
+  });
+
   it("extracts unique professor names from an Albert shopping-cart style block", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
