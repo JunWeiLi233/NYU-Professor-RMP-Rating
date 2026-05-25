@@ -161,6 +161,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts names from taught-by Albert rows", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Taught by: Ada Lovelace
+      Taught by YAP, CHEE KENG
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Chee Keng Yap",
+    ]);
+  });
+
   it("extracts instructor names from hyphen-separated Albert labels", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
