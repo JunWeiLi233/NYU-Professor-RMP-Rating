@@ -36,7 +36,11 @@ export async function verifyExtensionPackage(distDir = "dist") {
   }
 
   await assertFileExists(join(distDir, manifest.background?.service_worker ?? ""), "background service worker is missing");
-  await assertFileExists(join(distDir, manifest.action?.default_popup ?? ""), "popup html is missing");
+  const popupPath = manifest.action?.default_popup;
+  if (!popupPath) {
+    throw new Error("popup html entry is required");
+  }
+  await assertFileExists(join(distDir, popupPath), "popup html is missing");
 
   for (const script of manifest.content_scripts?.flatMap((contentScript) => contentScript.js ?? []) ?? []) {
     const scriptPath = join(distDir, script);
@@ -44,7 +48,7 @@ export async function verifyExtensionPackage(distDir = "dist") {
     await assertClassicContentScript(scriptPath);
   }
 
-  const popupHtml = await readFile(join(distDir, manifest.action.default_popup), "utf8");
+  const popupHtml = await readFile(join(distDir, popupPath), "utf8");
   const popupScripts = Array.from(popupHtml.matchAll(/<script[^>]+src="([^"]+)"/g)).map((match) => match[1]);
   if (popupScripts.length === 0) {
     throw new Error("popup script entry is required");

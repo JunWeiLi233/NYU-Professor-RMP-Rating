@@ -21,6 +21,18 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the manifest action omits the popup html entry", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        action: { default_title: "NYU RMP" },
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("popup html entry is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when the manifest omits Rate My Professors host permission", async () => {
     const dist = await createPackageDist({
       manifestOverrides: { host_permissions: [] },
