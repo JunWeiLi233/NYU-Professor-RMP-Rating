@@ -815,12 +815,21 @@ function numberOrNull(value) {
   if (value == null || value === "") {
     return null;
   }
-  const number = Number(stripScaleSuffix(value));
+  const number = Number(normalizeNumericString(stripScaleSuffix(value)));
   return Number.isFinite(number) ? number : null;
 }
 
 function stripScaleSuffix(value) {
   return typeof value === "string" ? value.trim().replace(/\s*\/\s*5\s*$/i, "") : value;
+}
+
+function normalizeNumericString(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return /^-?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(trimmed) ? trimmed.replace(/,/g, "") : trimmed;
 }
 
 function formatUpdatedAt(value) {
