@@ -27,6 +27,11 @@ export function startAlbertRmpEnhancer({
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+  const disconnectObserver = observer.disconnect?.bind(observer) ?? (() => {});
+  observer.disconnect = () => {
+    window.clearTimeout(observer.scanTimer);
+    disconnectObserver();
+  };
   return observer;
 }
 
