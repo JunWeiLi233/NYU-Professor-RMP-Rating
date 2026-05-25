@@ -537,7 +537,12 @@ describe("Rate My Professors client", () => {
                     avgDifficulty: 3.1,
                     numRatings: 44,
                     wouldTakeAgainPercent: 96,
-                    teacherRatingTags: [null, { tagName: "" }, { tagName: "Clear grading criteria" }],
+                    teacherRatingTags: [
+                      null,
+                      { tagName: "" },
+                      { tagName: "   " },
+                      { tagName: " Clear grading criteria " },
+                    ],
                     ratings: { edges: [] },
                   },
                 },

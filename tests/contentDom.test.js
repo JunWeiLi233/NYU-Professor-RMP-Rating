@@ -160,6 +160,25 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Difficulty 2.0");
   });
 
+  it("renders only trimmed nonblank cached RMP tags", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: ["  Clear grading criteria ", "   ", "", null],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const tags = Array.from(document.querySelectorAll(".nyu-rmp-tags span")).map((tag) => tag.textContent);
+    expect(tags).toEqual(["Clear grading criteria"]);
+  });
+
   it("does not render unsafe cached RMP profile URLs", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

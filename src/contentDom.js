@@ -311,6 +311,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .map((comment, index) => formatComment(comment, commentTextId(card, index)))
     .join("");
   const tags = asArray(result.tags)
+    .map(normalizeTagName)
+    .filter(Boolean)
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
     .join("");
 
@@ -668,6 +670,10 @@ function compactName(value) {
 
 function asArray(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function normalizeTagName(value) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function refreshLabel(name) {

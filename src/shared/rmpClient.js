@@ -137,7 +137,7 @@ function toProfessorRating(teacher, requestedName) {
     difficulty: rmpScaleNumberOrNull(teacher.avgDifficulty),
     ratingsCount: nonNegativeCount(teacher.numRatings),
     wouldTakeAgain: percentNumberOrNull(teacher.wouldTakeAgainPercent),
-    tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
+    tags: teacher.teacherRatingTags?.map((tag) => normalizeTagName(tag?.tagName)).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
     url: teacher.legacyId
       ? `https://www.ratemyprofessors.com/professor/${teacher.legacyId}`
@@ -164,6 +164,10 @@ function teacherScore(target, teacher) {
   }
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
+}
+
+function normalizeTagName(value) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function commentHelpfulScore(rating) {
