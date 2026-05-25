@@ -1,6 +1,7 @@
 const RMP_GRAPHQL_URL = "https://www.ratemyprofessors.com/graphql";
 const NYU_SCHOOL_ID = "U2Nob29sLTEzODE=";
 const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
+const MIN_SUBSTRING_NAME_LENGTH = 6;
 const DEFAULT_LOOKUP_TIMEOUT_MS = 8000;
 const NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v.", "jr", "jr.", "sr", "sr."]);
 
@@ -156,7 +157,7 @@ function teacherScore(target, teacher) {
   if (name === target) {
     score += 100;
   }
-  if (target.includes(name)) {
+  if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
     score += 25;
   }
   if (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName)) {
