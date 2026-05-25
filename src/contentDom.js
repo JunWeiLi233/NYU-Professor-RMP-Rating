@@ -491,7 +491,13 @@ function selectedControlledOption(element) {
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
-      || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase()));
+      || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
+      || hasSelectedOptionClass(option));
+}
+
+function hasSelectedOptionClass(element) {
+  return Array.from(element.classList ?? [])
+    .some((className) => /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current)$/.test(className.toLowerCase()));
 }
 
 function isInstructorLabeledControlledElement(element, id) {
