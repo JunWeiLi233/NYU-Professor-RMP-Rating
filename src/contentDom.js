@@ -108,7 +108,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, [data-instructor-name]"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
@@ -116,6 +116,11 @@ export function findInstructorTargets(document = globalThis.document) {
 }
 
 function findInstructorTargetsForElement(element) {
+  const markedNames = instructorNamesFromElementMarker(element);
+  if (markedNames.length > 0) {
+    return [{ element, names: markedNames }];
+  }
+
   const text = visibleTextSegments(element).join("\n");
   if (hasInstructorText(text) && text.length < 700) {
     const names = extractInstructorNamesFromText(text);
@@ -218,6 +223,19 @@ function instructorNameSegments(element) {
   return markedName ? [markedName] : visibleTextSegments(element);
 }
 
+function instructorNamesFromElementMarker(element) {
+  const markedName = element.getAttribute("data-instructor-name")?.trim();
+  if (!markedName) {
+    return [];
+  }
+
+  return [markedName]
+    .flatMap(splitInstructorList)
+    .filter(isLikelyInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
 function textForParsing(node) {
   if (node.nodeType === Node.TEXT_NODE) {
     return node.textContent ?? "";
@@ -245,6 +263,9 @@ function preferMostSpecificTargets(targets) {
     return !targets.some((other) => {
       if (other === target) {
         return false;
+      }
+      if (other.element === target.element) {
+        return targets.indexOf(other) < targets.indexOf(target);
       }
       if (target.element.contains(other.element)) {
         return other.names.length >= target.names.length;
