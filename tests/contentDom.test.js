@@ -2315,6 +2315,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA-labeled table cells should render.");
   });
 
+  it("injects ratings when Albert renders instructor text directly in semantic sections", async () => {
+    document.body.innerHTML = `
+      <section>Instructor: YAP, CHEE KENG</section>
+      <article>Professor: Ada Lovelace</article>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 3.2,
+      ratingsCount: 27,
+      tags: [],
+      topComments: [`Semantic container for ${name} should render.`],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(document.body.textContent).toContain("Semantic container for Chee Keng Yap should render.");
+    expect(document.body.textContent).toContain("Semantic container for Ada Lovelace should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
