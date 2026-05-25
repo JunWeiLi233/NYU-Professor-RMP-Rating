@@ -164,7 +164,7 @@ function isHiddenStyle(style) {
 }
 
 function isInstructorLabel(text) {
-  return /^instructor(?:\(s\)|s)?:?$/i.test(text.trim());
+  return /^instructor(?:\(s\)|s)?\s*(?::|-|\u2013|\u2014)?$/i.test(text.trim());
 }
 
 function findAdjacentInstructorTarget(element) {

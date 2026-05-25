@@ -215,6 +215,22 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names that continue after standalone labels with dash separators", () => {
+    const text = [
+      "CSCI-UA 201 Computer Systems Organization",
+      "Instructor -",
+      "YAP, CHEE KENG",
+      "Instructor(s) \u2013",
+      "Grace B. Hopper",
+      "Section Status Open",
+    ].join("\n");
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
