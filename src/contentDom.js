@@ -481,143 +481,212 @@ export function injectStyles(document = globalThis.document) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    .${ROOT_CLASS} {
-      display: grid;
-      gap: 8px;
-      margin: 8px 0 12px;
-      font-family: Aptos, "Segoe UI", sans-serif;
-    }
-    .nyu-rmp-card {
-      border: 1px solid #d9dee7;
-      border-left: 4px solid #6b7280;
-      border-radius: 8px;
-      background: #fbfcfe;
-      color: #172033;
-      padding: 10px 12px;
-      box-shadow: 0 8px 24px rgba(18, 31, 53, 0.08);
-      transition: transform 160ms ease, box-shadow 160ms ease;
-    }
-    .nyu-rmp-card:hover {
-      box-shadow: 0 12px 30px rgba(18, 31, 53, 0.12);
-      transform: translateY(-1px);
-    }
-    .nyu-rmp-card-head,
-    .nyu-rmp-score-row,
-    .nyu-rmp-tags {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .nyu-rmp-card-head {
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .nyu-rmp-card strong {
-      font-size: 13px;
-      letter-spacing: 0;
-    }
-    .nyu-rmp-department,
-    .nyu-rmp-match-note {
-      color: #64748b;
-      font-size: 11px;
-      margin: -2px 0 6px;
-    }
-    .nyu-rmp-updated {
-      color: #64748b;
-      font-size: 11px;
-      margin: -3px 0 7px;
-    }
-    .nyu-rmp-card a,
-    .nyu-rmp-refresh,
-    .nyu-rmp-status {
-      color: #334155;
-      font-size: 11px;
-      text-transform: uppercase;
-    }
-    .nyu-rmp-actions {
-      align-items: center;
-      display: flex;
-      gap: 8px;
-    }
-    .nyu-rmp-refresh {
-      background: transparent;
-      border: 0;
-      cursor: pointer;
-      font-family: inherit;
-      padding: 0;
-    }
-    .nyu-rmp-refresh:active {
-      transform: translateY(1px);
-    }
-    .nyu-rmp-score {
-      color: #111827;
-      font-size: 20px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .nyu-rmp-score-row span:not(.nyu-rmp-score),
-    .nyu-rmp-comments {
-      color: #475569;
-      font-size: 12px;
-    }
-    .nyu-rmp-score-row .nyu-rmp-verdict {
-      border: 1px solid #d8e0ea;
-      border-radius: 999px;
-      color: #334155;
-      font-size: 11px;
-      padding: 2px 7px;
-    }
-    .nyu-rmp-tags span {
-      background: #eef2f7;
-      border: 1px solid #d8e0ea;
-      border-radius: 999px;
-      color: #334155;
-      font-size: 11px;
-      padding: 3px 7px;
-    }
-    .nyu-rmp-comments {
-      margin: 8px 0 0;
-      padding-left: 16px;
-    }
-    .nyu-rmp-comments p {
-      margin: 0;
-    }
-    .nyu-rmp-comment-toggle {
-      background: transparent;
-      border: 0;
-      color: #334155;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 11px;
-      margin-top: 3px;
-      padding: 0;
-      text-transform: uppercase;
-    }
-    .nyu-rmp-comment-toggle:active {
-      transform: translateY(1px);
-    }
-    .nyu-rmp-comment-meta {
-      color: #64748b;
-      display: block;
-      font-size: 11px;
-      margin-top: 2px;
-    }
-    .nyu-rmp-skeleton {
-      animation: nyu-rmp-shimmer 1.2s infinite linear;
-      background: linear-gradient(90deg, #e8edf3, #f7f9fc, #e8edf3);
-      background-size: 220% 100%;
-      border-radius: 6px;
-      height: 18px;
-    }
-    .nyu-rmp-card.rating-good { border-left-color: #1f8a5b; }
-    .nyu-rmp-card.rating-mixed { border-left-color: #b7791f; }
-    .nyu-rmp-card.rating-weak,
-    .nyu-rmp-card.is-error { border-left-color: #b42318; }
-    @keyframes nyu-rmp-shimmer {
-      to { background-position: -220% 0; }
-    }
-  `;
+	    .${ROOT_CLASS} {
+	      display: grid;
+	      gap: 8px;
+	      margin: 8px 0 14px;
+	      font-family: Aptos, "Segoe UI", sans-serif;
+	    }
+	    .nyu-rmp-card {
+	      border: 1px solid #e4dff0;
+	      border-left: 3.5px solid #6b7280;
+	      border-radius: 9px;
+	      background: #fefdfe;
+	      color: #1f1a2e;
+	      padding: 11px 13px;
+	      box-shadow: 0 1px 3px rgba(26,5,48,0.04), 0 6px 18px rgba(26,5,48,0.06);
+	      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+	    }
+	    .nyu-rmp-card:hover {
+	      border-color: #d0c8de;
+	      box-shadow: 0 2px 4px rgba(26,5,48,0.05), 0 10px 28px rgba(26,5,48,0.09);
+	      transform: translateY(-1px);
+	    }
+	    .nyu-rmp-card-head,
+	    .nyu-rmp-score-row,
+	    .nyu-rmp-tags {
+	      align-items: center;
+	      display: flex;
+	      flex-wrap: wrap;
+	      gap: 7px;
+	    }
+	    .nyu-rmp-card-head {
+	      justify-content: space-between;
+	      margin-bottom: 5px;
+	    }
+	    .nyu-rmp-card strong {
+	      font-size: 12.5px;
+	      font-weight: 700;
+	      letter-spacing: -0.1px;
+	      line-height: 1.3;
+	    }
+	    .nyu-rmp-department {
+	      color: #8474a0;
+	      font-size: 10.5px;
+	      font-weight: 500;
+	      letter-spacing: 0.15px;
+	      margin: -2px 0 5px;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-match-note {
+	      color: #8474a0;
+	      font-size: 10.5px;
+	      margin: -1px 0 5px;
+	    }
+	    .nyu-rmp-updated {
+	      color: #a094b8;
+	      font-size: 10px;
+	      margin: -3px 0 6px;
+	    }
+	    .nyu-rmp-card a,
+	    .nyu-rmp-refresh,
+	    .nyu-rmp-status {
+	      color: #5e4d7a;
+	      font-size: 10.5px;
+	      font-weight: 600;
+	      letter-spacing: 0.3px;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-card a:hover {
+	      color: #57068c;
+	    }
+	    .nyu-rmp-actions {
+	      align-items: center;
+	      display: flex;
+	      gap: 8px;
+	    }
+	    .nyu-rmp-actions a,
+	    .nyu-rmp-refresh {
+	      text-decoration: none;
+	    }
+	    .nyu-rmp-actions a:hover {
+	      text-decoration: underline;
+	    }
+	    .nyu-rmp-refresh {
+	      background: transparent;
+	      border: 0;
+	      cursor: pointer;
+	      font-family: inherit;
+	      padding: 0;
+	      transition: color 120ms ease;
+	    }
+	    .nyu-rmp-refresh:hover {
+	      color: #57068c;
+	    }
+	    .nyu-rmp-refresh:active {
+	      transform: translateY(1px);
+	    }
+	    .nyu-rmp-score {
+	      font-size: 22px;
+	      font-weight: 800;
+	      letter-spacing: -0.3px;
+	      line-height: 1;
+	    }
+	    .rating-good .nyu-rmp-score { color: #1a7a4c; }
+	    .rating-mixed .nyu-rmp-score { color: #a0620a; }
+	    .rating-weak .nyu-rmp-score { color: #b42318; }
+	    .is-error .nyu-rmp-score,
+	    .is-loading .nyu-rmp-score,
+	    .is-empty .nyu-rmp-score { color: #1f1a2e; }
+	    .nyu-rmp-score-row span:not(.nyu-rmp-score),
+	    .nyu-rmp-comments {
+	      color: #544a66;
+	      font-size: 11.5px;
+	    }
+	    .nyu-rmp-score-row .nyu-rmp-verdict {
+	      border: 1px solid #d8cee8;
+	      border-radius: 999px;
+	      color: #4a3d60;
+	      font-size: 10.5px;
+	      font-weight: 600;
+	      padding: 2px 8px;
+	      letter-spacing: 0.1px;
+	    }
+	    .rating-good .nyu-rmp-verdict {
+	      background: #edf7f1;
+	      border-color: #b8dcc8;
+	      color: #1a6a3e;
+	    }
+	    .rating-mixed .nyu-rmp-verdict {
+	      background: #fef7ed;
+	      border-color: #e8cf9a;
+	      color: #8a5a14;
+	    }
+	    .rating-weak .nyu-rmp-verdict,
+	    .is-error .nyu-rmp-verdict {
+	      background: #fef4f4;
+	      border-color: #e8b8b8;
+	      color: #a82020;
+	    }
+	    .nyu-rmp-tags {
+	      gap: 5px;
+	    }
+	    .nyu-rmp-tags span {
+	      background: #f4f1f9;
+	      border: 1px solid #e4def0;
+	      border-radius: 999px;
+	      color: #4a3d60;
+	      font-size: 10px;
+	      font-weight: 500;
+	      padding: 2px 8px;
+	    }
+	    .nyu-rmp-comments {
+	      margin: 8px 0 0;
+	      padding-left: 14px;
+	    }
+	    .nyu-rmp-comments li {
+	      margin-bottom: 6px;
+	    }
+	    .nyu-rmp-comments p {
+	      margin: 0;
+	      line-height: 1.45;
+	    }
+	    .nyu-rmp-comment-toggle {
+	      background: transparent;
+	      border: 0;
+	      color: #57068c;
+	      cursor: pointer;
+	      font-family: inherit;
+	      font-size: 10.5px;
+	      font-weight: 600;
+	      letter-spacing: 0.2px;
+	      margin-top: 2px;
+	      padding: 0;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-comment-toggle:hover {
+	      text-decoration: underline;
+	    }
+	    .nyu-rmp-comment-toggle:active {
+	      transform: translateY(1px);
+	    }
+	    .nyu-rmp-comment-meta {
+	      color: #a094b8;
+	      display: block;
+	      font-size: 10px;
+	      margin-top: 2px;
+	    }
+	    .nyu-rmp-skeleton {
+	      animation: nyu-rmp-shimmer 1.3s infinite linear;
+	      background: linear-gradient(105deg, #f0ecf6 8%, #faf8fd 18%, #f0ecf6 33%);
+	      background-size: 280% 100%;
+	      border-radius: 5px;
+	      height: 18px;
+	    }
+	    .nyu-rmp-card.is-loading {
+	      border-left-color: #b8a8d0;
+	    }
+	    .nyu-rmp-card.is-empty {
+	      border-left-color: #d0c8de;
+	    }
+	    .nyu-rmp-card.rating-good { border-left-color: #1a7a4c; }
+	    .nyu-rmp-card.rating-mixed { border-left-color: #c4850e; }
+	    .nyu-rmp-card.rating-weak,
+	    .nyu-rmp-card.is-error { border-left-color: #c42020; }
+	    @keyframes nyu-rmp-shimmer {
+	      to { background-position: -280% 0; }
+	    }
+	  `;
   document.documentElement.append(style);
 }
 
