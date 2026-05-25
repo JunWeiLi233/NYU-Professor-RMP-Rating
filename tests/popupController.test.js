@@ -59,6 +59,38 @@ describe("extension popup controller", () => {
     expect(storage.set).toHaveBeenCalledWith({ "settings:overlayEnabled": true });
   });
 
+  it("disables and marks the overlay toggle busy while saving the setting", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "settings:overlayEnabled": false,
+    });
+    let resolveSave;
+    storage.set.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveSave = resolve;
+    }));
+
+    await initPopup({ document, storage });
+    const checkbox = document.getElementById("enable-overlay");
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+
+    expect(checkbox.disabled).toBe(true);
+    expect(checkbox.getAttribute("aria-busy")).toBe("true");
+    expect(document.getElementById("status").textContent).toBe("Saving overlay setting");
+
+    resolveSave();
+    await flushPromises();
+
+    expect(checkbox.disabled).toBe(false);
+    expect(checkbox.getAttribute("aria-busy")).toBe("false");
+    expect(document.getElementById("status").textContent).toBe("Ratings overlay enabled");
+  });
+
   it("rolls back the overlay toggle when the setting cannot be saved", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

@@ -19,11 +19,18 @@ export async function initPopup({
     enableOverlay.checked = overlayEnabled;
     enableOverlay.addEventListener("change", async () => {
       const nextValue = enableOverlay.checked;
+      enableOverlay.disabled = true;
+      enableOverlay.setAttribute("aria-busy", "true");
+      status.textContent = "Saving overlay setting";
       try {
         await storage.set({ "settings:overlayEnabled": nextValue });
+        status.textContent = nextValue ? "Ratings overlay enabled" : "Ratings overlay disabled";
       } catch (error) {
         enableOverlay.checked = !nextValue;
         status.textContent = `Overlay setting failed: ${error.message}`;
+      } finally {
+        enableOverlay.disabled = false;
+        enableOverlay.setAttribute("aria-busy", "false");
       }
     });
   }
