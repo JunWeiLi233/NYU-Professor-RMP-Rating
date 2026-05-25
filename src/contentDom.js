@@ -235,6 +235,9 @@ function findNextVisibleInstructorSibling(element) {
     if (!isElementVisible(sibling)) {
       continue;
     }
+    if (isBroadGridContainer(sibling)) {
+      continue;
+    }
     const segments = visibleTextSegments(sibling);
     if (segments.length > 0
       && !segments.every(isInstructorSeparatorOnlyText)
@@ -243,6 +246,10 @@ function findNextVisibleInstructorSibling(element) {
     }
   }
   return null;
+}
+
+function isBroadGridContainer(element) {
+  return element.tagName === "TABLE" || ["grid", "table", "treegrid"].includes(element.getAttribute("role")?.trim().toLowerCase());
 }
 
 function isInstructorSeparatorOnlyText(value) {
@@ -317,6 +324,7 @@ function isInstructorHeaderedCell(element) {
 function cellHeaderText(element) {
   return [
     cellLabelAttributeText(element),
+    ariaLabelledByText(element),
     referencedHeaderText(element),
     columnHeaderText(element),
   ].filter(Boolean).join("\n");
