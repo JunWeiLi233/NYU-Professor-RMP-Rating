@@ -864,6 +864,10 @@ describe("Albert content DOM injection", () => {
       <div>Instructor: Staff TBA</div>
       <div>Instructor: To Be Assigned</div>
       <div>Instructor: Not Available</div>
+      <div>Instructor: Multiple Instructors</div>
+      <div>Instructor: Various Instructors</div>
+      <div>Instructor: To Be Named</div>
+      <div>Instructor: See Department</div>
       <div>Instructor: Staff (TBA)</div>
       <div>Instructor: Ada Lovelace (Staff)</div>
     `;
@@ -876,6 +880,10 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).not.toHaveBeenCalledWith("Staff Tba");
     expect(lookupProfessor).not.toHaveBeenCalledWith("To Be Assigned");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Not Available");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Multiple Instructors");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Various Instructors");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("To Be Named");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("See Department");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Staff (tba)");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Ada Lovelace (staff)");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);

@@ -5,6 +5,7 @@ const STAFF_TERMS = new Set([
   "to be announced",
   "to be assigned",
   "to be determined",
+  "to be named",
   "department",
   "unassigned",
   "not assigned",
@@ -12,6 +13,9 @@ const STAFF_TERMS = new Set([
   "no instructor assigned",
   "n/a",
   "none",
+  "multiple instructors",
+  "various instructors",
+  "see department",
 ]);
 const PLACEHOLDER_WORDS = new Set(["staff", "tba", "tbd"]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v."]);
