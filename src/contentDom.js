@@ -215,6 +215,11 @@ function findInstructorTargetsForElement(element) {
     return [{ element, names: formControlNames }];
   }
 
+  const ariaValueControlNames = instructorNamesFromAriaValueControl(element);
+  if (ariaValueControlNames.length > 0) {
+    return [{ element, names: ariaValueControlNames }];
+  }
+
   const headeredCellNames = instructorNamesFromHeaderedCell(element);
   if (headeredCellNames.length > 0) {
     return [{ element, names: headeredCellNames }];
@@ -397,6 +402,32 @@ function instructorNamesFromFormControl(element) {
 
 function isNamedFormControl(element) {
   return ["INPUT", "TEXTAREA", "SELECT"].includes(element.tagName);
+}
+
+function instructorNamesFromAriaValueControl(element) {
+  if (!isInstructorLabeledAriaValueControl(element)) {
+    return [];
+  }
+
+  return visibleTextSegments(element)
+    .flatMap(splitInstructorList)
+    .filter(isLikelyInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
+function isInstructorLabeledAriaValueControl(element) {
+  const role = element.getAttribute("role")?.trim().toLowerCase();
+  if (!["combobox", "listbox", "textbox"].includes(role)) {
+    return false;
+  }
+
+  return [
+    element.getAttribute("aria-label"),
+    element.getAttribute("title"),
+    ariaLabelledByText(element),
+    ariaDescribedByText(element),
+  ].some((value) => value && isInstructorLabel(String(value)));
 }
 
 function instructorNamesFromHeaderedCell(element) {
