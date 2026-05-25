@@ -2315,6 +2315,32 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA controlled option should render.");
   });
 
+  it("injects ratings when controlled list items use selected ARIA state without option roles", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
+      <ul id="instructor-options" role="listbox">
+        <li>Ada Lovelace</li>
+        <li aria-selected="true">YAP, CHEE KENG</li>
+      </ul>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Selected ARIA list items should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Selected ARIA list items should render.");
+  });
+
   it("injects ratings when ARIA comboboxes own selected instructor options", async () => {
     document.body.innerHTML = `
       <div role="combobox" aria-label="Instructor" aria-owns="owned-instructor-options"></div>
