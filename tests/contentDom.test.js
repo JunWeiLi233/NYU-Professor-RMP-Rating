@@ -914,6 +914,31 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("injects ratings when Albert uses definition-list instructor labels", async () => {
+    document.body.innerHTML = `
+      <dl>
+        <dt>Instructor</dt>
+        <dd>YAP, CHEE KENG</dd>
+      </dl>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Definition-list details should still render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.querySelector("dd .nyu-rmp-rating-root")).not.toBeNull();
+    expect(document.body.textContent).toContain("Definition-list details should still render.");
+  });
+
   it("ignores hidden adjacent instructor-name cells", async () => {
     document.body.innerHTML = `
       <table>

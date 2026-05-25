@@ -108,7 +108,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, div, span, li, p"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
@@ -265,7 +265,7 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
 }
 
 function isTableCell(element) {
-  return ["TD", "TH"].includes(element.tagName);
+  return ["TD", "TH", "DD"].includes(element.tagName);
 }
 
 function createRatingShell(document, name) {
