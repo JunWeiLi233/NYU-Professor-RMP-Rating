@@ -1073,6 +1073,25 @@ describe("Rate My Professors client", () => {
     expect(`${bestMatch.firstName} ${bestMatch.lastName}`).toBe("José García");
   });
 
+  it("prefers abbreviated computer science departments for same-name RMP matches", () => {
+    const bestMatch = pickBestTeacher("Ada Lovelace", [
+      {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        department: "Mathematics",
+        numRatings: 900,
+      },
+      {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        department: "Comp Sci",
+        numRatings: 0,
+      },
+    ]);
+
+    expect(bestMatch.department).toBe("Comp Sci");
+  });
+
   it("falls back to first-last RMP search when a full Albert middle-name search is weak", async () => {
     const fetchImpl = vi.fn()
       .mockResolvedValueOnce({

@@ -177,11 +177,16 @@ function teacherScore(target, teacher) {
   if (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName)) {
     score += 90;
   }
-  if (/computer|cs|courant/i.test(teacher.department ?? "")) {
+  if (isComputerScienceDepartment(teacher.department)) {
     score += 10;
   }
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
+}
+
+function isComputerScienceDepartment(value) {
+  const department = String(value ?? "").toLowerCase();
+  return /computer|courant|\bcs\b|\bcomp\.?\s+sci\.?\b/.test(department);
 }
 
 function normalizeTagName(value) {
