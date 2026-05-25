@@ -122,6 +122,24 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("normalizes punctuation in professor cache keys", async () => {
+    const cachedRating = {
+      name: "Grace B Hopper",
+      rating: 4.8,
+      topComments: ["Punctuation variants should share cache."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Grace B Hopper")]: cachedRating,
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Grace B. Hopper")).resolves.toMatchObject(cachedRating);
+
+    expect(professorCacheKey("Grace B. Hopper")).toBe(professorCacheKey("Grace B Hopper"));
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

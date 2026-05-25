@@ -67,7 +67,11 @@ export function createProfessorLookupService({
 }
 
 export function professorCacheKey(name) {
-  return `professor:${foldDiacritics(name).trim().replace(/\s+/g, " ").toLowerCase()}`;
+  return `professor:${foldDiacritics(name)
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()}`;
 }
 
 function foldDiacritics(value) {
