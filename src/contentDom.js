@@ -308,6 +308,7 @@ function isInstructorLabeledFormControl(element) {
     element.getAttribute("name"),
     element.id,
     ariaLabelledByText(element),
+    associatedLabelText(element),
   ].some((value) => value && isInstructorLabel(String(value)));
 }
 
@@ -319,6 +320,14 @@ function ariaLabelledByText(element) {
 
   return ids
     .map((id) => element.ownerDocument?.getElementById(id))
+    .filter((labelElement) => labelElement && isElementVisible(labelElement))
+    .map((labelElement) => visibleTextSegments(labelElement).join(" "))
+    .filter(Boolean)
+    .join(" ");
+}
+
+function associatedLabelText(element) {
+  return Array.from(element.labels ?? [])
     .filter((labelElement) => labelElement && isElementVisible(labelElement))
     .map((labelElement) => visibleTextSegments(labelElement).join(" "))
     .filter(Boolean)

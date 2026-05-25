@@ -2092,6 +2092,54 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Referenced select labels should render.");
   });
 
+  it("injects ratings when input instructor labels use the native for attribute", async () => {
+    document.body.innerHTML = `
+      <label for="instructor-field">Instructor</label>
+      <input id="instructor-field" readonly value="YAP, CHEE KENG" />
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Native input labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Native input labels should render.");
+  });
+
+  it("injects ratings when select instructor labels use the native for attribute", async () => {
+    document.body.innerHTML = `
+      <label for="select-instructor-field">Primary Instructor</label>
+      <select id="select-instructor-field">
+        <option value="419998" selected>YAP, CHEE KENG</option>
+      </select>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Native select labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Native select labels should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
