@@ -741,9 +741,13 @@ function isColumnHeaderCell(element) {
 
 function formControlValue(element) {
   if (element.tagName === "SELECT") {
-    return Array.from(element.selectedOptions ?? [])
+    const selectedOptionValues = Array.from(element.selectedOptions ?? [])
       .map((option) => instructorNameSegments(option).join(" "))
-      .find(Boolean) ?? element.value?.trim() ?? "";
+      .filter(Boolean);
+    return selectedOptionValues.find((value) => splitInstructorList(value).some(isLikelyInstructorName))
+      ?? selectedOptionValues[0]
+      ?? element.value?.trim()
+      ?? "";
   }
 
   return element.value?.trim() || firstNameLikeAttribute(element) || "";
