@@ -34,6 +34,8 @@ const TITLE_NAME_SUFFIXES = new Map([
   ["sr", "Sr"],
   ["sr.", "Sr."],
 ]);
+const ACADEMIC_CREDENTIAL_PATTERN =
+  /(?:,?\s*(?:ph\.?\s*d\.?|m\.?\s*d\.?|m\.?\s*f\.?\s*a\.?|m\.?\s*b\.?\s*a\.?|j\.?\s*d\.?))+\.?\s*$/i;
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
 
@@ -45,14 +47,16 @@ export function normalizeInstructorName(value) {
   const withoutLabel = value
     .replace(INSTRUCTOR_ROLE_PATTERN, "")
     .replace(/^(?:instructor\(s\)|instructors?|professor|prof)\s*[:.]?\s*/i, "")
+    .replace(/^(?:dr|doctor)\.?\s+/i, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  if (!withoutLabel) {
+  const withoutCredentials = stripAcademicCredentials(withoutLabel);
+  if (!withoutCredentials) {
     return "";
   }
 
-  const normalized = titleCaseName(withoutLabel.replace(/[;|]+$/g, "").trim());
+  const normalized = titleCaseName(withoutCredentials.replace(/[;|]+$/g, "").trim());
   if (!normalized || isPlaceholderInstructor(normalized)) {
     return "";
   }
@@ -106,7 +110,7 @@ export function extractInstructorNamesFromText(text) {
 }
 
 export function splitInstructorList(value) {
-  const cleaned = stripInstructorRoleAnnotations(value);
+  const cleaned = stripAcademicCredentials(stripInstructorRoleAnnotations(value));
   if (isPlaceholderInstructor(cleaned)) {
     return [];
   }
@@ -162,6 +166,10 @@ function isLikelyInstructorContinuation(value) {
 
 function stripInstructorRoleAnnotations(value) {
   return String(value ?? "").replace(INSTRUCTOR_ROLE_PATTERN, "").replace(/\s+/g, " ").trim();
+}
+
+function stripAcademicCredentials(value) {
+  return String(value ?? "").replace(ACADEMIC_CREDENTIAL_PATTERN, "").trim();
 }
 
 function isPlaceholderInstructor(value) {

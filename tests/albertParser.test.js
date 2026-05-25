@@ -10,9 +10,12 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("Prof. Ada Lovelace (Primary Instructor)")).toBe("Ada Lovelace");
     expect(normalizeInstructorName("GRACE B. HOPPER")).toBe("Grace B. Hopper");
     expect(normalizeInstructorName("PROF. MAEVE O'CONNOR")).toBe("Maeve O'Connor");
+    expect(normalizeInstructorName("Dr. Ada Lovelace")).toBe("Ada Lovelace");
+    expect(normalizeInstructorName("Doctor Grace Hopper")).toBe("Grace Hopper");
     expect(normalizeInstructorName("ROBERT MARTIN III")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN III.")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN JR.")).toBe("Robert Martin Jr.");
+    expect(normalizeInstructorName("Ada Lovelace, PhD")).toBe("Ada Lovelace");
   });
 
   it("ignores Albert placeholder instructor names", () => {
@@ -131,6 +134,21 @@ describe("Albert instructor parsing", () => {
       "John Smith Jr.",
       "Robert Lee III",
       "Robert Martin III",
+    ]);
+  });
+
+  it("ignores academic titles and credentials in Albert instructor names", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: Dr. Ada Lovelace
+      Instructor(s): YAP, CHEE KENG, PhD
+      Instructor: Doctor Grace Hopper, M.D.
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Chee Keng Yap",
+      "Grace Hopper",
     ]);
   });
 
