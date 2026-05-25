@@ -127,11 +127,13 @@ describe("Albert instructor parsing", () => {
       CSCI-UA 201 Computer Systems Organization
       Instructor Name: Ada Lovelace
       Instructor Name YAP, CHEE KENG
+      Instructor(s) Name: Grace B. Hopper
     `;
 
     expect(extractInstructorNamesFromText(text)).toEqual([
       "Ada Lovelace",
       "Chee Keng Yap",
+      "Grace B. Hopper",
     ]);
   });
 
