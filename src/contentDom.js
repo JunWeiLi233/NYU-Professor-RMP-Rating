@@ -133,7 +133,7 @@ function findInstructorTargetsForElement(element) {
 }
 
 function hasInstructorText(text) {
-  return /\binstructor(?:\(s\)|s)?\s*(?::|-)/i.test(text)
+  return /\binstructor(?:\(s\)|s)?\s*(?::|-|\u2013|\u2014)/i.test(text)
     || /(?:^|\n)\s*instructor(?:\(s\)|s)?\s*(?:\n|$)/i.test(text);
 }
 

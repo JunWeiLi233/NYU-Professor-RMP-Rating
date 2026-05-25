@@ -12,6 +12,8 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("PROF. MAEVE O'CONNOR")).toBe("Maeve O'Connor");
     expect(normalizeInstructorName("Dr. Ada Lovelace")).toBe("Ada Lovelace");
     expect(normalizeInstructorName("Doctor Grace Hopper")).toBe("Grace Hopper");
+    expect(normalizeInstructorName("Instructor - Ada Lovelace")).toBe("Ada Lovelace");
+    expect(normalizeInstructorName("Instructor \u2013 Grace Hopper")).toBe("Grace Hopper");
     expect(normalizeInstructorName("ROBERT MARTIN III")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN III.")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN JR.")).toBe("Robert Martin Jr.");
@@ -107,6 +109,19 @@ describe("Albert instructor parsing", () => {
       "Chee Keng Yap",
       "Grace B. Hopper",
       "Alan Turing",
+    ]);
+  });
+
+  it("extracts instructor names from dash-variant Albert labels", () => {
+    const text = [
+      "CSCI-UA 201 Computer Systems Organization",
+      "Instructor \u2013 YAP, CHEE KENG",
+      "Instructor(s) \u2014 Grace B. Hopper",
+    ].join("\n");
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
     ]);
   });
 

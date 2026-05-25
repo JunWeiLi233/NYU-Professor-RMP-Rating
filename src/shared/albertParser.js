@@ -38,7 +38,11 @@ const ACADEMIC_CREDENTIAL_PATTERN =
   /(?:,?\s*(?:ph\.?\s*d\.?|m\.?\s*d\.?|m\.?\s*f\.?\s*a\.?|m\.?\s*b\.?\s*a\.?|j\.?\s*d\.?))+\.?\s*$/i;
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
-const INSTRUCTOR_LABEL_WITH_NAMES_PATTERN = /\binstructor(?:\(s\)|s)?\s*(?::|-)\s*(.*)$/i;
+const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|-|\u2013|\u2014)`;
+const INSTRUCTOR_LABEL_WITH_NAMES_PATTERN = new RegExp(
+  String.raw`\binstructor(?:\(s\)|s)?\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
+  "i",
+);
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -47,7 +51,7 @@ export function normalizeInstructorName(value) {
 
   const withoutLabel = value
     .replace(INSTRUCTOR_ROLE_PATTERN, "")
-    .replace(/^(?:instructor\(s\)|instructors?|professor|prof)\s*[:.]?\s*/i, "")
+    .replace(new RegExp(String.raw`^(?:instructor\(s\)|instructors?|professor|prof)\s*(?:${INSTRUCTOR_SEPARATOR_PATTERN}|[.:])?\s*`, "i"), "")
     .replace(/^(?:dr|doctor)\.?\s+/i, "")
     .replace(/\s+/g, " ")
     .trim();
