@@ -2642,6 +2642,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Generated field ids should render.");
   });
 
+  it("injects ratings when generated field-id attributes embed instructor tokens", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-fieldid="SSR_CRSE_TITLE_LONG$0">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-fieldid="SSR_INSTR_LONG$0">YAP, CHEE KENG</td>
+            <td data-fieldid="SSR_ENRL_STAT$0">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Generated field ids in attributes should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Generated field ids in attributes should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
