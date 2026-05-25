@@ -480,6 +480,41 @@ describe("Rate My Professors client", () => {
     expect(result.ratingsCount).toBe(0);
   });
 
+  it("normalizes fractional RMP rating counts to whole counts", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xMw==",
+                    legacyId: 247,
+                    firstName: "Ada",
+                    lastName: "Lovelace",
+                    department: "Computer Science",
+                    avgRating: 4.7,
+                    avgDifficulty: 2.4,
+                    numRatings: 12.8,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Ada Lovelace", { fetchImpl });
+
+    expect(result.ratingsCount).toBe(12);
+  });
+
   it("ignores null RMP teacher edges in partial GraphQL results", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

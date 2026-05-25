@@ -214,7 +214,8 @@ function rmpScaleNumberOrNull(value) {
 }
 
 function nonNegativeCount(value) {
-  return nonNegativeNumberOrNull(value) ?? 0;
+  const number = nonNegativeNumberOrNull(value);
+  return number == null ? 0 : Math.floor(number);
 }
 
 function searchNameVariants(name) {

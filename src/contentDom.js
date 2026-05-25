@@ -533,7 +533,8 @@ function formatRatingsCount(value) {
 }
 
 function nonNegativeCount(value) {
-  return nonNegativeNumberOrNull(value) ?? 0;
+  const number = nonNegativeNumberOrNull(value);
+  return number == null ? 0 : Math.floor(number);
 }
 
 function nonNegativeNumberOrNull(value) {
