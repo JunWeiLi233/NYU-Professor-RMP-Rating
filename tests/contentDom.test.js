@@ -989,6 +989,35 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
   });
 
+  it("skips empty spacer cells between adjacent Albert instructor labels and names", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor</th>
+            <td class="spacer"></td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Spacer cells should not block instructor detection."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Spacer cells should not block instructor detection.");
+  });
+
   it("injects ratings when Albert instructor labels use a hyphen separator", async () => {
     document.body.innerHTML = `<div>Instructor - YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

@@ -169,7 +169,7 @@ function isInstructorLabel(text) {
 
 function findAdjacentInstructorTarget(element) {
   const nameElement = [
-    element.nextElementSibling,
+    findNextVisibleSiblingWithText(element),
     element.parentElement?.querySelector("[data-instructor-name]"),
   ].find((candidate) => candidate && isElementVisible(candidate));
   if (!nameElement) {
@@ -180,6 +180,18 @@ function findAdjacentInstructorTarget(element) {
     .map(normalizeInstructorName)
     .filter(Boolean);
   return names.length > 0 ? { element: nameElement, processedElements: [element, nameElement], names } : null;
+}
+
+function findNextVisibleSiblingWithText(element) {
+  for (let sibling = element.nextElementSibling; sibling; sibling = sibling.nextElementSibling) {
+    if (!isElementVisible(sibling)) {
+      continue;
+    }
+    if (visibleTextSegments(sibling).length > 0) {
+      return sibling;
+    }
+  }
+  return null;
 }
 
 function visibleTextSegments(element) {
@@ -214,7 +226,16 @@ function isLineBreakElement(element) {
 function preferMostSpecificTargets(targets) {
   return targets.filter((target) => {
     return !targets.some((other) => {
-      return other !== target && target.element.contains(other.element);
+      if (other === target) {
+        return false;
+      }
+      if (target.element.contains(other.element)) {
+        return other.names.length >= target.names.length;
+      }
+      if (other.element.contains(target.element)) {
+        return other.names.length > target.names.length;
+      }
+      return false;
     });
   });
 }
