@@ -14,6 +14,7 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("Doctor Grace Hopper")).toBe("Grace Hopper");
     expect(normalizeInstructorName("Instructor - Ada Lovelace")).toBe("Ada Lovelace");
     expect(normalizeInstructorName("Instructor \u2013 Grace Hopper")).toBe("Grace Hopper");
+    expect(normalizeInstructorName("Instructor: Ada Lovelace.")).toBe("Ada Lovelace");
     expect(normalizeInstructorName("ROBERT MARTIN III")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN III.")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN JR.")).toBe("Robert Martin Jr.");

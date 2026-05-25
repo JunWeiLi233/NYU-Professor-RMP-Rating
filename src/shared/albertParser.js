@@ -61,7 +61,7 @@ export function normalizeInstructorName(value) {
     return "";
   }
 
-  const normalized = titleCaseName(withoutCredentials.replace(/[;|]+$/g, "").trim());
+  const normalized = titleCaseName(stripTrailingInstructorPunctuation(withoutCredentials));
   if (!normalized || isPlaceholderInstructor(normalized)) {
     return "";
   }
@@ -175,6 +175,14 @@ function stripInstructorRoleAnnotations(value) {
 
 function stripAcademicCredentials(value) {
   return String(value ?? "").replace(ACADEMIC_CREDENTIAL_PATTERN, "").trim();
+}
+
+function stripTrailingInstructorPunctuation(value) {
+  const trimmed = String(value ?? "").trim();
+  if (/\b(?:jr|sr)\.$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return trimmed.replace(/[.;|]+$/g, "").trim();
 }
 
 function isPlaceholderInstructor(value) {
