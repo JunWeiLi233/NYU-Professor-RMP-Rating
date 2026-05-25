@@ -74,6 +74,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-ps-fieldid",
     "data-ps-fieldname",
     "data-qa",
+    "data-selected",
     "data-slot",
     "data-test-id",
     "data-testid",
@@ -467,7 +468,7 @@ function selectedControlledOptionText(element) {
   const fallbackTexts = [];
   for (const controlledElementId of controlledElementIds) {
     const controlledElement = element.ownerDocument?.getElementById(controlledElementId);
-    const selectedOption = controlledElement?.querySelector?.("[role='option'][aria-selected='true']");
+    const selectedOption = selectedControlledOption(controlledElement);
     const selectedText = selectedOption && isElementVisible(selectedOption)
       ? visibleTextSegments(selectedOption).join(" ")
       : "";
@@ -481,6 +482,12 @@ function selectedControlledOptionText(element) {
   }
 
   return fallbackTexts[0] ?? "";
+}
+
+function selectedControlledOption(element) {
+  return Array.from(element?.querySelectorAll?.("[role='option']") ?? [])
+    .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
+      || option.getAttribute("data-selected")?.trim().toLowerCase() === "true");
 }
 
 function isInstructorLabeledControlledElement(element, id) {
