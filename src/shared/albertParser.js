@@ -23,6 +23,8 @@ const COURSE_METADATA_TERMS = new Set([
   "group",
   "location",
   "open",
+  "permission",
+  "required",
   "requirement",
   "section",
   "status",
