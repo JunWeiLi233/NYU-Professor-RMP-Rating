@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createProfessorMessenger } from "../src/contentMessenger.js";
 
 describe("content script professor messenger", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("sends professor lookup requests through the extension runtime", async () => {
     const chrome = {
       runtime: {
@@ -83,5 +87,21 @@ describe("content script professor messenger", () => {
     const messenger = createProfessorMessenger(chrome);
 
     await expect(messenger.lookupProfessor("Ada Lovelace")).rejects.toThrow("RMP lookup failed");
+  });
+
+  it("times out runtime messages that never receive a background response", async () => {
+    vi.useFakeTimers();
+    const chrome = {
+      runtime: {
+        sendMessage: vi.fn(() => undefined),
+      },
+    };
+    const messenger = createProfessorMessenger(chrome, { timeoutMs: 10 });
+
+    const lookup = messenger.lookupProfessor("Ada Lovelace");
+    const assertion = expect(lookup).rejects.toThrow("RMP lookup timed out");
+    await vi.advanceTimersByTimeAsync(10);
+
+    await assertion;
   });
 });
