@@ -202,7 +202,7 @@ function commentHelpfulScore(rating) {
 }
 
 function isUsefulCommentText(value) {
-  const text = String(value ?? "").trim();
+  const text = normalizeCommentText(value);
   const normalized = text.toLowerCase().replace(/[.!?]+$/g, "").trim();
   return /\p{L}|\p{N}/u.test(text) && !PLACEHOLDER_COMMENT_TEXT.has(normalized);
 }
