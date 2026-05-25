@@ -46,6 +46,8 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-pnlfld",
     "data-pnlfldid",
     "data-pnlfldname",
+    "data-ps-column-id",
+    "data-ps-column-name",
     "data-ps-columnid",
     "data-ps-columnname",
     "data-ps-fieldid",
@@ -416,6 +418,8 @@ function cellLabelAttributeText(element) {
     "data-column-name",
     "data-columnname",
     "data-columnid",
+    "data-ps-column-id",
+    "data-ps-column-name",
     "data-ps-columnid",
     "data-ps-columnname",
     "data-field",
@@ -465,7 +469,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-field-id", "data-ps-field-name", "data-ps-fieldid", "data-ps-fieldname", "data-pnlfldid", "data-pnlfldname", "data-pnlfld", "data-column", "data-column-id", "data-columnid", "data-column-name", "data-columnname", "data-ps-columnid", "data-ps-columnname", "id", "name", "class", "data-testid", "data-test-id", "data-qa", "data-cy", "data-e2e", "data-automation-id", "data-automationid", "data-slot", "slot", "data-name", "data-key", "data-field-key"].includes(attributeName);
+  return ["data-field", "data-field-id", "data-fieldid", "data-field-name", "data-fieldname", "data-ps-field-id", "data-ps-field-name", "data-ps-fieldid", "data-ps-fieldname", "data-pnlfldid", "data-pnlfldname", "data-pnlfld", "data-column", "data-column-id", "data-columnid", "data-column-name", "data-columnname", "data-ps-column-id", "data-ps-column-name", "data-ps-columnid", "data-ps-columnname", "id", "name", "class", "data-testid", "data-test-id", "data-qa", "data-cy", "data-e2e", "data-automation-id", "data-automationid", "data-slot", "slot", "data-name", "data-key", "data-field-key"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
