@@ -862,6 +862,9 @@ describe("Albert content DOM injection", () => {
   it("ignores mixed Albert placeholder instructor text", async () => {
     document.body.innerHTML = `
       <div>Instructor: Staff TBA</div>
+      <div>Instructor: Staff - TBA</div>
+      <div>Instructor: Department - TBD</div>
+      <div>Instructor: Pending - Assignment</div>
       <div>Instructor: To Be Assigned</div>
       <div>Instructor: Not Available</div>
       <div>Instructor: Not Yet Assigned</div>
@@ -887,6 +890,9 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Staff Tba");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Staff - Tba");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Department - Tbd");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Pending - Assignment");
     expect(lookupProfessor).not.toHaveBeenCalledWith("To Be Assigned");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Not Available");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Not Yet Assigned");

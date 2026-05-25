@@ -21,6 +21,7 @@ const STAFF_TERMS = new Set([
   "see advisor",
   "online course",
   "n/a",
+  "n a",
   "none",
   "multiple instructors",
   "various instructors",
@@ -235,8 +236,17 @@ function stripTrailingInstructorPunctuation(value) {
 }
 
 function isPlaceholderInstructor(value) {
-  const normalized = String(value ?? "").trim().toLowerCase();
+  const normalized = normalizePlaceholderText(value);
   return STAFF_TERMS.has(normalized) || /\bstaff$/.test(normalized) || isPlaceholderWordCombination(normalized);
+}
+
+function normalizePlaceholderText(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.,;:|/\\()[\]{}_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function hasInstructorListSeparator(value) {
