@@ -13,6 +13,21 @@ const STAFF_TERMS = new Set([
 ]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v."]);
 const SURNAME_PARTICLES = new Set(["de", "del", "della", "di", "du", "la", "le", "van", "von"]);
+const COURSE_METADATA_TERMS = new Set([
+  "class",
+  "closed",
+  "consent",
+  "credits",
+  "enrollment",
+  "group",
+  "location",
+  "open",
+  "requirement",
+  "section",
+  "status",
+  "units",
+  "waitlist",
+]);
 const TITLE_NAME_SUFFIXES = new Map([
   ["jr", "Jr"],
   ["jr.", "Jr."],
@@ -53,21 +68,33 @@ export function extractInstructorNamesFromText(text) {
   const names = [];
   const seen = new Set();
   const lines = text.split(/\r?\n/);
+  let readingContinuationNames = false;
 
   for (const line of lines) {
-    const match = line.match(/\binstructor(?:\(s\)|s)?\s*:\s*(.+)$/i);
-    if (!match) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) {
       continue;
     }
 
-    for (const piece of splitInstructorList(match[1])) {
-      const name = normalizeInstructorName(piece);
-      const key = name.toLowerCase();
-      if (name && !seen.has(key)) {
-        seen.add(key);
-        names.push(name);
-      }
+    const match = trimmedLine.match(/\binstructor(?:\(s\)|s)?\s*:\s*(.*)$/i);
+    if (match) {
+      const inlineNames = match[1].trim();
+      readingContinuationNames = !inlineNames;
+      addInstructorPieces(inlineNames, { names, seen });
+      continue;
     }
+
+    if (!readingContinuationNames) {
+      continue;
+    }
+
+    const continuationNames = splitInstructorList(trimmedLine).filter(isLikelyInstructorContinuation);
+    if (continuationNames.length === 0) {
+      readingContinuationNames = false;
+      continue;
+    }
+
+    addInstructorPieces(continuationNames, { names, seen });
   }
 
   return names;
@@ -100,6 +127,32 @@ export function splitInstructorList(value) {
     .split(/\s*,\s*/)
     .map((part) => part.trim())
     .filter(Boolean);
+}
+
+function addInstructorPieces(value, { names, seen }) {
+  const pieces = Array.isArray(value) ? value : splitInstructorList(value);
+  for (const piece of pieces) {
+    const name = normalizeInstructorName(piece);
+    const key = name.toLowerCase();
+    if (name && !seen.has(key)) {
+      seen.add(key);
+      names.push(name);
+    }
+  }
+}
+
+function isLikelyInstructorContinuation(value) {
+  const normalized = normalizeInstructorName(value);
+  if (!normalized) {
+    return false;
+  }
+
+  const words = normalized.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.some((word) => COURSE_METADATA_TERMS.has(word))) {
+    return false;
+  }
+
+  return words.length >= 2 && words.length <= 5;
 }
 
 function stripInstructorRoleAnnotations(value) {

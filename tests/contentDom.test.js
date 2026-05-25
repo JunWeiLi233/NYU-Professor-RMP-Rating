@@ -940,6 +940,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Grace B. Hopper comment");
   });
 
+  it("injects ratings when Albert puts names on lines after an instructor label", async () => {
+    document.body.innerHTML = `
+      <div>
+        <span>Instructor(s):</span>
+        <br>
+        <span>YAP, CHEE KENG</span>
+        <br>
+        <span>Grace B. Hopper</span>
+        <br>
+        <span>Enrollment Requirement Group</span>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 3.4,
+      ratingsCount: 17,
+      tags: [],
+      topComments: [`${name} comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace B. Hopper");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Enrollment Requirement Group");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+  });
+
   it("prefers the most specific instructor node inside nested Albert containers", async () => {
     document.body.innerHTML = `
       <div class="course-wrapper">

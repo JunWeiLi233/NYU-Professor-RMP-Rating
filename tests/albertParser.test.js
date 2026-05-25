@@ -134,6 +134,21 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names that continue on lines after an empty label", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor(s):
+      YAP, CHEE KENG
+      Grace B. Hopper
+      Enrollment Requirement Group
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
