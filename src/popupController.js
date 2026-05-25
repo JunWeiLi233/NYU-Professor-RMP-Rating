@@ -9,6 +9,9 @@ export async function initPopup({
   if (!status || !storage) {
     return;
   }
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.setAttribute("aria-atomic", "true");
 
   const settings = await storage.get("settings:overlayEnabled");
   const overlayEnabled = settings["settings:overlayEnabled"] !== false;

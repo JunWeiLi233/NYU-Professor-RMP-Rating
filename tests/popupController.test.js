@@ -21,6 +21,22 @@ describe("extension popup controller", () => {
     expect(document.getElementById("enable-overlay").checked).toBe(true);
   });
 
+  it("marks popup status text as a polite live region", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock();
+
+    await initPopup({ document, storage });
+
+    const status = document.getElementById("status");
+    expect(status.getAttribute("role")).toBe("status");
+    expect(status.getAttribute("aria-live")).toBe("polite");
+    expect(status.getAttribute("aria-atomic")).toBe("true");
+  });
+
   it("persists whether the Albert overlay is enabled", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
