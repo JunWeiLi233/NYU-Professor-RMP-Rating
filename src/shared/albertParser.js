@@ -98,7 +98,7 @@ export function extractInstructorNamesFromText(text) {
       const inlineNames = separatorMatch[1].trim();
       readingContinuationNames = !inlineNames;
       if (inlineNames) {
-        const filteredInlineNames = splitInstructorList(inlineNames).filter(isLikelyInstructorContinuation);
+        const filteredInlineNames = splitInstructorList(inlineNames).filter(isLikelyInstructorName);
         addInstructorPieces(filteredInlineNames, { names, seen });
       }
       continue;
@@ -107,7 +107,7 @@ export function extractInstructorNamesFromText(text) {
     const whitespaceMatch = trimmedLine.match(INSTRUCTOR_LABEL_WITH_WHITESPACE_NAMES_PATTERN);
     if (whitespaceMatch) {
       readingContinuationNames = false;
-      const inlineNames = splitInstructorList(whitespaceMatch[1].trim()).filter(isLikelyInstructorContinuation);
+      const inlineNames = splitInstructorList(whitespaceMatch[1].trim()).filter(isLikelyInstructorName);
       addInstructorPieces(inlineNames, { names, seen });
       continue;
     }
@@ -121,7 +121,7 @@ export function extractInstructorNamesFromText(text) {
       continue;
     }
 
-    const continuationNames = splitInstructorList(trimmedLine).filter(isLikelyInstructorContinuation);
+    const continuationNames = splitInstructorList(trimmedLine).filter(isLikelyInstructorName);
     if (continuationNames.length === 0) {
       readingContinuationNames = false;
       continue;
@@ -174,7 +174,7 @@ function addInstructorPieces(value, { names, seen }) {
   }
 }
 
-function isLikelyInstructorContinuation(value) {
+export function isLikelyInstructorName(value) {
   const normalized = normalizeInstructorName(value);
   if (!normalized) {
     return false;

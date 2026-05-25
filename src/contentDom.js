@@ -1,4 +1,4 @@
-import { extractInstructorNamesFromText, normalizeInstructorName, splitInstructorList } from "./shared/albertParser.js";
+import { extractInstructorNamesFromText, isLikelyInstructorName, normalizeInstructorName, splitInstructorList } from "./shared/albertParser.js";
 
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
@@ -168,18 +168,23 @@ function isInstructorLabel(text) {
 }
 
 function findAdjacentInstructorTarget(element) {
-  const nameElement = [
+  const candidateElements = [
     findNextVisibleSiblingWithText(element),
     element.parentElement?.querySelector("[data-instructor-name]"),
-  ].find((candidate) => candidate && isElementVisible(candidate));
-  if (!nameElement) {
-    return null;
+  ].filter((candidate) => candidate && isElementVisible(candidate));
+
+  for (const nameElement of candidateElements) {
+    const names = visibleTextSegments(nameElement)
+      .flatMap(splitInstructorList)
+      .filter(isLikelyInstructorName)
+      .map(normalizeInstructorName)
+      .filter(Boolean);
+    if (names.length > 0) {
+      return { element: nameElement, processedElements: [element, nameElement], names };
+    }
   }
-  const names = visibleTextSegments(nameElement)
-    .flatMap(splitInstructorList)
-    .map(normalizeInstructorName)
-    .filter(Boolean);
-  return names.length > 0 ? { element: nameElement, processedElements: [element, nameElement], names } : null;
+
+  return null;
 }
 
 function findNextVisibleSiblingWithText(element) {
