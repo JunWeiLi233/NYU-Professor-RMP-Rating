@@ -11,6 +11,7 @@ const STAFF_TERMS = new Set([
   "n/a",
   "none",
 ]);
+const PLACEHOLDER_WORDS = new Set(["staff", "tba", "tbd"]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v."]);
 const SURNAME_PARTICLES = new Set(["de", "del", "della", "di", "du", "la", "le", "van", "von"]);
 const COURSE_METADATA_TERMS = new Set([
@@ -187,7 +188,12 @@ function stripTrailingInstructorPunctuation(value) {
 
 function isPlaceholderInstructor(value) {
   const normalized = String(value ?? "").trim().toLowerCase();
-  return STAFF_TERMS.has(normalized) || /\bstaff$/.test(normalized);
+  return STAFF_TERMS.has(normalized) || /\bstaff$/.test(normalized) || isPlaceholderWordCombination(normalized);
+}
+
+function isPlaceholderWordCombination(value) {
+  const words = value.split(/\s+/).filter(Boolean);
+  return words.length > 1 && words.every((word) => PLACEHOLDER_WORDS.has(word));
 }
 
 function pairAlbertLastFirstParts(parts) {

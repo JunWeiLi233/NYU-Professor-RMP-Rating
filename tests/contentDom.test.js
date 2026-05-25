@@ -726,6 +726,21 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("ignores mixed Albert placeholder instructor text", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Staff TBA</div>
+      <div>Instructor: Ada Lovelace</div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Staff Tba");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("ignores instructor sections hidden by Albert stylesheet classes", async () => {
     document.head.innerHTML = `<style>.collapsed-albert-section { display: none; }</style>`;
     document.body.innerHTML = `
