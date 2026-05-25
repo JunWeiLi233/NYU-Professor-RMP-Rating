@@ -744,7 +744,7 @@ function formControlValue(element) {
       .find(Boolean) ?? element.value?.trim() ?? "";
   }
 
-  return element.value?.trim() ?? "";
+  return element.value?.trim() || firstNameLikeAttribute(element) || "";
 }
 
 function isInstructorLabeledFormControl(element) {

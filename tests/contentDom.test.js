@@ -2054,6 +2054,26 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Input instructor values should render.");
   });
 
+  it("injects ratings when instructor inputs mirror names in data-value", async () => {
+    document.body.innerHTML = `<input aria-label="Instructor" readonly value="" data-value="YAP, CHEE KENG" />`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Input data-value instructor names should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Input data-value instructor names should render.");
+  });
+
   it("injects ratings when Albert uses data-instructor-name on an input", async () => {
     document.body.innerHTML = `<input data-instructor-name="YAP, CHEE KENG" readonly value="View instructor details" />`;
     const lookupProfessor = vi.fn(async (name) => ({
