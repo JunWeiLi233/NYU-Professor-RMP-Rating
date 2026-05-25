@@ -216,6 +216,7 @@ describe("Albert content DOM injection", () => {
     const profileLink = document.querySelector(".nyu-rmp-actions a");
     expect(profileLink.textContent).toBe("RMP");
     expect(profileLink.getAttribute("aria-label")).toBe("Open RMP profile for Ada Lovelace");
+    expect(profileLink.getAttribute("rel")).toBe("noreferrer noopener");
   });
 
   it("omits negative useful-comment metadata from cached RMP ratings", async () => {
@@ -514,6 +515,7 @@ describe("Albert content DOM injection", () => {
     expect(searchLink.textContent).toBe("Search RMP");
     expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
+    expect(searchLink.getAttribute("rel")).toBe("noreferrer noopener");
   });
 
   it("announces loading, no-match, and error status updates politely", async () => {
@@ -578,6 +580,7 @@ describe("Albert content DOM injection", () => {
     expect(searchLink.textContent).toBe("Search RMP");
     expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
+    expect(searchLink.getAttribute("rel")).toBe("noreferrer noopener");
   });
 
   it("labels refresh controls with the requested professor name", async () => {

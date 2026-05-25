@@ -287,7 +287,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <strong>${escapeHtml(requestedName)}</strong>
         <div class="nyu-rmp-actions">
           <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
-          <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
+          <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
           ${statusMarkup("No RMP match")}
         </div>
       </div>
@@ -322,7 +322,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <strong>${escapeHtml(professorName)}</strong>
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
-        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
+        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
@@ -349,7 +349,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
       <strong>${escapeHtml(requestedName)}</strong>
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(retryLabel(requestedName))}">Retry</button>
-        <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
+        <a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>
         ${statusMarkup(message || "RMP lookup failed")}
       </div>
     </div>
