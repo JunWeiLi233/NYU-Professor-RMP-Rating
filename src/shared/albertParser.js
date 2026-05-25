@@ -19,8 +19,11 @@ const COURSE_METADATA_TERMS = new Set([
   "closed",
   "consent",
   "credits",
+  "detail",
+  "details",
   "enrollment",
   "group",
+  "instructor",
   "location",
   "open",
   "permission",
@@ -29,6 +32,7 @@ const COURSE_METADATA_TERMS = new Set([
   "section",
   "status",
   "units",
+  "view",
   "waitlist",
 ]);
 const TITLE_NAME_SUFFIXES = new Map([
