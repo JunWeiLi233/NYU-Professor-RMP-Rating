@@ -765,6 +765,39 @@ describe("Rate My Professors client", () => {
     await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toBeNull();
   });
 
+  it("does not accept nameless RMP teacher results", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "nameless",
+                    legacyId: 321,
+                    firstName: null,
+                    lastName: null,
+                    department: "Computer Science",
+                    avgRating: 5,
+                    avgDifficulty: 1,
+                    numRatings: 200,
+                    wouldTakeAgainPercent: 100,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toBeNull();
+  });
+
   it("drops title suffixes before building first-last fallback searches", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

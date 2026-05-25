@@ -149,6 +149,9 @@ function teacherScore(target, teacher) {
   const firstName = compactName(teacher.firstName ?? "");
   const lastName = compactName(teacher.lastName ?? "");
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
+  if (!name) {
+    return 0;
+  }
   let score = 0;
   if (name === target) {
     score += 100;
