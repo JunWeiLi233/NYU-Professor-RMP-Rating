@@ -96,6 +96,20 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names from hyphen-separated Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor - YAP, CHEE KENG
+      Instructor(s) - Grace B. Hopper and Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+
   it("understands accented Albert last-name-first instructor formatting", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

@@ -38,6 +38,7 @@ const ACADEMIC_CREDENTIAL_PATTERN =
   /(?:,?\s*(?:ph\.?\s*d\.?|m\.?\s*d\.?|m\.?\s*f\.?\s*a\.?|m\.?\s*b\.?\s*a\.?|j\.?\s*d\.?))+\.?\s*$/i;
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
+const INSTRUCTOR_LABEL_WITH_NAMES_PATTERN = /\binstructor(?:\(s\)|s)?\s*(?::|-)\s*(.*)$/i;
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -80,7 +81,7 @@ export function extractInstructorNamesFromText(text) {
       continue;
     }
 
-    const match = trimmedLine.match(/\binstructor(?:\(s\)|s)?\s*:\s*(.*)$/i);
+    const match = trimmedLine.match(INSTRUCTOR_LABEL_WITH_NAMES_PATTERN);
     if (match) {
       const inlineNames = match[1].trim();
       readingContinuationNames = !inlineNames;
