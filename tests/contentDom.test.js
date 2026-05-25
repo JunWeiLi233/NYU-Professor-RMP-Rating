@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { removeAlbertRmpEnhancements, scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
+import { injectStyles, removeAlbertRmpEnhancements, scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
 
 describe("Albert content DOM injection", () => {
   afterEach(() => {
@@ -26,6 +26,16 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).not.toHaveBeenCalled();
     expect(observe).not.toHaveBeenCalled();
     expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
+  it("includes reduced-motion safeguards for injected Albert rating cards", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    expect(styles).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(styles).toContain(".nyu-rmp-skeleton");
+    expect(styles).toContain("animation: none");
+    expect(styles).toContain("transform: none");
   });
 
   it("does not scan Albert pages when the overlay is disabled", () => {

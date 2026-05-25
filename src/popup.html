@@ -170,6 +170,18 @@
       .toggle-switch input:checked + .toggle-track::after {
         transform: translateX(18px);
       }
+      @media (prefers-reduced-motion: reduce) {
+        .dot,
+        button,
+        .toggle-track,
+        .toggle-track::after {
+          animation: none;
+          transition: none;
+        }
+        button:active:not(:disabled) {
+          transform: none;
+        }
+      }
     </style>
   </head>
   <body>

@@ -699,6 +699,22 @@ export function injectStyles(document = globalThis.document) {
 	    @keyframes nyu-rmp-shimmer {
 	      to { background-position: -280% 0; }
 	    }
+	    @media (prefers-reduced-motion: reduce) {
+	      .nyu-rmp-card,
+	      .nyu-rmp-refresh,
+	      .nyu-rmp-comment-toggle {
+	        transition: none;
+	      }
+	      .nyu-rmp-card:hover,
+	      .nyu-rmp-refresh:active,
+	      .nyu-rmp-comment-toggle:active {
+	        transform: none;
+	      }
+	      .nyu-rmp-skeleton {
+	        animation: none;
+	        background-position: 0 0;
+	      }
+	    }
 	  `;
   document.documentElement.append(style);
 }

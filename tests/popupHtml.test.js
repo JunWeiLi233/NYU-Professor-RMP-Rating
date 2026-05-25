@@ -7,4 +7,12 @@ describe("extension popup markup", () => {
 
     expect(popup).toContain('<span class="dot" aria-hidden="true"></span>');
   });
+
+  it("respects reduced-motion preferences for popup animations", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(popup).toContain("animation: none");
+    expect(popup).toContain("transition: none");
+  });
 });
