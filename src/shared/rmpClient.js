@@ -224,10 +224,18 @@ function decodeHtmlEntities(value) {
   const namedEntities = {
     amp: "&",
     apos: "'",
+    emdash: "-",
+    endash: "-",
     gt: ">",
     lt: "<",
+    mdash: "-",
     nbsp: " ",
+    ndash: "-",
     quot: "\"",
+    rdquo: "\"",
+    rsquo: "'",
+    ldquo: "\"",
+    lsquo: "'",
   };
 
   return String(value ?? "").replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, token) => {
