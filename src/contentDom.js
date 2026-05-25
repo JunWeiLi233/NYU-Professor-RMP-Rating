@@ -85,6 +85,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-testid",
     "data-title",
     "data-tooltip",
+    "data-value",
     "headers",
     "hidden",
     "id",
@@ -761,7 +762,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label"]) {
+  for (const attributeName of ["title", "aria-label", "data-value"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
