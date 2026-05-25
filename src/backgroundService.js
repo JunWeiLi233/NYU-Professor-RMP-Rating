@@ -67,7 +67,12 @@ export function professorCacheKey(name) {
 }
 
 async function readStoredRating(storage, key, currentTime) {
-  const result = await storage.get(key);
+  let result;
+  try {
+    result = await storage.get(key);
+  } catch {
+    return { status: "missing" };
+  }
   if (!Object.prototype.hasOwnProperty.call(result, key) || result[key] === undefined) {
     return { status: "missing" };
   }
@@ -97,8 +102,12 @@ function isFreshCacheEntry(entry, currentTime) {
 async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }) {
   const result = await findProfessorRating(name);
   const storedResult = createStoredRating(result, currentTime);
-  await storage.set({ [key]: storedResult });
   memoryCache.set(key, storedResult);
+  try {
+    await storage.set({ [key]: storedResult });
+  } catch {
+    // Chrome storage can fail transiently; fetched RMP data is still useful for the current Albert card.
+  }
   return withCacheMetadata(result, currentTime);
 }
 

@@ -302,32 +302,48 @@ describe("background professor lookup service", () => {
     });
   });
 
-  it("does not populate memory cache when persisting a fresh lookup fails", async () => {
-    const firstRating = {
+  it("falls back to RMP lookup when reading persisted cache fails", async () => {
+    const freshRating = {
       name: "Ada Lovelace",
       rating: 4.7,
-      topComments: ["Storage failed before this could persist."],
-    };
-    const secondRating = {
-      name: "Ada Lovelace",
-      rating: 4.9,
-      topComments: ["Second lookup after storage recovers."],
+      topComments: ["Storage read failed, but RMP still worked."],
     };
     const storage = createStorageMock();
-    storage.set = vi.fn()
-      .mockRejectedValueOnce(new Error("storage unavailable"))
-      .mockImplementationOnce(async function set(items) {
-        Object.assign(storage.data, items);
-      });
-    const findProfessorRating = vi.fn()
-      .mockResolvedValueOnce(firstRating)
-      .mockResolvedValueOnce(secondRating);
-    const service = createProfessorLookupService({ storage, findProfessorRating });
+    storage.get = vi.fn(async () => {
+      throw new Error("storage unavailable");
+    });
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const service = createProfessorLookupService({ storage, findProfessorRating, now: () => now });
 
-    await expect(service.lookup("Ada Lovelace")).rejects.toThrow("storage unavailable");
-    await expect(service.lookup("Ada Lovelace")).resolves.toMatchObject(secondRating);
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual({
+      ...freshRating,
+      cacheUpdatedAt: now,
+    });
 
-    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+    expect(findProfessorRating).toHaveBeenCalledWith("Ada Lovelace");
+  });
+
+  it("returns fresh RMP data when persisting the cache entry fails", async () => {
+    const freshRating = {
+      name: "Ada Lovelace",
+      rating: 4.7,
+      topComments: ["Storage failed, but the card can still render."],
+    };
+    const storage = createStorageMock();
+    storage.set = vi.fn(async () => {
+      throw new Error("storage unavailable");
+    });
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const service = createProfessorLookupService({ storage, findProfessorRating, now: () => now });
+
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual({
+      ...freshRating,
+      cacheUpdatedAt: now,
+    });
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Ada Lovelace");
   });
 
   it("clears persisted and in-memory professor cache entries", async () => {
