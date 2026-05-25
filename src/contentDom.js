@@ -109,7 +109,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, button, [role='button'], label, strong, b, input, textarea, [data-instructor-name]"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, button, [role='button'], label, strong, b, input, textarea, select, [data-instructor-name]"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
@@ -275,7 +275,7 @@ function instructorNamesFromFormControl(element) {
     return [];
   }
 
-  const value = element.value?.trim();
+  const value = formControlValue(element);
   if (!value) {
     return [];
   }
@@ -288,7 +288,17 @@ function instructorNamesFromFormControl(element) {
 }
 
 function isNamedFormControl(element) {
-  return ["INPUT", "TEXTAREA"].includes(element.tagName);
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(element.tagName);
+}
+
+function formControlValue(element) {
+  if (element.tagName === "SELECT") {
+    return Array.from(element.selectedOptions ?? [])
+      .map((option) => option.textContent?.trim())
+      .find(Boolean) ?? element.value?.trim() ?? "";
+  }
+
+  return element.value?.trim() ?? "";
 }
 
 function isInstructorLabeledFormControl(element) {
