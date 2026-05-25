@@ -232,8 +232,8 @@ describe("Albert content DOM injection", () => {
       ratingsCount: 38,
       tags: [],
       topComments: [
-        { text: "N/A", helpfulRating: 40 },
-        "No comment",
+        { text: "N/A.", helpfulRating: 40 },
+        "No comments.",
         { text: "Lectures are clear and the systems projects are fair.", helpfulRating: 12 },
       ],
       url: "https://www.ratemyprofessors.com/professor/123",
@@ -243,8 +243,8 @@ describe("Albert content DOM injection", () => {
 
     const commentTexts = Array.from(document.querySelectorAll(".nyu-rmp-comment-text")).map((comment) => comment.textContent);
     expect(commentTexts).toEqual(["Lectures are clear and the systems projects are fair."]);
-    expect(document.body.textContent).not.toContain("N/A");
-    expect(document.body.textContent).not.toContain("No comment");
+    expect(document.body.textContent).not.toContain("N/A.");
+    expect(document.body.textContent).not.toContain("No comments.");
   });
 
   it("renders only trimmed nonblank cached RMP tags", async () => {

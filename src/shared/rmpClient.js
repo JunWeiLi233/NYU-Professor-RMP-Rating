@@ -198,7 +198,8 @@ function commentHelpfulScore(rating) {
 
 function isUsefulCommentText(value) {
   const text = String(value ?? "").trim();
-  return text && !PLACEHOLDER_COMMENT_TEXT.has(text.toLowerCase());
+  const normalized = text.toLowerCase().replace(/[.!?]+$/g, "").trim();
+  return text && !PLACEHOLDER_COMMENT_TEXT.has(normalized);
 }
 
 function uniqueCommentText(rating, _index, ratings) {

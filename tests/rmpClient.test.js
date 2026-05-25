@@ -433,13 +433,13 @@ describe("Rate My Professors client", () => {
                       edges: [
                         {
                           node: {
-                            comment: "N/A",
+                            comment: "N/A.",
                             helpfulRating: 40,
                           },
                         },
                         {
                           node: {
-                            comment: "No comment",
+                            comment: "No comments.",
                             helpfulRating: 32,
                           },
                         },
