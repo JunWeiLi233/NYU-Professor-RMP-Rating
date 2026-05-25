@@ -165,7 +165,10 @@ function computedStyleFor(element) {
 }
 
 function isHiddenStyle(style) {
-  return style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse";
+  return style?.display === "none"
+    || style?.visibility === "hidden"
+    || style?.visibility === "collapse"
+    || style?.opacity === "0";
 }
 
 function isInstructorLabel(text) {
