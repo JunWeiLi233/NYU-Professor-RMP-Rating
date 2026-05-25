@@ -344,6 +344,8 @@ function cellLabelAttributeText(element) {
     "data-title",
     "data-column",
     "data-column-title",
+    "data-column-name",
+    "data-columnname",
     "data-field",
     "data-field-name",
     "data-fieldname",
@@ -367,7 +369,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-name", "data-fieldname"].includes(attributeName);
+  return ["data-field", "data-field-name", "data-fieldname", "data-column", "data-column-name", "data-columnname"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
