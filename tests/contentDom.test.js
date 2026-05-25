@@ -717,6 +717,8 @@ describe("Albert content DOM injection", () => {
       <div aria-hidden="true">Instructor: Hidden Aria</div>
       <div style="display: none;">Instructor: Hidden Display</div>
       <div style="opacity: 0;">Instructor: Hidden Transparent</div>
+      <div style="opacity: 0.0;">Instructor: Hidden Transparent Variant</div>
+      <div style="height: 0; width: 0; overflow: hidden;">Instructor: Hidden Zero Size</div>
       <div>Instructor: Ada Lovelace</div>
     `;
     const lookupProfessor = vi.fn(async () => null);

@@ -168,7 +168,19 @@ function isHiddenStyle(style) {
   return style?.display === "none"
     || style?.visibility === "hidden"
     || style?.visibility === "collapse"
-    || style?.opacity === "0";
+    || style?.opacity === "0"
+    || isZeroSizeOverflowHidden(style);
+}
+
+function isZeroSizeOverflowHidden(style) {
+  const width = parseCssPixelValue(style?.width);
+  const height = parseCssPixelValue(style?.height);
+  return width === 0 && height === 0 && /hidden|clip/i.test(`${style?.overflow ?? ""} ${style?.overflowX ?? ""} ${style?.overflowY ?? ""}`);
+}
+
+function parseCssPixelValue(value) {
+  const match = String(value ?? "").trim().match(/^(-?\d+(?:\.\d+)?)px$/i);
+  return match ? Number(match[1]) : null;
 }
 
 function isInstructorLabel(text) {
