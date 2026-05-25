@@ -127,6 +127,11 @@ function findInstructorTargetsForElement(element) {
     return [{ element, names: formControlNames }];
   }
 
+  const headeredCellNames = instructorNamesFromHeaderedCell(element);
+  if (headeredCellNames.length > 0) {
+    return [{ element, names: headeredCellNames }];
+  }
+
   const text = visibleTextSegments(element).join("\n");
   if (hasInstructorText(text) && text.length < 700) {
     const names = extractInstructorNamesFromText(text);
@@ -289,6 +294,38 @@ function instructorNamesFromFormControl(element) {
 
 function isNamedFormControl(element) {
   return ["INPUT", "TEXTAREA", "SELECT"].includes(element.tagName);
+}
+
+function instructorNamesFromHeaderedCell(element) {
+  if (!isTableCell(element) || !isInstructorHeaderedCell(element)) {
+    return [];
+  }
+
+  return instructorNameSegments(element)
+    .flatMap(splitInstructorList)
+    .filter(isLikelyInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
+function isInstructorHeaderedCell(element) {
+  return referencedHeaderText(element)
+    .split("\n")
+    .some(isInstructorLabel);
+}
+
+function referencedHeaderText(element) {
+  const ids = element.getAttribute("headers")?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (ids.length === 0) {
+    return "";
+  }
+
+  return ids
+    .map((id) => element.ownerDocument?.getElementById(id))
+    .filter((headerElement) => headerElement && isElementVisible(headerElement))
+    .map((headerElement) => visibleTextSegments(headerElement).join(" "))
+    .filter(Boolean)
+    .join("\n");
 }
 
 function formControlValue(element) {
