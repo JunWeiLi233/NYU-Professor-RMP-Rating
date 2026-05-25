@@ -679,7 +679,13 @@ function formatMatchNote(professorName, requestedName, matchConfidence) {
 }
 
 function compactName(value) {
-  return String(value ?? "").toLowerCase().replace(/[^a-z]/g, "");
+  return foldDiacritics(value).toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function foldDiacritics(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function asArray(value) {

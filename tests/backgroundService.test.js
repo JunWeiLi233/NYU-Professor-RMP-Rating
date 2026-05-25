@@ -104,6 +104,24 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("normalizes accents in professor cache keys", async () => {
+    const cachedRating = {
+      name: "Jose Garcia",
+      rating: 4.7,
+      topComments: ["Accented and unaccented cache keys should match."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Jose Garcia")]: cachedRating,
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Jos\u00e9 Garc\u00eda")).resolves.toMatchObject(cachedRating);
+
+    expect(professorCacheKey("Jos\u00e9 Garc\u00eda")).toBe(professorCacheKey("Jose Garcia"));
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

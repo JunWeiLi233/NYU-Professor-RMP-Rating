@@ -67,7 +67,13 @@ export function createProfessorLookupService({
 }
 
 export function professorCacheKey(name) {
-  return `professor:${String(name).trim().replace(/\s+/g, " ").toLowerCase()}`;
+  return `professor:${foldDiacritics(name).trim().replace(/\s+/g, " ").toLowerCase()}`;
+}
+
+function foldDiacritics(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 async function readStoredRating(storage, key, currentTime) {

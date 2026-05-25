@@ -729,6 +729,28 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("reuses one RMP lookup for accented and unaccented duplicate instructors during the same scan", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Jos\u00e9 Garc\u00eda</div>
+      <div>Instructor: Jose Garcia</div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Accent folded duplicate lookup."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Jos\u00e9 Garc\u00eda");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+  });
+
   it("deduplicates repeated instructor names inside the same Albert instructor cell", async () => {
     document.body.innerHTML = `<div>Instructor(s): Ada Lovelace; Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
