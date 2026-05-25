@@ -4,7 +4,7 @@ const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
 const MIN_SUBSTRING_NAME_LENGTH = 6;
 const DEFAULT_LOOKUP_TIMEOUT_MS = 8000;
 const NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v.", "jr", "jr.", "sr", "sr."]);
-const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments"]);
+const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 
 const PROFESSOR_SEARCH_QUERY = `
   query NewSearchTeachersQuery($query: TeacherSearchQuery!) {

@@ -235,6 +235,7 @@ describe("Albert content DOM injection", () => {
         { text: "N/A.", helpfulRating: 40 },
         "No comments.",
         { text: "---", helpfulRating: 24 },
+        { text: "No comments yet", helpfulRating: 20 },
         { text: "Lectures are clear and the systems projects are fair.", helpfulRating: 12 },
       ],
       url: "https://www.ratemyprofessors.com/professor/123",
@@ -247,6 +248,7 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).not.toContain("N/A.");
     expect(document.body.textContent).not.toContain("No comments.");
     expect(document.body.textContent).not.toContain("---");
+    expect(document.body.textContent).not.toContain("No comments yet");
   });
 
   it("renders only trimmed nonblank cached RMP tags", async () => {

@@ -451,6 +451,12 @@ describe("Rate My Professors client", () => {
                         },
                         {
                           node: {
+                            comment: "No comments yet",
+                            helpfulRating: 20,
+                          },
+                        },
+                        {
+                          node: {
                             comment: "Lectures are clear and the systems projects are fair.",
                             helpfulRating: 12,
                           },
