@@ -459,17 +459,37 @@ function activeDescendantText(element) {
 }
 
 function selectedControlledOptionText(element) {
-  const controlledElementId = element.getAttribute("aria-controls")?.trim()
-    || element.getAttribute("aria-owns")?.trim();
-  if (!controlledElementId) {
-    return "";
+  const controlledElementIds = [
+    element.getAttribute("aria-controls"),
+    element.getAttribute("aria-owns"),
+  ].join(" ").trim().split(/\s+/).filter(Boolean);
+
+  const fallbackTexts = [];
+  for (const controlledElementId of controlledElementIds) {
+    const controlledElement = element.ownerDocument?.getElementById(controlledElementId);
+    const selectedOption = controlledElement?.querySelector?.("[role='option'][aria-selected='true']");
+    const selectedText = selectedOption && isElementVisible(selectedOption)
+      ? visibleTextSegments(selectedOption).join(" ")
+      : "";
+    if (!selectedText || !splitInstructorList(selectedText).some(isLikelyInstructorName)) {
+      continue;
+    }
+    if (isInstructorLabeledControlledElement(controlledElement, controlledElementId)) {
+      return selectedText;
+    }
+    fallbackTexts.push(selectedText);
   }
 
-  const controlledElement = element.ownerDocument?.getElementById(controlledElementId);
-  const selectedOption = controlledElement?.querySelector?.("[role='option'][aria-selected='true']");
-  return selectedOption && isElementVisible(selectedOption)
-    ? visibleTextSegments(selectedOption).join(" ")
-    : "";
+  return fallbackTexts[0] ?? "";
+}
+
+function isInstructorLabeledControlledElement(element, id) {
+  return [
+    id,
+    element?.getAttribute?.("aria-label"),
+    element?.getAttribute?.("title"),
+    element ? ariaLabelledByText(element) : "",
+  ].some((value) => value && /\b(?:instructor|instr)\b/i.test(normalizeLabelText(value)));
 }
 
 function instructorNamesFromHeaderedCell(element) {
