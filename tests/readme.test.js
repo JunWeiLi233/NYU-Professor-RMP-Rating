@@ -7,6 +7,7 @@ describe("README", () => {
 
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
     expect(readme).toContain("npm run verify:chrome-profile");
+    expect(readme).toContain("npm run verify:albert-shape");
     expect(readme).toContain("npm run verify:live");
     expect(readme).toContain("refresh Albert");
     expect(readme).toContain("Show ratings on Albert");
@@ -31,6 +32,7 @@ describe("README", () => {
     expect(readme).toContain("not installed from `dist`");
     expect(readme).toContain("your local repository `dist` folder");
     expect(readme).toContain("A current build should report segmented quick views");
+    expect(readme).toContain("Albert page snapshot");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });
 });

@@ -54,6 +54,12 @@ npm run verify:chrome-profile
 npm run verify:live
 ```
 
+To verify an exported or saved Albert page snapshot is running the current segmented card UI, pass the HTML file to:
+
+```powershell
+npm run verify:albert-shape -- .\albert-snapshot.html
+```
+
 To check a specific Chrome user-data folder, pass it after `dist`:
 
 ```powershell
