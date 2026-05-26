@@ -6,6 +6,8 @@ describe("README", () => {
     const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
+    expect(readme).toContain("npm run verify:local");
+    expect(readme).toContain("builds `dist` first");
     expect(readme).toContain("npm run verify:chrome-profile");
     expect(readme).toContain("npm run verify:albert-smoke");
     expect(readme).toContain("npm run verify:albert-shape");
