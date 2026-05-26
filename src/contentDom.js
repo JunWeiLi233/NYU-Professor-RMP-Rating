@@ -1049,12 +1049,10 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <dt class="nyu-rmp-metric-label">Difficulty</dt>
         <dd class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</dd>
       </div>
-      ${wouldTakeAgain == null ? "" : `
-        <div class="nyu-rmp-metric">
-          <dt class="nyu-rmp-metric-label">Take again</dt>
-          <dd class="nyu-rmp-metric-value">${Math.round(wouldTakeAgain)}% take again</dd>
-        </div>
-      `}
+      <div class="nyu-rmp-metric">
+        <dt class="nyu-rmp-metric-label">Take again</dt>
+        <dd class="nyu-rmp-metric-value">${wouldTakeAgain == null ? "Take again N/A" : `${Math.round(wouldTakeAgain)}% take again`}</dd>
+      </div>
     </dl>
     ${radar}
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}

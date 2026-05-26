@@ -304,6 +304,28 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-comments-panel")).not.toBeNull();
   });
 
+  it("keeps the take-again metric visible when RMP omits take-again data", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metrics = document.querySelector(".nyu-rmp-metrics");
+    expect(metrics.querySelectorAll(".nyu-rmp-metric")).toHaveLength(3);
+    expect(metrics.textContent).toContain("Take again");
+    expect(metrics.textContent).toContain("Take again N/A");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again N/A");
+  });
+
   it("renders rating metrics as semantic description-list pairs", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
