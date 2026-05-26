@@ -231,6 +231,20 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts names from plural abbreviated Albert instructor labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instr(s): YAP, CHEE KENG + Grace B. Hopper
+      Primary Instr(s) Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+
   it("extracts names from professor-labeled Albert rows", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

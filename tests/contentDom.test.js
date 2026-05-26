@@ -7456,6 +7456,30 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Chee Keng Yap abbreviated label comment");
   });
 
+  it("injects one rating card for each plural abbreviated Albert instructor label", async () => {
+    document.body.innerHTML = `
+      <div>
+        <span>Instr(s): YAP, CHEE KENG + Grace B. Hopper</span>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.2,
+      difficulty: 2.6,
+      ratingsCount: 31,
+      topComments: [`${name} plural abbreviated label comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace B. Hopper");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(document.body.textContent).toContain("Chee Keng Yap plural abbreviated label comment");
+    expect(document.body.textContent).toContain("Grace B. Hopper plural abbreviated label comment");
+  });
+
   it("injects ratings when multiline Albert instructor labels omit the colon", async () => {
     document.body.innerHTML = `
       <div>
