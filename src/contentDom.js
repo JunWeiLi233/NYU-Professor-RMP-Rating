@@ -1021,8 +1021,9 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .map(normalizeTagName)
     .filter(Boolean);
   const tags = tagNames
-    .map((tag) => `<span>${escapeHtml(tag)}</span>`)
+    .map((tag) => `<span role="listitem">${escapeHtml(tag)}</span>`)
     .join("");
+  const tagListLabel = `RMP professor tags, ${tagNames.length} shown`;
   const radar = renderRadarChart({
     chartId: card.dataset.nyuRmpCardId,
     rating,
@@ -1065,7 +1066,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       </div>
     </dl>
     ${radar}
-    ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
+    ${tags ? `<div class="nyu-rmp-tags" role="list" aria-label="${escapeHtml(tagListLabel)}">${tags}</div>` : ""}
     ${commentsPanel}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);

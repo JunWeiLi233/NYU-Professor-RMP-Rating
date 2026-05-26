@@ -362,6 +362,28 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-comments-panel")).not.toBeNull();
   });
 
+  it("labels rendered RMP tag chips with the exact tag count", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: ["Clear grading", "Respected"],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const tags = document.querySelector(".nyu-rmp-tags");
+    expect(tags.getAttribute("role")).toBe("list");
+    expect(tags.getAttribute("aria-label")).toBe("RMP professor tags, 2 shown");
+    expect(Array.from(tags.children).map((node) => node.getAttribute("role"))).toEqual(["listitem", "listitem"]);
+  });
+
   it("labels useful comment lists with the exact rendered comment count", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
