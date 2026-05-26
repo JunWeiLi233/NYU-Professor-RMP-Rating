@@ -1013,7 +1013,13 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .filter(Boolean)
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
     .join("");
-  const radar = renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain });
+  const radar = renderRadarChart({
+    chartId: card.dataset.nyuRmpCardId,
+    rating,
+    difficulty,
+    ratingsCount,
+    wouldTakeAgain,
+  });
 
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
@@ -1074,8 +1080,11 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
 
-function renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain }) {
+function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTakeAgain }) {
   const ease = difficulty == null ? null : 5 - difficulty;
+  const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
+  const titleId = `nyu-rmp-radar-title-${safeChartId}`;
+  const descId = `nyu-rmp-radar-desc-${safeChartId}`;
   const axes = [
     { label: "Rating", value: scaleFivePoint(rating) },
     { label: "Ease", value: scaleFivePoint(ease) },
@@ -1091,9 +1100,9 @@ function renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain }) 
 
   return `
     <div class="nyu-rmp-radar-wrap">
-      <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" focusable="false">
-        <title>Professor rating radar</title>
-        <desc>${escapeHtml(capitalizeSentence(radarSummary))}.</desc>
+      <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" aria-labelledby="${titleId}" aria-describedby="${descId}" focusable="false">
+        <title id="${titleId}">Professor rating radar</title>
+        <desc id="${descId}">${escapeHtml(capitalizeSentence(radarSummary))}.</desc>
         <polygon class="nyu-rmp-radar-grid" points="60,12 108,60 60,108 12,60"></polygon>
         <polygon class="nyu-rmp-radar-grid inner" points="60,36 84,60 60,84 36,60"></polygon>
         <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="12"></line>
