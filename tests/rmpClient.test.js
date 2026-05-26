@@ -138,8 +138,56 @@ describe("Rate My Professors client", () => {
     expect(result.topComments.map((comment) => comment.text)).toEqual([
       "The systems explanations are precise and the labs are fair.",
       "Office hours make the projects much easier to reason about.",
+      "Fine lecture, but the review is not very detailed.",
     ]);
-    expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7]);
+    expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7, 1]);
+  });
+
+  it("keeps three useful comments so Albert can still promote course-specific context", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "three-comments",
+                    legacyId: 456,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        { node: { comment: "Generic but very useful overview.", helpfulRating: 31 } },
+                        { node: { comment: "Another broadly useful comment.", helpfulRating: 24 } },
+                        { node: { comment: "CS201-specific workload context.", class: "CSCI-UA 201", helpfulRating: 8 } },
+                        { node: { comment: "Less useful extra comment.", helpfulRating: 2 } },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments.map((comment) => comment.text)).toEqual([
+      "Generic but very useful overview.",
+      "Another broadly useful comment.",
+      "CS201-specific workload context.",
+    ]);
+    expect(result.topComments[2].course).toBe("CSCI-UA 201");
   });
 
   it("decodes HTML entities in useful comments before returning them to Albert", async () => {
@@ -597,6 +645,7 @@ describe("Rate My Professors client", () => {
     expect(result.topComments.map((comment) => comment.text)).toEqual([
       "Most useful systems comment.",
       "Second most useful systems comment.",
+      "Malformed helpfulness should not win sorting.",
     ]);
   });
 

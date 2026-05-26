@@ -134,7 +134,7 @@ function toProfessorRating(teacher, requestedName) {
       };
     })
     .filter(Boolean)
-    .slice(0, 2) ?? [];
+    .slice(0, 3) ?? [];
 
   return {
     id: teacher.id,
