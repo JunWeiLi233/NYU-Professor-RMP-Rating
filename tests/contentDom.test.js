@@ -1007,7 +1007,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1052,7 +1052,7 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-course-context").textContent.replace(/\s+/g, " ").trim()).toBe("Albert CSCI-UA 201");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1096,7 +1096,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCIUA201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1140,7 +1140,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI UA 201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1184,7 +1184,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI-UA-201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1228,7 +1228,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CS 201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1272,7 +1272,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI 201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1316,7 +1316,7 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+      "1 useful comment shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1419,7 +1419,7 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-comments-expand").textContent).toBe("Show 2 more comments");
     expect(document.querySelector(".nyu-rmp-comments-panel").getAttribute("aria-label")).toContain("3 of 5 useful comments shown");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "3 useful comments shown, 1 matches Albert course CSCI-UA 201",
+      "3 useful comments shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1570,10 +1570,10 @@ describe("Albert content DOM injection", () => {
 
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("4 CSCI-UA 201 matches");
     expect(document.querySelector(".nyu-rmp-comments-panel").getAttribute("aria-label")).toContain(
-      "4 match Albert course CSCI-UA 201",
+      "4 useful comments match Albert course CSCI-UA 201",
     );
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "3 useful comments shown, 4 match Albert course CSCI-UA 201",
+      "3 useful comments shown, 4 useful comments match Albert course CSCI-UA 201",
     );
     expect(document.querySelector(".nyu-rmp-comment.is-hidden .nyu-rmp-comment-meta").textContent).toContain(
       "Course CSCI-UA 201 (Albert match)",
@@ -1622,7 +1622,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
-      "2 useful comments shown, 1 matches Albert course CSCI-UA 201",
+      "2 useful comments shown, 1 useful comment matches Albert course CSCI-UA 201",
     );
   });
 
@@ -1670,7 +1670,7 @@ describe("Albert content DOM injection", () => {
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (2)");
     expect(panel.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
-    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 2 shown, 1 matches Albert course CSCI-UA 201");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 2 shown, 1 useful comment matches Albert course CSCI-UA 201");
   });
 
   it("labels the useful comments panel as most useful RMP comments", async () => {

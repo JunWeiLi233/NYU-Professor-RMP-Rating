@@ -1992,8 +1992,8 @@ function formatUsefulCommentSummary(commentCount, courseMatchedCommentCount = 0,
 
 function formatCourseMatchSummary(courseMatchedCommentCount, courseCode) {
   return courseMatchedCommentCount === 1
-    ? `1 matches Albert course ${courseCode}`
-    : `${courseMatchedCommentCount} match Albert course ${courseCode}`;
+    ? `1 useful comment matches Albert course ${courseCode}`
+    : `${courseMatchedCommentCount} useful comments match Albert course ${courseCode}`;
 }
 
 function formatRatingsCount(value) {
