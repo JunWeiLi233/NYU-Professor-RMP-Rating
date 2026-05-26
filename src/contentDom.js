@@ -1101,7 +1101,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     commentSignal,
     recommendationClassName: recommendation.className,
   });
-  const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain, commentSignal });
+  const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain, commentSignal, courseCode, courseMatchedCommentCount });
   const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
@@ -1366,13 +1366,13 @@ function getPickRecommendation(radarFit) {
   };
 }
 
-function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain, commentSignal = null }) {
+function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain, commentSignal = null, courseCode = "", courseMatchedCommentCount = 0 }) {
   const chips = [
     ratingEvidenceLabel(rating),
     difficultyEvidenceLabel(difficulty),
     takeAgainEvidenceLabel(wouldTakeAgain),
     ratingsCountEvidenceLabel(ratingsCount),
-    commentSignalEvidenceLabel(commentSignal),
+    commentSignalEvidenceLabel(commentSignal, { courseCode, courseMatchedCommentCount }),
   ].filter(Boolean);
 
   return `
@@ -1382,11 +1382,15 @@ function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldT
   `;
 }
 
-function commentSignalEvidenceLabel(commentSignal) {
+function commentSignalEvidenceLabel(commentSignal, { courseCode = "", courseMatchedCommentCount = 0 } = {}) {
   if (commentSignal == null) {
     return null;
   }
   const score = Math.round(commentSignal * 100);
+  const hasCourseRiskContext = score <= 40 && courseCode && courseMatchedCommentCount > 0;
+  if (hasCourseRiskContext) {
+    return `${courseCode} comment risk ${score}/100`;
+  }
   if (score >= 70) {
     return `Positive comment signal ${score}/100`;
   }
