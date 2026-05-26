@@ -148,6 +148,80 @@ describe("extension popup controller", () => {
     );
   });
 
+  it("copies only privacy-safe diagnostics from the popup", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <button id="copy-diagnostics"></button>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const writeText = vi.fn(async () => {});
+    const originalNavigator = globalThis.navigator;
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { clipboard: { writeText } },
+    });
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.2",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        quickGridCount: 4,
+        radarCount: 3,
+        processedCellCount: 4,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+    document.getElementById("copy-diagnostics").click();
+    await flushPromises();
+
+    expect(writeText).toHaveBeenCalledWith([
+      "NYU Albert RMP Ratings diagnostics",
+      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells",
+      "Page status: Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK",
+    ].join("\n"));
+    expect(writeText.mock.calls[0][0]).not.toContain("nyu.edu");
+    expect(writeText.mock.calls[0][0]).not.toContain("sis.portal.nyu.edu");
+    expect(document.getElementById("status").textContent).toBe("Diagnostics copied");
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: originalNavigator,
+    });
+  });
+
+  it("reports when diagnostic clipboard copy is unavailable", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <button id="copy-diagnostics"></button>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const originalNavigator = globalThis.navigator;
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: {},
+    });
+
+    await initPopup({ document, storage: createStorageMock() });
+    document.getElementById("copy-diagnostics").click();
+    await flushPromises();
+
+    expect(document.getElementById("status").textContent).toBe("Diagnostics copy failed: clipboard unavailable");
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: originalNavigator,
+    });
+  });
+
   it("reports when the active Albert page is connected to the content script", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

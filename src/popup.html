@@ -192,6 +192,24 @@
         cursor: default;
         opacity: 0.38;
       }
+      .button-row {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 1fr 1fr;
+        margin-top: 12px;
+      }
+      .button-row button {
+        margin-top: 0;
+      }
+      .secondary-button {
+        background: #f4f1f8;
+        border: 1px solid #ded6ea;
+        color: var(--nv-dark);
+      }
+      .secondary-button:hover:not(:disabled) {
+        background: #ece5f5;
+        box-shadow: 0 4px 12px rgba(87,6,140,0.12);
+      }
       .toggle-row {
         align-items: center;
         display: flex;
@@ -306,7 +324,10 @@
           <li>Course-aware matching for Albert surname rows</li>
           <li>Course comment risk/support highlighting</li>
         </ul>
-        <button id="clear-cache" type="button">Clear cached ratings</button>
+        <div class="button-row">
+          <button id="copy-diagnostics" class="secondary-button" type="button">Copy diagnostics</button>
+          <button id="clear-cache" type="button">Clear cache</button>
+        </div>
       </section>
     </main>
   </body>

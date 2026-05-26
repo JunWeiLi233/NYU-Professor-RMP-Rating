@@ -64,6 +64,15 @@ describe("extension popup markup", () => {
     expect(popup).toContain('aria-label="Privacy-safe Albert diagnostic summary"');
   });
 
+  it("renders a compact copy diagnostics control beside cache clearing", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('class="button-row"');
+    expect(popup).toContain('id="copy-diagnostics"');
+    expect(popup).toContain("Copy diagnostics");
+    expect(popup).toContain("Clear cache");
+  });
+
   it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
     const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
 

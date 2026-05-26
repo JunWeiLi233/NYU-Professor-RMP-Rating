@@ -12,6 +12,7 @@ export async function initPopup({
   const buildVersion = document.getElementById("build-version");
   const diagnosticSummary = document.getElementById("diagnostic-summary");
   const clearButton = document.getElementById("clear-cache");
+  const copyDiagnosticsButton = document.getElementById("copy-diagnostics");
   const enableOverlay = document.getElementById("enable-overlay");
   if (!status || !storage) {
     return;
@@ -111,6 +112,26 @@ export async function initPopup({
         clearButton.disabled = false;
       } finally {
         clearButton.setAttribute("aria-busy", "false");
+      }
+    });
+  }
+
+  if (copyDiagnosticsButton) {
+    copyDiagnosticsButton.addEventListener("click", async () => {
+      copyDiagnosticsButton.disabled = true;
+      copyDiagnosticsButton.setAttribute("aria-busy", "true");
+      try {
+        const diagnosticText = formatDiagnosticsClipboardText({
+          diagnosticSummary,
+          pageStatus,
+        });
+        await writeClipboardText(diagnosticText, { navigator: globalThis.navigator });
+        status.textContent = "Diagnostics copied";
+      } catch (error) {
+        status.textContent = `Diagnostics copy failed: ${error.message}`;
+      } finally {
+        copyDiagnosticsButton.disabled = false;
+        copyDiagnosticsButton.setAttribute("aria-busy", "false");
       }
     });
   }
@@ -405,4 +426,19 @@ function formatDiagnosticSummary(response = null) {
   const quickGridCount = nonNegativeInteger(response.quickGridCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
   return `Build v${EXTENSION_VERSION} | Albert ${version} | ${cardCount} cards | ${quickGridCount} quick views | ${processedCellCount} cells`;
+}
+
+function formatDiagnosticsClipboardText({ diagnosticSummary, pageStatus }) {
+  return [
+    "NYU Albert RMP Ratings diagnostics",
+    String(diagnosticSummary?.textContent ?? formatDiagnosticSummary()).trim(),
+    `Page status: ${String(pageStatus?.textContent ?? "unavailable").trim()}`,
+  ].join("\n");
+}
+
+async function writeClipboardText(text, { navigator = globalThis.navigator } = {}) {
+  if (!navigator?.clipboard?.writeText) {
+    throw new Error("clipboard unavailable");
+  }
+  await navigator.clipboard.writeText(text);
 }
