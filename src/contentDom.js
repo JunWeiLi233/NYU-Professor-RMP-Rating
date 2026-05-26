@@ -1191,7 +1191,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
   const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
   const ratingsVolumeLabel = normalizedRatingsCount == null ? "N/A" : normalizedRatingsCount;
   const commentSignalLabel = commentSignal == null ? "" : `, comment signal ${Math.round(commentSignal * 100)} out of 100`;
-  const commentLegendLabel = commentSignal == null ? "" : radarLegendItem(`Comments ${Math.round(commentSignal * 100)}/100`, scalePercent(commentSignal), true);
+  const commentLegendLabel = commentSignal == null ? "" : radarLegendItem(`Comments ${Math.round(commentSignal * 100)}/100`, clamp01(commentSignal), true);
   const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
@@ -1581,13 +1581,23 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /(?<!not\s)(?<!not very\s)\bexcellent\b/,
     /(?<!not\s)(?<!not very\s)\bgreat\b/,
     /(?<!not\s)(?<!not very\s)\bmanageable\b/,
+    /\bnot\s+hard\b/,
+    /\bnot\s+very\s+hard\b/,
+    /\bnot\s+tough\b/,
+    /\bnot\s+very\s+tough\b/,
+    /\bnot\s+confusing\b/,
+    /\bnot\s+very\s+confusing\b/,
+    /\bnot\s+demanding\b/,
+    /\bnot\s+very\s+demanding\b/,
+    /\bnot\s+overwhelming\b/,
+    /\bnot\s+very\s+overwhelming\b/,
   ];
   const riskSignals = [
-    /\bhard\b/,
-    /\btough\b/,
+    /(?<!not\s)(?<!not very\s)\bhard\b/,
+    /(?<!not\s)(?<!not very\s)\btough\b/,
     /\bavoid\b/,
-    /\bconfusing\b/,
-    /\bdemanding\b/,
+    /(?<!not\s)(?<!not very\s)\bconfusing\b/,
+    /(?<!not\s)(?<!not very\s)\bdemanding\b/,
     /\bdisorganized\b/,
     /\bnot\s+clear\b/,
     /\bnot\s+very\s+clear\b/,
@@ -1605,7 +1615,7 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bunfair\b/,
     /\bfast\b/,
     /\bheavy\b/,
-    /\boverwhelming\b/,
+    /(?<!not\s)(?<!not very\s)\boverwhelming\b/,
     /\bworkload\b/,
   ];
   const positives = countSignalMatches(sources, positiveSignals);
