@@ -996,6 +996,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
 
   const rating = rmpScaleNumberOrNull(result.rating);
   const difficulty = rmpScaleNumberOrNull(result.difficulty);
+  const ease = difficulty == null ? null : 5 - difficulty;
   const wouldTakeAgain = percentNumberOrNull(result.wouldTakeAgain);
   const ratingVerdict = getRatingVerdict(rating);
   const ratingClass = ratingVerdict.className;
@@ -1048,6 +1049,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <div class="nyu-rmp-metric">
         <dt class="nyu-rmp-metric-label">Difficulty</dt>
         <dd class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</dd>
+        <dd class="nyu-rmp-metric-secondary">Ease ${formatScore(ease)}/5</dd>
       </div>
       <div class="nyu-rmp-metric">
         <dt class="nyu-rmp-metric-label">Take again</dt>
@@ -1365,6 +1367,13 @@ export function injectStyles(document = globalThis.document) {
 	      font-size: 11px;
 	      font-weight: 650;
 	      line-height: 1.25;
+	    }
+	    .nyu-rmp-metric-secondary {
+	      color: #64748b;
+	      font-size: 10.5px;
+	      font-weight: 600;
+	      line-height: 1.2;
+	      margin: 0;
 	    }
 	    .nyu-rmp-radar-wrap {
 	      align-items: center;

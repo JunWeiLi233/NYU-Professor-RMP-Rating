@@ -326,6 +326,29 @@ describe("Albert content DOM injection", () => {
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again N/A");
   });
 
+  it("shows the professor ease value beside difficulty in the visible metrics", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const difficultyMetric = Array.from(document.querySelectorAll(".nyu-rmp-metric"))
+      .find((metric) => metric.querySelector(".nyu-rmp-metric-label")?.textContent === "Difficulty");
+
+    expect(difficultyMetric.textContent).toContain("Difficulty 2.4");
+    expect(difficultyMetric.textContent).toContain("Ease 2.6/5");
+  });
+
   it("renders rating metrics as semantic description-list pairs", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
