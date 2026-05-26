@@ -354,7 +354,11 @@ function hasInstructorText(text) {
 }
 
 function isUnprocessedVisibleCandidate(element) {
-  return element.dataset.nyuRmpProcessed !== "true" && !element.closest(`.${ROOT_CLASS}`) && isElementVisible(element);
+  return element.dataset.nyuRmpProcessed !== "true"
+    && !element.closest("[data-nyu-rmp-processed='true']")
+    && !element.querySelector?.("[data-nyu-rmp-processed='true']")
+    && !element.closest(`.${ROOT_CLASS}`)
+    && isElementVisible(element);
 }
 
 function isElementVisible(element) {

@@ -9437,6 +9437,24 @@ describe("Albert content DOM injection", () => {
     expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
   });
 
+  it("does not rescan wrapped original content inside processed Albert gridcells", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor">Instructor: Ada Lovelace</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const instructorCell = document.getElementById("grid-instructor");
+    expect(instructorCell.querySelector(".nyu-rmp-albert-original").textContent.trim()).toBe("Instructor: Ada Lovelace");
+    expect(instructorCell.querySelectorAll(".nyu-rmp-rating-root")).toHaveLength(1);
+    expect(instructorCell.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+  });
+
   it("removes original-content wrappers when the overlay is disabled", async () => {
     document.body.innerHTML = `
       <div role="row">
