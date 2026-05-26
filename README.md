@@ -114,7 +114,8 @@ Run `npm run verify:local` first; if that passes, the package and local trailing
 8. Run `npm run verify:live`.
 9. Refresh Albert after both verifiers pass.
 10. Open the extension popup on Albert and confirm it reports segmented quick views and trailing rating columns.
-11. If Albert still shows old squeezed cards, save an Albert page snapshot and run `npm run verify:albert-shape -- .\albert-snapshot.html`.
-12. Do not click enrollment, cart, or class-selection controls while testing the overlay.
+11. If browser automation shows the content script loaded on Albert Login but reports zero cards, finish signing in and open the shopping-cart or class grid before checking the overlay.
+12. If Albert still shows old squeezed cards, save an Albert page snapshot and run `npm run verify:albert-shape -- .\albert-snapshot.html`.
+13. Do not click enrollment, cart, or class-selection controls while testing the overlay.
 
 If the popup says `old squeezed card layout detected`, Chrome is still showing stale injected cards on Albert. Reload the unpacked extension from this repository's `dist` folder, refresh Albert, and open the popup again. A current build should report segmented quick views and trailing rating columns instead of the stale-layout warning.

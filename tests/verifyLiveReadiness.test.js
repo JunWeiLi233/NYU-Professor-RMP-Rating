@@ -79,6 +79,11 @@ describe("live Albert readiness verifier", () => {
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
+    })).rejects.toThrow("content script loaded on Albert Login");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
     })).rejects.toThrow("confirm it reports segmented quick views");
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,

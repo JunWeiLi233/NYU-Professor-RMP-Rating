@@ -33,6 +33,7 @@ export async function verifyLiveReadiness({
       `Expected extension folder: ${expectedPath}`,
       ...(expectedAccountName ? [`Expected Chrome account: ${redactAccountName(expectedAccountName)}`] : []),
       ...(userDataDir ? [`Scanned Chrome user-data folder: ${redactPath(resolve(userDataDir))}`] : []),
+      "If browser automation shows the content script loaded on Albert Login, finish signing in and open the shopping-cart or class grid before checking cards.",
       "Then refresh Albert, open the extension popup on Albert, and confirm it reports segmented quick views and trailing rating columns.",
       "If Albert still shows the old squeezed card layout, save an Albert page snapshot and run: npm run verify:albert-shape -- .\\albert-snapshot.html",
       "Do not click enrollment, cart, or class-selection controls during live verification.",
