@@ -158,11 +158,20 @@ export function startAlbertRmpEnhancer({
   scanAlbertPageOnce({ document, lookupProfessor });
 
   let observer;
+  let scanTimer = null;
   const scheduleScan = () => {
-    window.clearTimeout(observer.scanTimer);
-    observer.scanTimer = window.setTimeout(() => {
+    if (scanTimer !== null) {
+      return;
+    }
+    const runScan = () => {
+      scanTimer = null;
       scanAlbertPageOnce({ document, lookupProfessor });
-    }, 300);
+    };
+    if (typeof window.requestAnimationFrame === "function") {
+      scanTimer = window.requestAnimationFrame(runScan);
+    } else {
+      scanTimer = window.setTimeout(runScan, 0);
+    }
   };
 
   observer = new window.MutationObserver(scheduleScan);
@@ -172,7 +181,14 @@ export function startAlbertRmpEnhancer({
   document.addEventListener("change", scheduleScan, true);
   const disconnectObserver = observer.disconnect?.bind(observer) ?? (() => {});
   observer.disconnect = () => {
-    window.clearTimeout(observer.scanTimer);
+    if (scanTimer !== null) {
+      if (typeof window.cancelAnimationFrame === "function") {
+        window.cancelAnimationFrame(scanTimer);
+      } else {
+        window.clearTimeout(scanTimer);
+      }
+      scanTimer = null;
+    }
     document.removeEventListener("input", scheduleScan, true);
     document.removeEventListener("change", scheduleScan, true);
     disconnectObserver();
@@ -210,7 +226,10 @@ function safeFrameLocation(window) {
 function isAlbertPage(location) {
   const hostname = String(location?.hostname ?? "").toLowerCase();
   const pathname = String(location?.pathname ?? "").toLowerCase();
-  return hostname === "albert.nyu.edu" || hostname.startsWith("albert.") || pathname.includes("albert");
+  return hostname === "albert.nyu.edu"
+    || hostname === "sis.nyu.edu"
+    || hostname.startsWith("albert.")
+    || pathname.includes("albert");
 }
 
 export function scanAlbertPageOnce({ document = globalThis.document, lookupProfessor }) {
@@ -1060,9 +1079,18 @@ export function injectStyles(document = globalThis.document) {
   style.textContent = `
 	    .${ROOT_CLASS} {
 	      display: grid;
-	      gap: 8px;
-	      margin: 8px 0 14px;
+	      gap: 6px;
+	      margin: 6px 0 8px;
 	      font-family: Aptos, "Segoe UI", sans-serif;
+	    }
+	    td > .nyu-rmp-rating-root,
+	    th > .nyu-rmp-rating-root,
+	    [role="cell"] > .nyu-rmp-rating-root,
+	    [role="gridcell"] > .nyu-rmp-rating-root,
+	    .ps_box-scrollarea .nyu-rmp-rating-root,
+	    [class*="ps_box-scrollarea"] .nyu-rmp-rating-root {
+	      gap: 4px;
+	      margin: 2px 0 4px;
 	    }
 	    .nyu-rmp-card {
 	      border: 1px solid #e4dff0;
@@ -1073,6 +1101,15 @@ export function injectStyles(document = globalThis.document) {
 	      padding: 11px 13px;
 	      box-shadow: 0 1px 3px rgba(26,5,48,0.04), 0 6px 18px rgba(26,5,48,0.06);
 	      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+	    }
+	    td .nyu-rmp-card,
+	    th .nyu-rmp-card,
+	    [role="cell"] .nyu-rmp-card,
+	    [role="gridcell"] .nyu-rmp-card,
+	    .ps_box-scrollarea .nyu-rmp-card,
+	    [class*="ps_box-scrollarea"] .nyu-rmp-card {
+	      padding: 8px 10px;
+	      border-radius: 7px;
 	    }
 	    .nyu-rmp-card:hover {
 	      border-color: #d0c8de;
