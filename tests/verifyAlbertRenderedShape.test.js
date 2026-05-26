@@ -4,7 +4,7 @@ import { verifyAlbertRenderedShape } from "../scripts/verify-albert-rendered-sha
 describe("Albert rendered shape verifier", () => {
   it("passes when Albert renders the current segmented quick view for every RMP card", () => {
     expect(verifyAlbertRenderedShape(`
-      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.1">
+      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.2">
         <body>
           <div data-nyu-rmp-processed="true">
             <div class="nyu-rmp-card">
@@ -19,7 +19,7 @@ describe("Albert rendered shape verifier", () => {
     `)).toMatchObject({
       ok: true,
       contentScript: "loaded",
-      contentVersion: "0.1.1",
+      contentVersion: "0.1.2",
       cardCount: 1,
       quickGridCount: 1,
       processedCellCount: 1,
@@ -56,7 +56,7 @@ describe("Albert rendered shape verifier", () => {
         cardCount: 1,
         quickGridCount: 0,
         failures: [
-          "content script version missing does not match expected 0.1.1",
+          "content script version missing does not match expected 0.1.2",
           "1 rendered RMP card still lacks segmented quick views",
         ],
       });

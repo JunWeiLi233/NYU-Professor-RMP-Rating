@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.1");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.1");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.1\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.2");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.2");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.2\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -4702,8 +4702,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.1");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.1");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.2");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.2");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -9563,7 +9563,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.1");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.2");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -9655,7 +9655,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.1"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.2"></div>
         </div>
       </div>
     `;
@@ -9707,7 +9707,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.1"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.2"></div>
       </div>
     `;
 

@@ -85,7 +85,7 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage });
 
-    expect(document.getElementById("build-version").textContent).toBe("Build v0.1.1");
+    expect(document.getElementById("build-version").textContent).toBe("Build v0.1.2");
   });
 
   it("reports when the active Albert page is connected to the content script", async () => {
@@ -100,7 +100,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -114,7 +114,7 @@ describe("extension popup controller", () => {
 
     expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
@@ -130,7 +130,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -143,7 +143,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.1; old squeezed card layout detected. Reload the extension, then refresh Albert. 4 rating roots, 4 cards, 0 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK",
+      "Albert connected v0.1.2; old squeezed card layout detected. Reload the extension, then refresh Albert. 4 rating roots, 4 cards, 0 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
@@ -161,7 +161,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -172,7 +172,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -194,7 +194,7 @@ describe("extension popup controller", () => {
       files: ["content.js"],
     });
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.1: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK, 4 stale card layouts migrated",
+      "Albert connected v0.1.2: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK, 4 stale card layouts migrated",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
@@ -211,7 +211,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -225,7 +225,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK, 2 stale card layouts migrated",
+      "Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK, 2 stale card layouts migrated",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
@@ -255,7 +255,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 2 segmented quick views, 1 radar map, 2 Albert cells checked, layout OK",
+      "Albert connected v0.1.0; popup v0.1.2. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 2 segmented quick views, 1 radar map, 2 Albert cells checked, layout OK",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
@@ -284,7 +284,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -302,7 +302,7 @@ describe("extension popup controller", () => {
 
     expect(scripting.executeScript).toHaveBeenCalledTimes(1);
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.1: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK",
+      "Albert connected v0.1.2: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
@@ -319,7 +319,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -333,7 +333,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_REPAIR_LAYOUT" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning");
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
@@ -350,7 +350,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -368,7 +368,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -385,7 +385,7 @@ describe("extension popup controller", () => {
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(1, 12, { type: "NYU_RMP_CONTENT_STATUS" });
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(2, 12, { type: "NYU_RMP_REPAIR_LAYOUT" });
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(3, 12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning repaired");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning repaired");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
@@ -401,7 +401,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -417,7 +417,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(tabs.sendMessage).toHaveBeenCalledTimes(1);
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK; last repair 4 cells");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK; last repair 4 cells");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
@@ -433,7 +433,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
-        version: "0.1.1",
+        version: "0.1.2",
         overlayState: "enabled",
         ratingRootCount: 4,
         cardCount: 4,
@@ -449,7 +449,7 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage: createStorageMock(), tabs });
 
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning remains after repair");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 1 layout warning remains after repair");
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
@@ -467,7 +467,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
-          version: "0.1.1",
+          version: "0.1.2",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -488,7 +488,7 @@ describe("extension popup controller", () => {
       files: ["content.js"],
     });
     expect(tabs.sendMessage).toHaveBeenCalledTimes(2);
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 

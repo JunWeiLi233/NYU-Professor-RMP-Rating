@@ -49,7 +49,7 @@ describe("content script controller", () => {
     expect(sendResponse).toHaveBeenCalledWith({
       ok: true,
       contentScript: "loaded",
-      version: "0.1.1",
+      version: "0.1.2",
       overlayState: "enabled",
       ratingRootCount: 3,
       cardCount: 2,
