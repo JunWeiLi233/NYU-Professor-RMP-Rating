@@ -2217,9 +2217,10 @@ function formatComment(comment, textId, albertCourseCode = "", { hidden = false 
 
   const preview = truncateComment(normalized.text);
   const isTruncated = preview !== normalized.text;
-  const isCourseMatch = normalized.course && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
+  const isCourseMatch = commentMatchesCourse(normalized, albertCourseCode);
   const metadata = [
     normalized.course ? `Course ${normalized.course}${isCourseMatch ? " (Albert match)" : ""}` : "",
+    !normalized.course && isCourseMatch ? "Albert course match" : "",
     normalized.helpfulRating == null ? "" : `${normalized.helpfulRating} useful`,
     normalized.clarityRating == null ? "" : `Clarity ${formatScore(normalized.clarityRating)}`,
     normalized.difficultyRating == null ? "" : `Difficulty ${formatScore(normalized.difficultyRating)}`,
@@ -2256,7 +2257,13 @@ function countCourseMatchedComments(comments, albertCourseCode = "") {
 
 function commentMatchesCourse(comment, albertCourseCode = "") {
   const normalized = normalizeComment(comment);
-  return Boolean(normalized.course) && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
+  const normalizedAlbertCourseCode = normalizeCourseCode(albertCourseCode);
+  if (!normalizedAlbertCourseCode) {
+    return false;
+  }
+  return [normalized.course, normalized.text]
+    .filter(Boolean)
+    .some((value) => normalizeCourseCode(value) === normalizedAlbertCourseCode);
 }
 
 function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", totalUsefulCommentCount, visibleCommentCount, listId = "nyu-rmp-comments" } = {}) {
