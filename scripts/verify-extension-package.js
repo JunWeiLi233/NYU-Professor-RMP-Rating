@@ -22,6 +22,9 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (!manifest.permissions?.includes("activeTab")) {
     throw new Error("activeTab permission is required");
   }
+  if (!manifest.permissions?.includes("scripting")) {
+    throw new Error("scripting permission is required");
+  }
   const albertContentScript = manifest.content_scripts?.find((contentScript) =>
     contentScript.matches?.includes("https://albert.nyu.edu/*")
   );

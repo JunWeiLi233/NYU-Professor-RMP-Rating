@@ -53,6 +53,16 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the manifest omits scripting permission for popup Albert wake-up", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: { permissions: ["storage", "activeTab"] },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("scripting permission is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when the content script uses a broad NYU match instead of explicit Albert surfaces", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {
@@ -212,7 +222,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
       },
     ],
     host_permissions: ["https://www.ratemyprofessors.com/*"],
-    permissions: ["storage", "activeTab"],
+    permissions: ["storage", "activeTab", "scripting"],
     ...manifestOverrides,
   };
 

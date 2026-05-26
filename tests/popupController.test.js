@@ -100,6 +100,65 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
+  it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendResults: [
+        new Error("Receiving end does not exist"),
+        {
+          ok: true,
+          contentScript: "loaded",
+          overlayState: "enabled",
+          cardCount: 4,
+          radarCount: 3,
+        },
+      ],
+    });
+    const scripting = {
+      executeScript: vi.fn(async () => []),
+    };
+
+    await initPopup({ document, storage: createStorageMock(), tabs, scripting });
+
+    expect(scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId: 12, allFrames: true },
+      files: ["content.js"],
+    });
+    expect(tabs.sendMessage).toHaveBeenCalledTimes(2);
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 cards, 3 radar maps");
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+  });
+
+  it("reports a warning when the active Albert wake-up injection fails", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendError: new Error("Receiving end does not exist"),
+    });
+    const scripting = {
+      executeScript: vi.fn(async () => {
+        throw new Error("Cannot access tab");
+      }),
+    };
+
+    await initPopup({ document, storage: createStorageMock(), tabs, scripting });
+
+    expect(scripting.executeScript).toHaveBeenCalledTimes(1);
+    expect(document.getElementById("page-status").textContent).toBe("Albert not connected. Reload the extension, then refresh Albert.");
+    expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
   it("prompts a refresh when the active Albert page is not connected", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
@@ -376,10 +435,18 @@ function createRuntimeMock() {
   };
 }
 
-function createTabsMock({ activeTab = null, contentStatus = null, sendError = null } = {}) {
+function createTabsMock({ activeTab = null, contentStatus = null, sendError = null, sendResults = null } = {}) {
+  const queuedResults = [...(sendResults ?? [])];
   return {
     query: vi.fn(async () => (activeTab ? [activeTab] : [])),
     sendMessage: vi.fn(async () => {
+      if (queuedResults.length > 0) {
+        const next = queuedResults.shift();
+        if (next instanceof Error) {
+          throw next;
+        }
+        return next;
+      }
       if (sendError) {
         throw sendError;
       }

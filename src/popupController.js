@@ -3,6 +3,7 @@ export async function initPopup({
   storage = globalThis.chrome?.storage?.local,
   runtime = globalThis.chrome?.runtime,
   tabs = globalThis.chrome?.tabs,
+  scripting = globalThis.chrome?.scripting,
 } = {}) {
   const status = document.getElementById("status");
   const pageStatus = document.getElementById("page-status");
@@ -107,7 +108,7 @@ export async function initPopup({
   }
 
   await refreshStatus();
-  await refreshAlbertPageStatus({ pageStatus, tabs });
+  await refreshAlbertPageStatus({ pageStatus, tabs, scripting });
 }
 
 async function getProfessorCacheKeys(storage) {
@@ -138,7 +139,7 @@ function nonNegativeInteger(value) {
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
 }
 
-async function refreshAlbertPageStatus({ pageStatus, tabs }) {
+async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
   if (!pageStatus) {
     return;
   }
@@ -154,16 +155,45 @@ async function refreshAlbertPageStatus({ pageStatus, tabs }) {
       return;
     }
 
-    const response = await tabs.sendMessage(activeTab.id, { type: "NYU_RMP_CONTENT_STATUS" });
-    if (!response?.ok || response.contentScript !== "loaded") {
+    const response = await pingAlbertContentScript(tabs, activeTab.id);
+    if (isLoadedContentResponse(response)) {
+      setPageStatus(pageStatus, formatAlbertConnectedStatus(response), "connected");
+      return;
+    }
+
+    const wakeResponse = await wakeAlbertContentScript({ tabs, scripting, tabId: activeTab.id });
+    if (!isLoadedContentResponse(wakeResponse)) {
       setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
       return;
     }
 
-    setPageStatus(pageStatus, formatAlbertConnectedStatus(response), "connected");
+    setPageStatus(pageStatus, formatAlbertConnectedStatus(wakeResponse), "connected");
   } catch {
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
   }
+}
+
+async function pingAlbertContentScript(tabs, tabId) {
+  try {
+    return await tabs.sendMessage(tabId, { type: "NYU_RMP_CONTENT_STATUS" });
+  } catch {
+    return null;
+  }
+}
+
+async function wakeAlbertContentScript({ tabs, scripting, tabId }) {
+  if (!scripting?.executeScript) {
+    return null;
+  }
+  await scripting.executeScript({
+    target: { tabId, allFrames: true },
+    files: ["content.js"],
+  });
+  return pingAlbertContentScript(tabs, tabId);
+}
+
+function isLoadedContentResponse(response) {
+  return response?.ok && response.contentScript === "loaded";
 }
 
 function setPageStatus(pageStatus, message, state) {
