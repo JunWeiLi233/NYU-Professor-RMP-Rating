@@ -484,6 +484,30 @@ describe("Albert content DOM injection", () => {
     expect(radar.querySelector("desc")?.textContent).toContain("Professor fit 82 out of 100.");
   });
 
+  it("counts present zero-value radar metrics against the professor fit score", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 0,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
+    const radar = document.querySelector(".nyu-rmp-radar");
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 66 out of 100");
+    expect(fit.textContent).toContain("Fit 66");
+    expect(radar.getAttribute("aria-label")).toContain("professor fit 66 out of 100");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again 0%");
+  });
+
   it("describes radar charts with native SVG title and description", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

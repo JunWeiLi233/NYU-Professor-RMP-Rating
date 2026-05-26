@@ -1093,10 +1093,10 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
   const axes = [
-    { label: "Rating", value: scaleFivePoint(rating) },
-    { label: "Ease", value: scaleFivePoint(ease) },
-    { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount) },
-    { label: "Again", value: scalePercent(wouldTakeAgain) },
+    { label: "Rating", value: scaleFivePoint(rating), available: rating != null },
+    { label: "Ease", value: scaleFivePoint(ease), available: ease != null },
+    { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount), available: normalizedRatingsCount != null },
+    { label: "Again", value: scalePercent(wouldTakeAgain), available: wouldTakeAgain != null },
   ];
   const fitScore = radarFitScore(axes);
   const fitSummary = `professor fit ${fitScore} out of 100`;
@@ -1143,7 +1143,7 @@ function radarFitScore(axes) {
     Again: 0.2,
   };
   const weighted = axes.reduce((total, axis) => total + axis.value * (weights[axis.label] ?? 0), 0);
-  const availableWeight = axes.reduce((total, axis) => total + (axis.value > 0 ? weights[axis.label] ?? 0 : 0), 0);
+  const availableWeight = axes.reduce((total, axis) => total + (axis.available ? weights[axis.label] ?? 0 : 0), 0);
   return Math.round((weighted / (availableWeight || 1)) * 100);
 }
 
