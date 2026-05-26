@@ -31,6 +31,7 @@ export async function initContentScript({
 } = {}) {
   markContentScriptLoaded(document);
   const settings = await readOverlaySettings(chrome);
+  const staleLayoutMigration = migrateStaleCardLayout(document, removeAlbertRmpEnhancements);
   let observer = null;
   if (settings["settings:overlayEnabled"] !== false) {
     markOverlayState(document, "enabled");
@@ -55,7 +56,7 @@ export async function initContentScript({
       markOverlayState(document, "disabled");
       observer?.disconnect?.();
       observer = null;
-      removeAlbertRmpEnhancements();
+      removeAlbertRmpEnhancements(document);
     }
   });
   chrome.runtime?.onMessage?.addListener((message, sender, sendResponse) => {
@@ -105,10 +106,27 @@ function contentStatusResponse(document) {
     radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
     processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
     processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
+    staleCardLayoutMigrationCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpStaleCardLayoutMigrationCount),
     processedCellLastRepairCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairCount),
     processedCellLastRepairWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairWarningCount),
     processedCellLastRepairRemainingWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairRemainingWarningCount),
   };
+}
+
+function migrateStaleCardLayout(document, removeAlbertRmpEnhancements) {
+  const cardCount = document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0;
+  if (cardCount === 0) {
+    return 0;
+  }
+  const quickGridCount = document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0;
+  if (quickGridCount >= cardCount) {
+    return 0;
+  }
+  removeAlbertRmpEnhancements(document);
+  if (document?.documentElement) {
+    document.documentElement.dataset.nyuRmpStaleCardLayoutMigrationCount = String(cardCount);
+  }
+  return cardCount;
 }
 
 function markContentScriptLoaded(document) {

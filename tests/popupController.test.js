@@ -148,6 +148,37 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
+  it("reports when stale squeezed Albert cards were migrated by the current content script", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.1",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        quickGridCount: 4,
+        radarCount: 3,
+        processedCellCount: 4,
+        staleCardLayoutMigrationCount: 2,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("page-status").textContent).toBe(
+      "Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK, 2 stale card layouts migrated",
+    );
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+  });
+
   it("warns when the active Albert page is running an older content script version", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

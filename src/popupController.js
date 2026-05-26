@@ -246,6 +246,7 @@ function formatAlbertConnectedStatus(response) {
   const radarCount = nonNegativeInteger(response.radarCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
   const processedCellLayoutWarningCount = nonNegativeInteger(response.processedCellLayoutWarningCount);
+  const staleCardLayoutMigrationCount = nonNegativeInteger(response.staleCardLayoutMigrationCount);
   const ratingRootLabel = ratingRootCount === 1 ? "1 rating root" : `${ratingRootCount} rating roots`;
   const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
   const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
@@ -254,7 +255,8 @@ function formatAlbertConnectedStatus(response) {
     : `${processedCellCount} Albert cells checked`;
   const layoutWarningLabel = formatLayoutWarningLabel(response, processedCellLayoutWarningCount);
   const quickGridLabel = formatQuickGridLabel(cardCount, quickGridCount);
-  const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, layoutWarningLabel].filter(Boolean).join(", ");
+  const migrationLabel = formatStaleCardLayoutMigrationLabel(staleCardLayoutMigrationCount);
+  const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, layoutWarningLabel, migrationLabel].filter(Boolean).join(", ");
   const versionLabel = formatVersionLabel(response.version);
   if (isStaleContentVersion(response.version)) {
     return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}. Reload the extension, then refresh Albert. ${renderedSummary}`;
@@ -283,6 +285,15 @@ function formatQuickGridLabel(cardCount, quickGridCount) {
   return quickGridCount === 1
     ? "1 segmented quick view"
     : `${quickGridCount} segmented quick views`;
+}
+
+function formatStaleCardLayoutMigrationLabel(count) {
+  if (count === 0) {
+    return "";
+  }
+  return count === 1
+    ? "1 stale card layout migrated"
+    : `${count} stale card layouts migrated`;
 }
 
 function formatLayoutWarningLabel(response, processedCellLayoutWarningCount) {

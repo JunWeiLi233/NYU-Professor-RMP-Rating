@@ -57,10 +57,74 @@ describe("content script controller", () => {
       radarCount: 1,
       processedCellCount: 2,
       processedCellLayoutWarningCount: 0,
+      staleCardLayoutMigrationCount: 0,
       processedCellLastRepairCount: 0,
       processedCellLastRepairWarningCount: 0,
       processedCellLastRepairRemainingWarningCount: 0,
     });
+  });
+
+  it("migrates stale squeezed card markup before starting the current overlay", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div data-nyu-rmp-processed="true">
+        <div class="nyu-rmp-albert-original">Instructor: Ada Lovelace</div>
+        <div class="nyu-rmp-rating-root">
+          <div class="nyu-rmp-card">
+            <div class="nyu-rmp-card-head">Ada Lovelace</div>
+            <div class="nyu-rmp-comments-panel">Old squeezed comments</div>
+          </div>
+        </div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+    const removeAlbertRmpEnhancements = vi.fn((targetDocument) => {
+      targetDocument.querySelector(".nyu-rmp-rating-root")?.remove();
+    });
+    const startAlbertRmpEnhancer = vi.fn(() => ({ disconnect: vi.fn() }));
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer,
+      removeAlbertRmpEnhancements,
+      lookupProfessor: vi.fn(),
+    });
+
+    expect(removeAlbertRmpEnhancements).toHaveBeenCalledWith(document);
+    expect(startAlbertRmpEnhancer).toHaveBeenCalled();
+    expect(document.documentElement.dataset.nyuRmpStaleCardLayoutMigrationCount).toBe("1");
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+    expect(sendResponse.mock.calls[0][0]).toMatchObject({
+      cardCount: 0,
+      quickGridCount: 0,
+      staleCardLayoutMigrationCount: 1,
+    });
+  });
+
+  it("keeps current segmented card markup when the content script restarts", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div class="nyu-rmp-rating-root">
+        <div class="nyu-rmp-card">
+          <div class="nyu-rmp-quick-grid"></div>
+        </div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+    const removeAlbertRmpEnhancements = vi.fn();
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements,
+      lookupProfessor: vi.fn(),
+    });
+
+    expect(removeAlbertRmpEnhancements).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-quick-grid")).not.toBeNull();
   });
 
   it("reports processed Albert layout warnings when cell safeguards are missing", async () => {
