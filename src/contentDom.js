@@ -1620,6 +1620,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bgenerous\s+curve\b/,
     /\bcurve\s+on\s+exams?\b/,
     /\bcurved\s+exams?\b/,
+    /\blenient\s+grad(?:e|er|ing)\b/,
+    /\bgrad(?:e|es|ed|ing)\s+leniently\b/,
     /\bextra\s+credit\b/,
     /\bbonus\s+(?:points?|credit)\b/,
     /\bdrops?\s+(?:the\s+)?lowest\s+(?:quiz|quizzes|homework|assignments?|grades?)\b/,
