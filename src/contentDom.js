@@ -1639,6 +1639,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bgrade(?:s|d|ing)?\s+harsh(?:ly)?\b/,
     /\bno\s+curve\b/,
     /\bwithout\s+a\s+curve\b/,
+    /(?<!not\s)(?<!not very\s)\bbrutal\b/,
+    /(?<!not\s)(?<!not very\s)\bimpossible\b/,
     /\bunclear\b/,
     /\bunfair\b/,
     /(?<!not\s)(?<!not very\s)(?<!not too\s)\bfast\b/,
