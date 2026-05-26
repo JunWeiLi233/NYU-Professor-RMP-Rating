@@ -1324,19 +1324,62 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const comments = Array.from(document.querySelectorAll(".nyu-rmp-comment-text")).map((comment) => comment.textContent);
+    const comments = Array.from(document.querySelectorAll(".nyu-rmp-comments li:not([hidden]) .nyu-rmp-comment-text")).map((comment) => comment.textContent);
     expect(comments).toEqual([
       "Later CS201-specific context should be promoted.",
       "Most useful generic comment.",
       "Second generic comment.",
     ]);
-    expect(document.body.textContent).not.toContain("Fourth generic comment should stay hidden.");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-comments li[hidden] .nyu-rmp-comment-text")).map((comment) => comment.textContent)).toEqual([
+      "Third generic comment.",
+      "Fourth generic comment should stay hidden.",
+    ]);
     expect(document.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (3)");
     expect(document.querySelector(".nyu-rmp-comments-truncated").textContent).toBe("Showing 3 of 5 useful comments");
+    expect(document.querySelector(".nyu-rmp-comments-expand").textContent).toBe("Show 2 more comments");
     expect(document.querySelector(".nyu-rmp-comments-panel").getAttribute("aria-label")).toContain("3 of 5 useful comments shown");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
       "3 useful comments shown, 1 matches Albert course CSCI-UA 201",
     );
+  });
+
+  it("lets students reveal hidden useful comments without leaving Albert", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.3,
+      difficulty: 2.7,
+      ratingsCount: 44,
+      tags: [],
+      topComments: [
+        "Most useful comment.",
+        "Second useful comment.",
+        "Third useful comment.",
+        "Fourth useful comment should be revealable.",
+        "Fifth useful comment should be revealable.",
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const list = document.querySelector(".nyu-rmp-comments");
+    const hiddenComments = Array.from(document.querySelectorAll(".nyu-rmp-comment.is-hidden"));
+    const toggle = document.querySelector(".nyu-rmp-comments-expand");
+
+    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments, 3 of 5 useful comments shown");
+    expect(hiddenComments).toHaveLength(2);
+    expect(hiddenComments.every((comment) => comment.hidden)).toBe(true);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toBe("Show 2 more comments");
+
+    toggle.click();
+
+    expect(hiddenComments.every((comment) => comment.hidden)).toBe(false);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.textContent).toBe("Show fewer comments");
+    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments, 5 of 5 useful comments shown");
   });
 
   it("summarizes Albert course-matched useful comments in the rating card label", async () => {

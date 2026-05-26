@@ -1062,11 +1062,11 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const displayedTopComments = usefulTopComments.slice(0, MAX_RENDERED_COMMENTS);
   const courseMatchedCommentCount = countCourseMatchedComments(displayedTopComments, courseCode);
   const courseContext = renderCourseContext(courseCode);
-  const comments = displayedTopComments
-    .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
+  const comments = usefulTopComments
+    .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode, { hidden: index >= MAX_RENDERED_COMMENTS }))
     .join("");
-  const commentCount = countRenderedComments(comments);
-  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode, totalUsefulCommentCount: usefulTopComments.length });
+  const commentCount = Math.min(usefulTopComments.length, MAX_RENDERED_COMMENTS);
+  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode, totalUsefulCommentCount: usefulTopComments.length, visibleCommentCount: commentCount, listId: `nyu-rmp-comments-${card.dataset.nyuRmpCardId || "0"}` });
   const tagNames = asArray(result.tags)
     .map(normalizeTagName)
     .filter(Boolean);
@@ -1128,6 +1128,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
   wireCommentToggleActions(card);
+  wireCommentsExpandActions(card);
 }
 
 function renderCourseContext(courseCode) {
@@ -1812,6 +1813,28 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comment-toggle:active {
 	      transform: translateY(1px);
 	    }
+	    .nyu-rmp-comments-expand {
+	      background: #f4f7f5;
+	      border: 1px solid #d8e1dc;
+	      border-radius: 5px;
+	      color: #245943;
+	      cursor: pointer;
+	      font-size: 10px;
+	      font-weight: 750;
+	      line-height: 1.2;
+	      margin: 0 0 3px;
+	      padding: 5px 7px;
+	      transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+	      will-change: transform;
+	    }
+	    .nyu-rmp-comments-expand:hover {
+	      background: #eaf2ee;
+	      border-color: #b7c9c0;
+	      color: #173d2d;
+	    }
+	    .nyu-rmp-comments-expand:active {
+	      transform: translateY(1px);
+	    }
 	    .nyu-rmp-comment-meta {
 	      color: #7a8699;
 	      display: block;
@@ -1969,7 +1992,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function formatComment(comment, textId, albertCourseCode = "") {
+function formatComment(comment, textId, albertCourseCode = "", { hidden = false } = {}) {
   const normalized = normalizeComment(comment);
   if (!isUsefulCommentText(normalized.text)) {
     return "";
@@ -1986,7 +2009,7 @@ function formatComment(comment, textId, albertCourseCode = "") {
   ].filter(Boolean);
 
   return `
-    <li>
+    <li class="nyu-rmp-comment${hidden ? " is-hidden" : ""}"${hidden ? " hidden" : ""}>
       <p class="nyu-rmp-comment-text" id="${escapeHtml(textId)}">${escapeHtml(preview)}</p>
       ${isTruncated ? `
         <button
@@ -2019,31 +2042,40 @@ function commentMatchesCourse(comment, albertCourseCode = "") {
   return Boolean(normalized.course) && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
 }
 
-function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", totalUsefulCommentCount } = {}) {
-  const commentCount = countRenderedComments(comments);
-  const heading = commentCount > 0 ? `Most useful comments (${commentCount})` : "Most useful comments";
-  const usefulCommentCount = Number.isFinite(totalUsefulCommentCount) ? totalUsefulCommentCount : commentCount;
-  const hiddenCommentCount = Math.max(0, usefulCommentCount - commentCount);
+function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", totalUsefulCommentCount, visibleCommentCount, listId = "nyu-rmp-comments" } = {}) {
+  const renderedCommentCount = countRenderedComments(comments);
+  const shownCommentCount = Number.isFinite(visibleCommentCount) ? visibleCommentCount : renderedCommentCount;
+  const heading = shownCommentCount > 0 ? `Most useful comments (${shownCommentCount})` : "Most useful comments";
+  const usefulCommentCount = Number.isFinite(totalUsefulCommentCount) ? totalUsefulCommentCount : renderedCommentCount;
+  const hiddenCommentCount = Math.max(0, usefulCommentCount - shownCommentCount);
   const matchBadge = courseMatchedCommentCount > 0 && courseCode
     ? `<span class="nyu-rmp-comments-course-match">${escapeHtml(formatCourseMatchBadge(courseMatchedCommentCount, courseCode))}</span>`
     : "";
   const shownLabel = hiddenCommentCount > 0
-    ? `${commentCount} of ${usefulCommentCount} useful comments shown`
-    : `${commentCount} shown`;
+    ? `${shownCommentCount} of ${usefulCommentCount} useful comments shown`
+    : `${shownCommentCount} shown`;
+  const expandedShownLabel = `${usefulCommentCount} of ${usefulCommentCount} useful comments shown`;
   const listLabel = courseMatchedCommentCount > 0 && courseCode
     ? `Most useful RMP comments, ${shownLabel}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
     : `Most useful RMP comments, ${shownLabel}`;
+  const expandedListLabel = courseMatchedCommentCount > 0 && courseCode
+    ? `Most useful RMP comments, ${expandedShownLabel}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
+    : `Most useful RMP comments, ${expandedShownLabel}`;
   const truncationNote = hiddenCommentCount > 0
-    ? `<p class="nyu-rmp-comments-truncated">Showing ${commentCount} of ${usefulCommentCount} useful comments</p>`
+    ? `<p class="nyu-rmp-comments-truncated">Showing ${shownCommentCount} of ${usefulCommentCount} useful comments</p>`
+    : "";
+  const expandControl = hiddenCommentCount > 0
+    ? `<button class="nyu-rmp-comments-expand" type="button" aria-expanded="false" aria-controls="${escapeHtml(listId)}" data-collapsed-text="${escapeHtml(`Show ${hiddenCommentCount} more comments`)}" data-expanded-text="Show fewer comments" data-collapsed-note="${escapeHtml(`Showing ${shownCommentCount} of ${usefulCommentCount} useful comments`)}" data-expanded-note="${escapeHtml(`Showing ${usefulCommentCount} of ${usefulCommentCount} useful comments`)}" data-collapsed-label="${escapeHtml(listLabel)}" data-expanded-label="${escapeHtml(expandedListLabel)}">Show ${hiddenCommentCount} more comments</button>`
     : "";
   const body = comments
-    ? `<ul class="nyu-rmp-comments" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
+    ? `<ul class="nyu-rmp-comments" id="${escapeHtml(listId)}" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
   return `
     <div class="nyu-rmp-comments-panel" role="region" aria-label="${escapeHtml(listLabel)}">
       <div class="nyu-rmp-comments-heading">${heading}${matchBadge}</div>
       ${body}
       ${truncationNote}
+      ${expandControl}
     </div>
   `;
 }
@@ -2075,6 +2107,36 @@ function wireCommentToggleActions(card) {
       commentText.textContent = isExpanded ? button.dataset.previewText : button.dataset.fullText;
     });
   }
+}
+
+function wireCommentsExpandActions(card) {
+  const button = card.querySelector(".nyu-rmp-comments-expand");
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener("click", () => {
+    const isExpanded = button.getAttribute("aria-expanded") === "true";
+    const nextExpanded = !isExpanded;
+    const panel = button.closest(".nyu-rmp-comments-panel");
+    const list = panel?.querySelector(".nyu-rmp-comments");
+    const note = panel?.querySelector(".nyu-rmp-comments-truncated");
+
+    for (const comment of panel?.querySelectorAll(".nyu-rmp-comment.is-hidden") ?? []) {
+      comment.hidden = !nextExpanded;
+    }
+
+    button.setAttribute("aria-expanded", String(nextExpanded));
+    button.textContent = nextExpanded ? button.dataset.expandedText : button.dataset.collapsedText;
+    const nextLabel = nextExpanded ? button.dataset.expandedLabel : button.dataset.collapsedLabel;
+    if (nextLabel) {
+      panel?.setAttribute("aria-label", nextLabel);
+      list?.setAttribute("aria-label", nextLabel);
+    }
+    if (note) {
+      note.textContent = nextExpanded ? button.dataset.expandedNote : button.dataset.collapsedNote;
+    }
+  });
 }
 
 function truncateComment(text) {
