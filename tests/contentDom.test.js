@@ -2888,11 +2888,14 @@ describe("Albert content DOM injection", () => {
 
     const actions = document.querySelector(".nyu-rmp-actions");
     const searchLink = document.querySelector(".nyu-rmp-search");
+    const emptyNote = document.querySelector(".nyu-rmp-empty-note");
     expect(actions.getAttribute("aria-label")).toBe("RMP actions for Ada Lovelace");
     expect(searchLink.textContent).toBe("Search RMP");
     expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
     expect(searchLink.getAttribute("rel")).toBe("noreferrer noopener");
+    expect(emptyNote.getAttribute("role")).toBe("note");
+    expect(emptyNote.textContent).toBe("No automatic RMP match. Use Search RMP to verify manually.");
   });
 
   it("announces loading, no-match, and error status updates politely", async () => {

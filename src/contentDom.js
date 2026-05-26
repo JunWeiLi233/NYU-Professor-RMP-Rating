@@ -1039,6 +1039,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         </div>
       </div>
       ${courseContext}
+      <div class="nyu-rmp-empty-note" role="note">No automatic RMP match. Use Search RMP to verify manually.</div>
     `;
     wireRefreshAction(card, requestedName, lookupProfessor);
     return;
@@ -1583,6 +1584,17 @@ export function injectStyles(document = globalThis.document) {
 	      line-height: 1.35;
 	      margin: -2px 0 7px;
 	      padding: 5px 6px;
+	    }
+	    .nyu-rmp-empty-note {
+	      background: #f7f8fb;
+	      border: 1px solid #dfe5ee;
+	      border-radius: 6px;
+	      color: #526173;
+	      font-size: 10.5px;
+	      font-weight: 650;
+	      line-height: 1.35;
+	      margin-top: 6px;
+	      padding: 6px 7px;
 	    }
 	    .nyu-rmp-card a,
 	    .nyu-rmp-refresh,
