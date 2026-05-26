@@ -1387,9 +1387,13 @@ function commentSignalEvidenceLabel(commentSignal, { courseCode = "", courseMatc
     return null;
   }
   const score = Math.round(commentSignal * 100);
-  const hasCourseRiskContext = score <= 40 && courseCode && courseMatchedCommentCount > 0;
+  const hasCourseCommentContext = courseCode && courseMatchedCommentCount > 0;
+  const hasCourseRiskContext = score <= 40 && hasCourseCommentContext;
   if (hasCourseRiskContext) {
     return `${courseCode} comment risk ${score}/100`;
+  }
+  if (score >= 70 && hasCourseCommentContext) {
+    return `${courseCode} comment support ${score}/100`;
   }
   if (score >= 70) {
     return `Positive comment signal ${score}/100`;
