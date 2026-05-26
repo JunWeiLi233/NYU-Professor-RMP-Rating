@@ -22,7 +22,7 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 
 - Detects Albert instructor labels in the page DOM.
 - Looks up matching NYU professors through the Rate My Professors GraphQL endpoint.
-- Injects compact rating cards with score, difficulty, take-again percentage, tags, and useful comments.
+- Injects compact rating cards with score, difficulty, take-again percentage, tags, and useful comments from a lookup that samples 20 recent RMP ratings.
 - Shows a radar fit score and pick recommendation so students can judge a professor without opening RMP.
 - Highlights CS201-relevant comments with a course-match badge that counts every CS201-matched useful comment, including comments hidden in the compact view.
 - Normalizes padded Albert course numbers such as `CSCI-UA 0201` so they still match RMP comments tagged `CSCI-UA 201`.
