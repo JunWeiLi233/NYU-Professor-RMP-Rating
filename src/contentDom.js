@@ -1978,7 +1978,13 @@ function formatUsefulCommentSummary(commentCount, courseMatchedCommentCount = 0,
     return "";
   }
   const commentSummary = commentCount === 1 ? "1 useful comment shown" : `${commentCount} useful comments shown`;
-  if (courseMatchedCommentCount <= 0 || !courseCode) {
+  if (!courseCode) {
+    return commentSummary;
+  }
+  if (courseMatchedCommentCount <= 0 && commentCount > 0) {
+    return `${commentSummary}, ${formatNoCourseMatchSummary(courseCode)}`;
+  }
+  if (courseMatchedCommentCount <= 0) {
     return commentSummary;
   }
   return `${commentSummary}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`;

@@ -962,6 +962,9 @@ describe("Albert content DOM injection", () => {
     expect(badge.classList.contains("is-empty")).toBe(true);
     expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
     expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "1 useful comment shown, no CSCI-UA 201 comment matches",
+    );
   });
 
   it("matches useful comments when Albert pads CS201 course numbers with a leading zero", async () => {
