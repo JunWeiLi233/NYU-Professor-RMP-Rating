@@ -356,6 +356,33 @@ describe("Albert content DOM injection", () => {
     expect(radar.querySelector("desc")?.textContent).toBe("Rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings.");
   });
 
+  it("renders a compact radar legend with exact axis values", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const legend = document.querySelector(".nyu-rmp-radar-legend");
+    expect(legend).not.toBeNull();
+    expect(legend.getAttribute("aria-label")).toBe("Radar chart values");
+    expect(Array.from(legend.querySelectorAll("li")).map((node) => node.textContent)).toEqual([
+      "Rating 4.5/5",
+      "Ease 3.0/5",
+      "Volume 64",
+      "Again 80%",
+    ]);
+  });
+
   it("renders useful-comment metadata from RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
