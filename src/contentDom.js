@@ -1030,6 +1030,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     normalizedRatingsCount: optionalNonNegativeCount(result.ratingsCount),
     wouldTakeAgain,
   });
+  const recommendation = getPickRecommendation(radarFit);
   const rmpUrl = safeRmpUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
@@ -1060,7 +1061,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote }),
+    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote }),
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -1073,6 +1074,10 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
+    <div class="nyu-rmp-recommendation is-${escapeHtml(recommendation.className)}" role="note" aria-label="${escapeHtml(`RMP pick recommendation: ${recommendation.label}`)}">
+      <strong>${escapeHtml(recommendation.label)}</strong>
+      <span>${escapeHtml(recommendation.detail)}</span>
+    </div>
     <dl class="nyu-rmp-score-row nyu-rmp-metrics" aria-label="${escapeHtml(`RMP metrics for ${professorName}`)}">
       <div class="nyu-rmp-metric nyu-rmp-rating-metric">
         <dt class="nyu-rmp-metric-label">Rating</dt>
@@ -1195,6 +1200,35 @@ function radarFitScore(axes) {
   const weighted = axes.reduce((total, axis) => total + axis.value * (weights[axis.label] ?? 0), 0);
   const availableWeight = axes.reduce((total, axis) => total + (axis.available ? weights[axis.label] ?? 0 : 0), 0);
   return Math.round((weighted / (availableWeight || 1)) * 100);
+}
+
+function getPickRecommendation(radarFit) {
+  if (!radarFit || radarFit.availableMetricCount < 2) {
+    return {
+      className: "limited",
+      label: "Limited RMP data",
+      detail: "Check the source before picking",
+    };
+  }
+  if (radarFit.score >= 80) {
+    return {
+      className: "strong",
+      label: "Pick with confidence",
+      detail: "Strong fit from RMP signals",
+    };
+  }
+  if (radarFit.score >= 60) {
+    return {
+      className: "mixed",
+      label: "Check tradeoffs",
+      detail: "Readable fit with some risk",
+    };
+  }
+  return {
+    className: "weak",
+    label: "Avoid if possible",
+    detail: "Weak fit from RMP signals",
+  };
 }
 
 function optionalNonNegativeCount(value) {
@@ -1445,6 +1479,52 @@ export function injectStyles(document = globalThis.document) {
 	      font-weight: 600;
 	      line-height: 1.2;
 	      margin: 0;
+	    }
+	    .nyu-rmp-recommendation {
+	      align-items: center;
+	      background: #f7f8fb;
+	      border: 1px solid #dde4ee;
+	      border-left: 3px solid #667085;
+	      border-radius: 7px;
+	      color: #253044;
+	      display: grid;
+	      gap: 2px 8px;
+	      grid-template-columns: minmax(0, 1fr);
+	      margin: 8px 0 7px;
+	      padding: 7px 9px;
+	    }
+	    .nyu-rmp-recommendation strong {
+	      color: #1f2937;
+	      font-size: 11.5px;
+	      font-weight: 800;
+	      letter-spacing: 0;
+	      line-height: 1.15;
+	    }
+	    .nyu-rmp-recommendation span {
+	      color: #667085;
+	      font-size: 10.5px;
+	      font-weight: 600;
+	      line-height: 1.25;
+	    }
+	    .nyu-rmp-recommendation.is-strong {
+	      background: #f0f8f4;
+	      border-color: #c2decf;
+	      border-left-color: #1a7a4c;
+	    }
+	    .nyu-rmp-recommendation.is-mixed {
+	      background: #fff8ed;
+	      border-color: #ebd5a8;
+	      border-left-color: #b7791f;
+	    }
+	    .nyu-rmp-recommendation.is-weak {
+	      background: #fff5f5;
+	      border-color: #eac0c0;
+	      border-left-color: #b42318;
+	    }
+	    .nyu-rmp-recommendation.is-limited {
+	      background: #f6f4f8;
+	      border-color: #ddd6e8;
+	      border-left-color: #7a6a90;
 	    }
 	    .nyu-rmp-radar-wrap {
 	      align-items: center;
@@ -1706,12 +1786,13 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote }) {
+function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
     department ? `department ${department}` : "",
     ratingVerdict,
+    recommendation ? `recommendation ${recommendation.label}` : "",
     formatRadarFitSummary(radarFit),
     ratingsCountLabel,
     `difficulty ${formatScore(difficulty)} out of 5`,
