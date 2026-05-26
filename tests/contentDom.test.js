@@ -382,6 +382,7 @@ describe("Albert content DOM injection", () => {
     expect(tags.getAttribute("role")).toBe("list");
     expect(tags.getAttribute("aria-label")).toBe("RMP professor tags, 2 shown");
     expect(Array.from(tags.children).map((node) => node.getAttribute("role"))).toEqual(["listitem", "listitem"]);
+    expect(tags.textContent.replace(/\s+/g, " ").trim()).toBe("Clear grading Respected");
   });
 
   it("labels useful comment lists with the exact rendered comment count", async () => {

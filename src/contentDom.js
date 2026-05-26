@@ -1022,7 +1022,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .filter(Boolean);
   const tags = tagNames
     .map((tag) => `<span role="listitem">${escapeHtml(tag)}</span>`)
-    .join("");
+    .join(" ");
   const tagListLabel = `RMP professor tags, ${tagNames.length} shown`;
   const radar = renderRadarChart({
     chartId: card.dataset.nyuRmpCardId,
