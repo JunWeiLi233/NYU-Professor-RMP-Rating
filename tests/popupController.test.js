@@ -175,7 +175,7 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
-  it("shows layout OK when the popup repair request clears Albert layout warnings", async () => {
+  it("shows when the popup repair request clears Albert layout warnings", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
       <p id="page-status"></p>
@@ -221,7 +221,7 @@ describe("extension popup controller", () => {
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(1, 12, { type: "NYU_RMP_CONTENT_STATUS" });
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(2, 12, { type: "NYU_RMP_REPAIR_LAYOUT" });
     expect(tabs.sendMessage).toHaveBeenNthCalledWith(3, 12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, 1 layout warning repaired");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 

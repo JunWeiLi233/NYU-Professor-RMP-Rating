@@ -196,7 +196,14 @@ async function repairAlbertLayoutWarningsIfNeeded(tabs, tabId, response) {
   try {
     await tabs.sendMessage(tabId, { type: "NYU_RMP_REPAIR_LAYOUT" });
     const repairedResponse = await pingAlbertContentScript(tabs, tabId);
-    return isLoadedContentResponse(repairedResponse) ? repairedResponse : response;
+    if (!isLoadedContentResponse(repairedResponse)) {
+      return response;
+    }
+    return {
+      ...repairedResponse,
+      processedCellLayoutRepairAttempted: true,
+      processedCellLayoutWarningCountBeforeRepair: nonNegativeInteger(response.processedCellLayoutWarningCount),
+    };
   } catch {
     return response;
   }
@@ -244,9 +251,7 @@ function formatAlbertConnectedStatus(response) {
   const processedCellLabel = processedCellCount === 1
     ? "1 Albert cell checked"
     : `${processedCellCount} Albert cells checked`;
-  const layoutWarningLabel = processedCellLayoutWarningCount === 0
-    ? "layout OK"
-    : `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning" : "warnings"}`;
+  const layoutWarningLabel = formatLayoutWarningLabel(response, processedCellLayoutWarningCount);
   const renderedSummary = `${ratingRootLabel}, ${cardLabel}, ${radarLabel}, ${processedCellLabel}, ${layoutWarningLabel}`;
   const versionLabel = formatVersionLabel(response.version);
   if (isStaleContentVersion(response.version)) {
@@ -260,6 +265,18 @@ function formatAlbertConnectedStatus(response) {
 
 function albertPageStatusState(response) {
   return isStaleContentVersion(response.version) || hasProcessedCellLayoutWarnings(response) ? "warning" : "connected";
+}
+
+function formatLayoutWarningLabel(response, processedCellLayoutWarningCount) {
+  if (processedCellLayoutWarningCount === 0 && response?.processedCellLayoutRepairAttempted) {
+    const repairedCount = nonNegativeInteger(response.processedCellLayoutWarningCountBeforeRepair);
+    if (repairedCount > 0) {
+      return `${repairedCount} layout ${repairedCount === 1 ? "warning" : "warnings"} repaired`;
+    }
+  }
+  return processedCellLayoutWarningCount === 0
+    ? "layout OK"
+    : `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning" : "warnings"}`;
 }
 
 function isStaleContentVersion(version) {
