@@ -266,6 +266,52 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("Albert course CSCI-UA 201");
   });
 
+  it("keeps the Albert course context visible while RMP is loading, missing, or failed", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Ada Lovelace</td>
+          </tr>
+          <tr>
+            <td>CSCI-UA 202 Operating Systems</td>
+            <td>Instructor: Grace Hopper</td>
+          </tr>
+          <tr>
+            <td>CSCI-UA 310 Basic Algorithms</td>
+            <td>Instructor: Alan Turing</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn((name) => {
+      if (name === "Ada Lovelace") {
+        return new Promise(() => {});
+      }
+      if (name === "Grace Hopper") {
+        return Promise.resolve(null);
+      }
+      return Promise.reject(new Error("RMP lookup failed"));
+    });
+
+    scanAlbertPageOnce({ document, lookupProfessor });
+    await flushPromises();
+
+    const cards = Array.from(document.querySelectorAll(".nyu-rmp-card"));
+    const courseLabels = cards.map((card) => card.querySelector(".nyu-rmp-course-context")?.getAttribute("aria-label"));
+    expect(courseLabels).toEqual([
+      "Albert course context: CSCI-UA 201",
+      "Albert course context: CSCI-UA 202",
+      "Albert course context: CSCI-UA 310",
+    ]);
+    expect(cards.map((card) => card.getAttribute("aria-label"))).toEqual([
+      "Checking RMP rating for Ada Lovelace, Albert course CSCI-UA 201",
+      "No RMP match for Grace Hopper, Albert course CSCI-UA 202",
+      "RMP lookup failed for Alan Turing, Albert course CSCI-UA 310: RMP lookup failed",
+    ]);
+  });
+
   it("labels injected rating cards with a concise accessible summary", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

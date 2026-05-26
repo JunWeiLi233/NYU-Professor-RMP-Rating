@@ -965,7 +965,7 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, cou
   return lookupProfessor(...lookupArgs)
     .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor, courseCode }))
     .catch((error) => {
-      updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message });
+      updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message, courseCode });
     });
 }
 
@@ -990,14 +990,16 @@ function createRatingShell(document, name, courseCode = "") {
 }
 
 function setCardLoading(card, name, status) {
+  const courseCode = card.dataset.nyuRmpCourseCode ?? "";
   card.className = "nyu-rmp-card is-loading";
   card.setAttribute("aria-busy", "true");
-  card.setAttribute("aria-label", `${status} rating for ${name}`);
+  card.setAttribute("aria-label", [`${status} rating for ${name}`, formatAlbertCourseSummary(courseCode)].filter(Boolean).join(", "));
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong></strong>
       ${statusMarkup(status)}
     </div>
+    ${renderCourseContext(courseCode)}
     <div class="nyu-rmp-skeleton"></div>
   `;
   card.querySelector("strong").textContent = name;
@@ -1007,8 +1009,9 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.remove("is-loading");
   card.removeAttribute("aria-busy");
   if (!result) {
+    const courseContext = renderCourseContext(courseCode);
     card.classList.add("is-empty");
-    card.setAttribute("aria-label", `No RMP match for ${requestedName}`);
+    card.setAttribute("aria-label", [`No RMP match for ${requestedName}`, formatAlbertCourseSummary(courseCode)].filter(Boolean).join(", "));
     card.innerHTML = `
       <div class="nyu-rmp-card-head">
         <strong>${escapeHtml(requestedName)}</strong>
@@ -1018,6 +1021,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
           ${statusMarkup("No RMP match")}
         </div>
       </div>
+      ${courseContext}
     `;
     wireRefreshAction(card, requestedName, lookupProfessor);
     return;
@@ -1122,10 +1126,14 @@ function renderCourseContext(courseCode) {
     : "";
 }
 
-function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
+function formatAlbertCourseSummary(courseCode) {
+  return courseCode ? `Albert course ${courseCode}` : "";
+}
+
+function updateErrorCard(card, { requestedName, lookupProfessor, message, courseCode = card.dataset.nyuRmpCourseCode ?? "" }) {
   card.className = "nyu-rmp-card is-error";
   card.removeAttribute("aria-busy");
-  card.setAttribute("aria-label", `RMP lookup failed for ${requestedName}: ${message || "RMP lookup failed"}`);
+  card.setAttribute("aria-label", [`RMP lookup failed for ${requestedName}`, formatAlbertCourseSummary(courseCode)].filter(Boolean).join(", ") + `: ${message || "RMP lookup failed"}`);
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(requestedName)}</strong>
@@ -1135,6 +1143,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
         ${statusMarkup(message || "RMP lookup failed")}
       </div>
     </div>
+    ${renderCourseContext(courseCode)}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
