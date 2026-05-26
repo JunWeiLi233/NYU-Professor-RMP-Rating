@@ -386,6 +386,28 @@ describe("Albert content DOM injection", () => {
     expect(comments.querySelectorAll("li")).toHaveLength(2);
   });
 
+  it("labels the comments panel as a region even when RMP has no useful comments", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const panel = document.querySelector(".nyu-rmp-comments-panel");
+    expect(panel.getAttribute("role")).toBe("region");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 0 shown");
+    expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found on RMP.");
+  });
+
   it("keeps the take-again metric visible when RMP omits take-again data", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

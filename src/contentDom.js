@@ -1799,7 +1799,7 @@ function renderCommentsPanel(comments) {
     ? `<ul class="nyu-rmp-comments" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
   return `
-    <div class="nyu-rmp-comments-panel">
+    <div class="nyu-rmp-comments-panel" role="region" aria-label="${escapeHtml(listLabel)}">
       <div class="nyu-rmp-comments-heading">${heading}</div>
       ${body}
     </div>
