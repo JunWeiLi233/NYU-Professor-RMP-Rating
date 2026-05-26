@@ -50,24 +50,27 @@ export async function verifyChromeUserDataExtension({
 } = {}) {
   const resolvedUserDataDir = resolve(userDataDir);
   const resolvedExtensionPath = resolve(extensionPath);
+  const profileDisplayNames = await chromeProfileDisplayNames(userDataDir);
   const profiles = await chromeProfileDirs(userDataDir);
   const scanned = [];
   const misses = [];
   for (const profileDir of profiles) {
     const profileName = basename(profileDir);
-    scanned.push(profileName);
+    const profileLabel = chromeProfileLabel(profileName, profileDisplayNames);
+    scanned.push(profileLabel);
     try {
       const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
       return {
         ...result,
         profileDir,
         profileName,
+        profileDisplayName: profileDisplayNames.get(profileName) ?? "",
       };
     } catch (error) {
       if (!isExpectedProfileMiss(error)) {
         throw error;
       }
-      misses.push(`${profileName}: ${error.message}`);
+      misses.push(`${profileLabel}: ${error.message}`);
     }
   }
 
@@ -75,6 +78,22 @@ export async function verifyChromeUserDataExtension({
   throw new Error(
     `${EXTENSION_NAME} is not installed from ${resolvedExtensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${resolvedUserDataDir}${details}`,
   );
+}
+
+async function chromeProfileDisplayNames(userDataDir) {
+  try {
+    const localState = JSON.parse(await readFile(resolve(userDataDir, "Local State"), "utf8"));
+    return new Map(Object.entries(localState.profile?.info_cache ?? {})
+      .map(([profileName, profileInfo]) => [profileName, String(profileInfo?.name ?? "").trim()])
+      .filter(([, displayName]) => displayName));
+  } catch {
+    return new Map();
+  }
+}
+
+function chromeProfileLabel(profileName, profileDisplayNames) {
+  const displayName = profileDisplayNames.get(profileName);
+  return displayName ? `${profileName} (${displayName})` : profileName;
 }
 
 async function chromeProfileDirs(userDataDir) {
