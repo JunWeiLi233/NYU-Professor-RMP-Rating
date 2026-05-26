@@ -81,6 +81,38 @@ describe("content script controller", () => {
     expect(sendResponse.mock.calls[0][0].processedCellLayoutWarningCount).toBe(1);
   });
 
+  it("repairs processed Albert layout safeguards when the popup requests it", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div role="gridcell" data-nyu-rmp-processed="true">
+        <div class="nyu-rmp-albert-original">Ada Lovelace</div>
+        <div class="nyu-rmp-rating-root is-cell-mounted"></div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+    const repairAlbertRmpLayoutSafeguards = vi.fn(() => ({ repairedCount: 1 }));
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      repairAlbertRmpLayoutSafeguards,
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_REPAIR_LAYOUT" }, {}, sendResponse);
+
+    expect(repairAlbertRmpLayoutSafeguards).toHaveBeenCalledWith(document);
+    expect(sendResponse).toHaveBeenCalledWith({
+      ok: true,
+      repairedCount: 1,
+      beforeWarningCount: 1,
+      afterWarningCount: 1,
+    });
+  });
+
   it("ignores unrelated content script messages", async () => {
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
 

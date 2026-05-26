@@ -170,8 +170,59 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage: createStorageMock(), tabs });
 
+    expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_REPAIR_LAYOUT" });
     expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, 1 layout warning");
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
+  it("shows layout OK when the popup repair request clears Albert layout warnings", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendResults: [
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.1",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          radarCount: 3,
+          processedCellCount: 4,
+          processedCellLayoutWarningCount: 1,
+        },
+        {
+          ok: true,
+          repairedCount: 4,
+          beforeWarningCount: 1,
+          afterWarningCount: 0,
+        },
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.1",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          radarCount: 3,
+          processedCellCount: 4,
+          processedCellLayoutWarningCount: 0,
+        },
+      ],
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(tabs.sendMessage).toHaveBeenNthCalledWith(1, 12, { type: "NYU_RMP_CONTENT_STATUS" });
+    expect(tabs.sendMessage).toHaveBeenNthCalledWith(2, 12, { type: "NYU_RMP_REPAIR_LAYOUT" });
+    expect(tabs.sendMessage).toHaveBeenNthCalledWith(3, 12, { type: "NYU_RMP_CONTENT_STATUS" });
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
   it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {

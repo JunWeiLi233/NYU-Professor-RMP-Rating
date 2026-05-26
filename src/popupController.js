@@ -163,7 +163,8 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
 
     const response = await pingAlbertContentScript(tabs, activeTab.id);
     if (isLoadedContentResponse(response)) {
-      setPageStatus(pageStatus, formatAlbertConnectedStatus(response), albertPageStatusState(response));
+      const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, response);
+      setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedResponse), albertPageStatusState(repairedResponse));
       return;
     }
 
@@ -173,7 +174,8 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
       return;
     }
 
-    setPageStatus(pageStatus, formatAlbertConnectedStatus(wakeResponse), albertPageStatusState(wakeResponse));
+    const repairedWakeResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, wakeResponse);
+    setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedWakeResponse), albertPageStatusState(repairedWakeResponse));
   } catch {
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
   }
@@ -184,6 +186,19 @@ async function pingAlbertContentScript(tabs, tabId) {
     return await tabs.sendMessage(tabId, { type: "NYU_RMP_CONTENT_STATUS" });
   } catch {
     return null;
+  }
+}
+
+async function repairAlbertLayoutWarningsIfNeeded(tabs, tabId, response) {
+  if (!hasProcessedCellLayoutWarnings(response)) {
+    return response;
+  }
+  try {
+    await tabs.sendMessage(tabId, { type: "NYU_RMP_REPAIR_LAYOUT" });
+    const repairedResponse = await pingAlbertContentScript(tabs, tabId);
+    return isLoadedContentResponse(repairedResponse) ? repairedResponse : response;
+  } catch {
+    return response;
   }
 }
 

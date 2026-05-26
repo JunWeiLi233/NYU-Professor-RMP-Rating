@@ -26,6 +26,7 @@ export async function initContentScript({
   document = globalThis.document,
   startAlbertRmpEnhancer,
   removeAlbertRmpEnhancements,
+  repairAlbertRmpLayoutSafeguards = () => ({ repairedCount: 0 }),
   lookupProfessor,
 } = {}) {
   markContentScriptLoaded(document);
@@ -58,20 +59,24 @@ export async function initContentScript({
     }
   });
   chrome.runtime?.onMessage?.addListener((message, sender, sendResponse) => {
-    if (message?.type !== "NYU_RMP_CONTENT_STATUS") {
+    if (message?.type === "NYU_RMP_CONTENT_STATUS") {
+      sendResponse(contentStatusResponse(document));
       return false;
     }
-    sendResponse({
-      ok: true,
-      contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
-      version: document?.documentElement?.dataset.nyuRmpVersion ?? EXTENSION_VERSION,
-      overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
-      ratingRootCount: document?.querySelectorAll?.(".nyu-rmp-rating-root").length ?? 0,
-      cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
-      radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
-      processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
-      processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
-    });
+
+    if (message?.type === "NYU_RMP_REPAIR_LAYOUT") {
+      const beforeWarningCount = countProcessedCellLayoutWarnings(document);
+      const repairResult = repairAlbertRmpLayoutSafeguards(document) ?? {};
+      const afterWarningCount = countProcessedCellLayoutWarnings(document);
+      sendResponse({
+        ok: true,
+        repairedCount: nonNegativeInteger(repairResult.repairedCount),
+        beforeWarningCount,
+        afterWarningCount,
+      });
+      return false;
+    }
+
     return false;
   });
 
@@ -81,6 +86,20 @@ export async function initContentScript({
       enabled: true,
     });
   }
+}
+
+function contentStatusResponse(document) {
+  return {
+    ok: true,
+    contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
+    version: document?.documentElement?.dataset.nyuRmpVersion ?? EXTENSION_VERSION,
+    overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
+    ratingRootCount: document?.querySelectorAll?.(".nyu-rmp-rating-root").length ?? 0,
+    cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
+    radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
+    processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
+    processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
+  };
 }
 
 function markContentScriptLoaded(document) {
@@ -142,4 +161,9 @@ function normalizeInlineStyleValue(property, value) {
     return "0";
   }
   return normalized;
+}
+
+function nonNegativeInteger(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
 }

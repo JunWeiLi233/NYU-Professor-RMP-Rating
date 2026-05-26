@@ -313,6 +313,21 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
   }
 }
 
+export function repairAlbertRmpLayoutSafeguards(document = globalThis.document) {
+  let repairedCount = 0;
+  for (const element of document.querySelectorAll("[data-nyu-rmp-processed='true']")) {
+    if (!isTableCell(element)) {
+      continue;
+    }
+    applyProcessedCellLayoutSafeguards(element);
+    repairedCount += 1;
+    for (const mountedChild of element.querySelectorAll(`:scope > .${ORIGINAL_CONTENT_CLASS}, :scope > .${ROOT_CLASS}.is-cell-mounted`)) {
+      applyCellMountedChildLayoutSafeguards(mountedChild);
+    }
+  }
+  return { repairedCount };
+}
+
 function createScanLookupCache(lookupProfessor) {
   const lookups = new Map();
   return (name, options = {}) => {

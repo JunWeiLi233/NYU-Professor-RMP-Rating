@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { injectStyles, removeAlbertRmpEnhancements, scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
+import { injectStyles, removeAlbertRmpEnhancements, repairAlbertRmpLayoutSafeguards, scanAlbertPageOnce, startAlbertRmpEnhancer } from "../src/contentDom.js";
 
 describe("Albert content DOM injection", () => {
   afterEach(() => {
@@ -9604,6 +9604,34 @@ describe("Albert content DOM injection", () => {
       expect(mountedChild.style.getPropertyPriority("word-break")).toBe("important");
     }
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+  });
+
+  it("repairs processed Albert layout safeguards on demand", () => {
+    document.body.innerHTML = `
+      <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
+        <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.1"></div>
+      </div>
+    `;
+
+    const result = repairAlbertRmpLayoutSafeguards(document);
+
+    const instructorCell = document.getElementById("grid-instructor");
+    const originalContent = instructorCell.querySelector(":scope > .nyu-rmp-albert-original");
+    const ratingRoot = instructorCell.querySelector(":scope > .nyu-rmp-rating-root");
+    expect(result).toEqual({ repairedCount: 1 });
+    expect(instructorCell.style.alignItems).toBe("flex-start");
+    expect(instructorCell.style.getPropertyPriority("align-items")).toBe("important");
+    expect(instructorCell.style.whiteSpace).toBe("normal");
+    expect(instructorCell.style.getPropertyPriority("white-space")).toBe("important");
+    for (const mountedChild of [originalContent, ratingRoot]) {
+      expect(mountedChild.style.flex).toBe("0 0 100%");
+      expect(mountedChild.style.width).toBe("100%");
+      expect(mountedChild.style.whiteSpace).toBe("normal");
+      expect(mountedChild.style.getPropertyPriority("flex")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("white-space")).toBe("important");
+    }
   });
 
   it("still scans a newly added instructor gridcell beside an already processed cell", async () => {
