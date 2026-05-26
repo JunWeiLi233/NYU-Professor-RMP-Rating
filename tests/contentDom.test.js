@@ -901,6 +901,53 @@ describe("Albert content DOM injection", () => {
     );
   });
 
+  it("shows the Albert course-match count in the useful comments panel", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Generic high-helpfulness comment about another section.",
+          course: "CSCI-UA 102",
+          helpfulRating: 44,
+        },
+        {
+          text: "Systems-specific comment for CS201.",
+          course: "CSCI-UA 201",
+          helpfulRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const panel = document.querySelector(".nyu-rmp-comments-panel");
+    expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (2)");
+    expect(panel.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 2 shown, 1 matches Albert course CSCI-UA 201");
+  });
+
   it("labels the useful comments panel as most useful RMP comments", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
