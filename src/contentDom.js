@@ -1587,11 +1587,14 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\btough\b/,
     /\bavoid\b/,
     /\bconfusing\b/,
+    /\bdemanding\b/,
     /\bdisorganized\b/,
     /\bunclear\b/,
     /\bunfair\b/,
     /\bfast\b/,
+    /\bheavy\b/,
     /\boverwhelming\b/,
+    /\bworkload\b/,
   ];
   const positives = countSignalMatches(sources, positiveSignals);
   const risks = countSignalMatches(sources, riskSignals);
