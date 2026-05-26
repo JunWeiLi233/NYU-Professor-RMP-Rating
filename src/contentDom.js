@@ -1608,6 +1608,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bfast\s+(?:feedback|grading|responses?|replies)\b/,
     /\bemails?\s+(?:get|gets|got)\s+replies\b/,
     /\b(?:reply|respond)s?\s+quickly\b/,
+    /\banswers?\s+questions?\b/,
+    /\b(?:ed|piazza)\s+posts?\s+(?:clarify|clarifies|explain|explains)\b/,
     /\bpractice\s+(?:exams?|tests?|problems?)\b/,
     /\breview\s+sessions?\b/,
     /\bstudy\s+guides?\b/,
