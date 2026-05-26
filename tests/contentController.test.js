@@ -1,7 +1,24 @@
+// @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { initContentScript } from "../src/contentController.js";
 
 describe("content script controller", () => {
+  it("marks the page when the Albert content script has loaded", async () => {
+    const document = globalThis.document;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    expect(document.documentElement.dataset.nyuRmpContentScript).toBe("loaded");
+    expect(document.documentElement.dataset.nyuRmpOverlayState).toBe("enabled");
+  });
+
   it("starts the overlay when the stored setting is enabled", async () => {
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
     const startAlbertRmpEnhancer = vi.fn(() => ({ disconnect: vi.fn() }));
@@ -59,18 +76,22 @@ describe("content script controller", () => {
   });
 
   it("does not start while disabled, then starts when re-enabled", async () => {
+    const document = globalThis.document;
     const chrome = createChromeMock({ "settings:overlayEnabled": false });
     const observer = { disconnect: vi.fn() };
     const startAlbertRmpEnhancer = vi.fn(() => observer);
 
     await initContentScript({
       chrome,
+      document,
       startAlbertRmpEnhancer,
       removeAlbertRmpEnhancements: vi.fn(),
       lookupProfessor: vi.fn(),
     });
 
     expect(startAlbertRmpEnhancer).not.toHaveBeenCalled();
+    expect(document.documentElement.dataset.nyuRmpContentScript).toBe("loaded");
+    expect(document.documentElement.dataset.nyuRmpOverlayState).toBe("disabled");
 
     chrome.storage.onChanged.listener({
       "settings:overlayEnabled": { oldValue: false, newValue: true },
@@ -81,6 +102,7 @@ describe("content script controller", () => {
       lookupProfessor: expect.any(Function),
       enabled: true,
     });
+    expect(document.documentElement.dataset.nyuRmpOverlayState).toBe("enabled");
   });
 });
 

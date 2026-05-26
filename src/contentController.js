@@ -1,13 +1,18 @@
 export async function initContentScript({
   chrome = globalThis.chrome,
+  document = globalThis.document,
   startAlbertRmpEnhancer,
   removeAlbertRmpEnhancements,
   lookupProfessor,
 } = {}) {
+  markContentScriptLoaded(document);
   const settings = await readOverlaySettings(chrome);
   let observer = null;
   if (settings["settings:overlayEnabled"] !== false) {
+    markOverlayState(document, "enabled");
     observer = startOverlay();
+  } else {
+    markOverlayState(document, "disabled");
   }
 
   chrome.storage.onChanged?.addListener((changes, areaName) => {
@@ -17,11 +22,13 @@ export async function initContentScript({
 
     const enabled = changes["settings:overlayEnabled"].newValue !== false;
     if (enabled && !observer) {
+      markOverlayState(document, "enabled");
       observer = startOverlay();
       return;
     }
 
     if (!enabled) {
+      markOverlayState(document, "disabled");
       observer?.disconnect?.();
       observer = null;
       removeAlbertRmpEnhancements();
@@ -33,6 +40,18 @@ export async function initContentScript({
       lookupProfessor,
       enabled: true,
     });
+  }
+}
+
+function markContentScriptLoaded(document) {
+  if (document?.documentElement) {
+    document.documentElement.dataset.nyuRmpContentScript = "loaded";
+  }
+}
+
+function markOverlayState(document, state) {
+  if (document?.documentElement) {
+    document.documentElement.dataset.nyuRmpOverlayState = state;
   }
 }
 
