@@ -544,6 +544,29 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Limited RMP data");
   });
 
+  it("keeps high-score RMP results with unknown rating volume in the limited-data recommendation state", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 5,
+      difficulty: 1,
+      wouldTakeAgain: 100,
+      tags: [],
+      topComments: ["The visible score is high, but rating volume is unknown."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const recommendation = document.querySelector(".nyu-rmp-recommendation");
+    const evidence = document.querySelector(".nyu-rmp-evidence");
+    expect(recommendation.getAttribute("aria-label")).toBe("RMP pick recommendation: Limited RMP data");
+    expect(recommendation.textContent.replace(/\s+/g, " ").trim()).toBe("Limited RMP data RMP rating count unavailable");
+    expect(evidence.textContent).toContain("N/A ratings");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Limited RMP data");
+  });
+
   it("renders rating cards with a dedicated metrics grid and comment panel", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

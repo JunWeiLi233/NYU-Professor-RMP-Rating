@@ -1283,6 +1283,13 @@ function getPickRecommendation(radarFit) {
       detail: "Check RMP before picking",
     };
   }
+  if (radarFit.ratingsCount == null) {
+    return {
+      className: "limited",
+      label: "Limited RMP data",
+      detail: "RMP rating count unavailable",
+    };
+  }
   if (Number.isFinite(radarFit.ratingsCount) && radarFit.ratingsCount > 0 && radarFit.ratingsCount < MIN_CONFIDENT_RATING_COUNT) {
     return {
       className: "limited",
