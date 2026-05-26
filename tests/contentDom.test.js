@@ -255,7 +255,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(mounted.pendingLookups);
 
     expect(card.hasAttribute("aria-busy")).toBe(false);
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A");
   });
 
   it("does not present missing RMP rating counts as zero ratings", async () => {
@@ -273,10 +273,31 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const card = document.querySelector(".nyu-rmp-card");
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, N/A ratings");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A");
     expect(document.querySelector(".nyu-rmp-rating-count").textContent).toBe("N/A ratings");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("N/A ratings");
     expect(document.body.textContent).not.toContain("0 ratings");
+  });
+
+  it("summarizes difficulty, ease, and take-again in the rating card accessible label", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toBe(
+      "RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again 92%",
+    );
   });
 
   it("renders rating cards with a dedicated metrics grid and comment panel", async () => {
