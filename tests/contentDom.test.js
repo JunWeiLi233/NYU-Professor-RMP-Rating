@@ -232,6 +232,40 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Avoid if you dislike fast lectures.");
   });
 
+  it("shows the nearby Albert course context on the RMP card", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.2,
+      difficulty: 2.8,
+      ratingsCount: 47,
+      wouldTakeAgain: 82,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const courseContext = document.querySelector(".nyu-rmp-course-context");
+    expect(courseContext).not.toBeNull();
+    expect(courseContext.getAttribute("role")).toBe("note");
+    expect(courseContext.getAttribute("aria-label")).toBe("Albert course context: CSCI-UA 201");
+    expect(courseContext.textContent.replace(/\s+/g, " ").trim()).toBe("Albert CSCI-UA 201");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("Albert course CSCI-UA 201");
+  });
+
   it("labels injected rating cards with a concise accessible summary", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

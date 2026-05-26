@@ -1047,6 +1047,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     : "";
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
   const courseMatchedCommentCount = countCourseMatchedComments(sortedTopComments, courseCode);
+  const courseContext = renderCourseContext(courseCode);
   const comments = sortedTopComments
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
@@ -1083,6 +1084,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
+    ${courseContext}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
     <div class="nyu-rmp-recommendation is-${escapeHtml(recommendation.className)}" role="note" aria-label="${escapeHtml(`RMP pick recommendation: ${recommendation.label}`)}">
@@ -1112,6 +1114,12 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
   wireCommentToggleActions(card);
+}
+
+function renderCourseContext(courseCode) {
+  return courseCode
+    ? `<div class="nyu-rmp-course-context" role="note" aria-label="${escapeHtml(`Albert course context: ${courseCode}`)}"><span>Albert</span> <strong>${escapeHtml(courseCode)}</strong></div>`
+    : "";
 }
 
 function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
@@ -1381,6 +1389,34 @@ export function injectStyles(document = globalThis.document) {
 	      color: #64748b;
 	      font-size: 10.5px;
 	      margin: -1px 0 5px;
+	    }
+	    .nyu-rmp-course-context {
+	      align-items: center;
+	      background: #f6f7fa;
+	      border: 1px solid #dde3ec;
+	      border-radius: 6px;
+	      color: #344054;
+	      display: inline-flex;
+	      gap: 5px;
+	      line-height: 1;
+	      margin: -1px 0 6px;
+	      max-width: 100%;
+	      padding: 4px 6px;
+	      width: fit-content;
+	    }
+	    .nyu-rmp-course-context span {
+	      color: #667085;
+	      font-size: 9.5px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-course-context strong {
+	      color: #253044;
+	      font-size: 10.5px;
+	      font-weight: 800;
+	      letter-spacing: 0;
+	      line-height: 1;
 	    }
 	    .nyu-rmp-updated {
 	      color: #7a8699;
@@ -1817,6 +1853,7 @@ function formatCardSummaryLabel({ professorName, department, rating, ratingVerdi
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
     department ? `department ${department}` : "",
+    courseCode ? `Albert course ${courseCode}` : "",
     ratingVerdict,
     recommendation ? `recommendation ${recommendation.label}` : "",
     formatRadarFitSummary(radarFit),
