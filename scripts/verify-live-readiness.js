@@ -40,7 +40,12 @@ export async function verifyLiveReadiness({
 
 export function liveReadinessArgs(argv = process.argv.slice(2)) {
   const [distDir = "dist", userDataDir, extensionPath = distDir, expectedAccountName] = argv;
-  return { distDir, userDataDir, extensionPath, expectedAccountName };
+  return {
+    distDir,
+    userDataDir: normalizeOptionalCliValue(userDataDir),
+    extensionPath,
+    expectedAccountName: normalizeOptionalCliValue(expectedAccountName),
+  };
 }
 
 function redactAccountName(value) {
@@ -53,6 +58,11 @@ function redactPath(path) {
   return home && value.toLowerCase().startsWith(home.toLowerCase())
     ? `%USERPROFILE%${value.slice(home.length)}`
     : value;
+}
+
+function normalizeOptionalCliValue(value) {
+  const normalized = String(value ?? "").trim();
+  return /^%[A-Z0-9_]+%$/i.test(normalized) ? undefined : value;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -18,6 +18,12 @@ describe("live Albert readiness verifier", () => {
       extensionPath: "D:\\NYU-Professor-RMP-Rating\\dist",
       expectedAccountName: "student-account@nyu.example",
     });
+    expect(liveReadinessArgs(["dist", "%LOCALAPPDATA%\\Google\\Chrome\\User Data", "%CD%\\dist", "%NYU_RMP_CHROME_ACCOUNT%"])).toEqual({
+      distDir: "dist",
+      userDataDir: "%LOCALAPPDATA%\\Google\\Chrome\\User Data",
+      extensionPath: "%CD%\\dist",
+      expectedAccountName: undefined,
+    });
   });
 
   it("passes when the package is valid and Chrome has the unpacked extension from dist", async () => {

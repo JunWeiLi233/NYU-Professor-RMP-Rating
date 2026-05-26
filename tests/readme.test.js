@@ -32,6 +32,7 @@ describe("README", () => {
     expect(readme).toContain("samples 20 recent RMP ratings");
     expect(readme).toContain("Live Albert Verification Troubleshooting");
     expect(readme).toContain('node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\\Google\\Chrome\\User Data" "%CD%\\dist" "student-account@nyu.example"');
+    expect(readme).toContain("npm run verify:live:account");
     expect(readme).toContain("not installed from `dist`");
     expect(readme).toContain("your local repository `dist` folder");
     expect(readme).toContain("A current build should report segmented quick views");
