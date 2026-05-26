@@ -9527,7 +9527,7 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Title-backed instructor names should render.");
   });
 
-  it("keeps injected ratings inside table cells instead of adding invalid row children", async () => {
+  it("puts injected ratings in a trailing table column", async () => {
     document.body.innerHTML = `
       <table>
         <tbody>
@@ -9543,12 +9543,14 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const row = document.querySelector("#section-row");
-    expect(Array.from(row.children).map((child) => child.tagName)).toEqual(["TH", "TD"]);
-    expect(row.querySelector("td .nyu-rmp-rating-root")).not.toBeNull();
-    expect(row.querySelector("td").style.display).toBe("");
-    expect(row.querySelector("td").style.flexWrap).toBe("wrap");
-    expect(row.querySelector("td").style.getPropertyPriority("display")).toBe("");
-    expect(row.querySelector("td").style.getPropertyPriority("flex-wrap")).toBe("important");
+    const ratingCell = row.querySelector(":scope > .nyu-rmp-rating-cell");
+    expect(Array.from(row.children).map((child) => child.tagName)).toEqual(["TH", "TD", "TD"]);
+    expect(ratingCell).not.toBeNull();
+    expect(ratingCell).toBe(row.lastElementChild);
+    expect(ratingCell.querySelector(".nyu-rmp-rating-root")).not.toBeNull();
+    expect(row.children[1].querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(ratingCell.style.minWidth).toBe("280px");
+    expect(ratingCell.style.getPropertyPriority("min-width")).toBe("important");
   });
 
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
@@ -9565,7 +9567,8 @@ describe("Albert content DOM injection", () => {
 
     const instructorCell = document.getElementById("grid-instructor");
     const originalContent = instructorCell.querySelector(":scope > .nyu-rmp-albert-original");
-    const ratingRoot = instructorCell.querySelector(":scope > .nyu-rmp-rating-root");
+    const ratingCell = document.querySelector("#grid-row > .nyu-rmp-rating-cell");
+    const ratingRoot = ratingCell.querySelector(":scope > .nyu-rmp-rating-root");
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
@@ -9589,7 +9592,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.getPropertyPriority("overflow-wrap")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("white-space")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("word-break")).toBe("important");
-    for (const mountedChild of [originalContent, ratingRoot]) {
+    for (const mountedChild of [originalContent]) {
       expect(mountedChild.style.flex).toBe("0 0 100%");
       expect(mountedChild.style.gridColumn).toBe("1 / -1");
       expect(mountedChild.style.minInlineSize).toBe("0px");
@@ -9609,8 +9612,11 @@ describe("Albert content DOM injection", () => {
     }
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",
-      "nyu-rmp-rating-root is-cell-mounted",
     ]);
+    expect(ratingCell).toBe(document.querySelector("#grid-row").lastElementChild);
+    expect(ratingCell.getAttribute("role")).toBe("gridcell");
+    expect(ratingCell.style.minWidth).toBe("280px");
+    expect(ratingCell.style.getPropertyPriority("min-width")).toBe("important");
     expect(ratingRoot).not.toBeNull();
     expect(ratingRoot.classList.contains("is-cell-mounted")).toBe(true);
     expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
@@ -9635,7 +9641,7 @@ describe("Albert content DOM injection", () => {
     expect(labelCell.style.getPropertyPriority("display")).toBe("important");
     expect(labelCell.style.flexWrap).toBe("wrap");
     expect(labelCell.style.getPropertyPriority("flex-wrap")).toBe("important");
-    expect(instructorCell.querySelector(".nyu-rmp-rating-root")).not.toBeNull();
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-rating-root")).not.toBeNull();
   });
 
   it("does not rescan wrapped original content inside processed Albert gridcells", async () => {
@@ -9651,8 +9657,9 @@ describe("Albert content DOM injection", () => {
 
     const instructorCell = document.getElementById("grid-instructor");
     expect(instructorCell.querySelector(".nyu-rmp-albert-original").textContent.trim()).toBe("Instructor: Ada Lovelace");
-    expect(instructorCell.querySelectorAll(".nyu-rmp-rating-root")).toHaveLength(1);
-    expect(instructorCell.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(instructorCell.querySelectorAll(".nyu-rmp-rating-root")).toHaveLength(0);
+    expect(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-rating-root")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card")).toHaveLength(1);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
@@ -9670,7 +9677,8 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const originalContent = document.querySelector("#grid-instructor > .nyu-rmp-albert-original");
-    const ratingRoot = document.querySelector("#grid-instructor > .nyu-rmp-rating-root");
+    const ratingCell = document.querySelector("[data-nyu-rmp-rating-cell='true']");
+    const ratingRoot = ratingCell.querySelector(":scope > .nyu-rmp-rating-root");
     const instructorCell = document.getElementById("grid-instructor");
     expect(instructorCell.style.alignItems).toBe("flex-start");
     expect(instructorCell.style.flexWrap).toBe("wrap");
@@ -9688,7 +9696,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.getPropertyPriority("overflow-wrap")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("white-space")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("word-break")).toBe("important");
-    for (const mountedChild of [originalContent, ratingRoot]) {
+    for (const mountedChild of [originalContent]) {
       expect(mountedChild.style.flex).toBe("0 0 100%");
       expect(mountedChild.style.gridColumn).toBe("1 / -1");
       expect(mountedChild.style.minInlineSize).toBe("0px");
@@ -9706,6 +9714,10 @@ describe("Albert content DOM injection", () => {
       expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("word-break")).toBe("important");
     }
+    expect(ratingCell).not.toBeNull();
+    expect(ratingCell).toBe(document.querySelector("[role='row']").lastElementChild);
+    expect(ratingRoot).not.toBeNull();
+    expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
   });
 
@@ -9740,7 +9752,7 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const ratingRoot = document.querySelector("#grid-instructor > .nyu-rmp-rating-root");
+    const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
     expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.2");
@@ -9777,8 +9789,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const card = document.querySelector("#grid-instructor .nyu-rmp-card");
-    expect(document.querySelectorAll("#grid-instructor .nyu-rmp-card")).toHaveLength(1);
+    const card = document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card");
+    expect(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card")).toHaveLength(1);
     expect(card.dataset.nyuRmpRequestedName).toBe("Grace Hopper");
     expect(card.querySelector(":scope > .nyu-rmp-quick-grid")).not.toBeNull();
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
@@ -9828,8 +9840,8 @@ describe("Albert content DOM injection", () => {
     `);
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.getElementById("primary-instructor").querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
-    expect(document.getElementById("secondary-instructor").querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    const rowCards = Array.from(document.querySelectorAll("#grid-row [data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
+    expect(rowCards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Ada Lovelace", "Grace Hopper"]);
     expect(lookupProfessor).toHaveBeenCalledTimes(2);
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
@@ -9848,8 +9860,8 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const instructorCell = document.getElementById("grid-instructor");
-    expect(instructorCell.querySelectorAll(":scope > .nyu-rmp-rating-root")).toHaveLength(1);
-    expect(instructorCell.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(instructorCell.querySelectorAll(":scope > .nyu-rmp-rating-root")).toHaveLength(0);
+    expect(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card")).toHaveLength(2);
     expect(lookupProfessor).toHaveBeenCalledTimes(2);
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
@@ -9867,7 +9879,7 @@ describe("Albert content DOM injection", () => {
     document.querySelector("#grid-instructor .nyu-rmp-albert-original").textContent = "Grace Hopper";
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const cards = Array.from(document.querySelectorAll("#grid-instructor .nyu-rmp-card"));
+    const cards = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
     expect(cards).toHaveLength(1);
     expect(cards[0].dataset.nyuRmpRequestedName).toBe("Grace Hopper");
     expect(document.getElementById("grid-instructor").textContent).not.toContain("Ada Lovelace");
@@ -9893,7 +9905,7 @@ describe("Albert content DOM injection", () => {
     }));
 
     const firstScan = scanAlbertPageOnce({ document, lookupProfessor });
-    const staleCard = document.querySelector("#grid-instructor .nyu-rmp-card");
+    const staleCard = document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card");
     document.querySelector("#grid-instructor .nyu-rmp-albert-original").textContent = "Grace Hopper";
     const secondScan = scanAlbertPageOnce({ document, lookupProfessor });
 
@@ -9922,7 +9934,7 @@ describe("Albert content DOM injection", () => {
     });
     await Promise.allSettled([...firstScan.pendingLookups, ...secondScan.pendingLookups]);
 
-    const cards = Array.from(document.querySelectorAll("#grid-instructor .nyu-rmp-card"));
+    const cards = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
     expect(cards).toHaveLength(1);
     expect(cards[0].dataset.nyuRmpRequestedName).toBe("Grace Hopper");
     expect(cards[0].textContent).toContain("Grace-only current department");
@@ -9943,7 +9955,7 @@ describe("Albert content DOM injection", () => {
     document.querySelector("#grid-instructor .nyu-rmp-albert-original").textContent = "Grace Hopper + Alan Turing";
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const cardNames = Array.from(document.querySelectorAll("#grid-instructor .nyu-rmp-card"))
+    const cardNames = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"))
       .map((card) => card.dataset.nyuRmpRequestedName);
     expect(cardNames).toEqual(["Alan Turing", "Grace Hopper"]);
     expect(lookupProfessor).toHaveBeenCalledTimes(3);
@@ -9966,6 +9978,7 @@ describe("Albert content DOM injection", () => {
     const instructorCell = document.getElementById("grid-instructor");
     expect(instructorCell.querySelector(".nyu-rmp-albert-original")).toBeNull();
     expect(instructorCell.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
     expect(instructorCell.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
     expect(instructorCell.style.display).toBe("");
@@ -10073,7 +10086,7 @@ describe("Albert content DOM injection", () => {
 
     const instructorCell = document.getElementById("grid-instructor");
     expect(instructorCell.querySelector(":scope > .nyu-rmp-albert-original").textContent.trim()).toBe("YAP, CHEE KENG");
-    expect(instructorCell.querySelector(":scope > .nyu-rmp-rating-root.is-cell-mounted")).not.toBeNull();
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root.is-cell-mounted")).not.toBeNull();
   });
 
   it("injects one rating card for each adjacent-cell co-instructor", async () => {

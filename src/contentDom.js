@@ -4,6 +4,7 @@ import { EXTENSION_VERSION } from "./shared/version.js";
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const ORIGINAL_CONTENT_CLASS = "nyu-rmp-albert-original";
+const RATING_CELL_CLASS = "nyu-rmp-rating-cell";
 const PROCESSED_CELL_STYLE_SNAPSHOT_DATA = "nyuRmpProcessedCellStyleSnapshot";
 const PROCESSED_CELL_LAYOUT_PROPERTIES = [
   ["align-items", "flex-start"],
@@ -303,6 +304,10 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
     root.remove();
   }
 
+  for (const ratingCell of document.querySelectorAll(`.${RATING_CELL_CLASS}[data-nyu-rmp-rating-cell='true']`)) {
+    ratingCell.remove();
+  }
+
   for (const wrapper of document.querySelectorAll(`.${ORIGINAL_CONTENT_CLASS}`)) {
     unwrapOriginalAlbertContent(wrapper);
   }
@@ -396,7 +401,9 @@ function hasInstructorText(text) {
 
 function isUnprocessedVisibleCandidate(element) {
   return element.dataset.nyuRmpProcessed !== "true"
+    && element.dataset.nyuRmpRatingCell !== "true"
     && !element.closest("[data-nyu-rmp-processed='true']")
+    && !element.closest("[data-nyu-rmp-rating-cell='true']")
     && !element.querySelector?.("[data-nyu-rmp-processed='true']")
     && !element.closest(`.${ROOT_CLASS}`)
     && isElementVisible(element);
@@ -997,7 +1004,8 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     }
   }
   const isCellMount = isTableCell(element);
-  const existingContainer = isCellMount ? element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`) : null;
+  const mountElement = isCellMount ? ratingMountElementForCell(element, document) : element;
+  const existingContainer = isCellMount ? existingRatingContainerForCell(element, mountElement) : null;
   const container = existingContainer ?? document.createElement("div");
   if (!existingContainer) {
     container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
@@ -1033,7 +1041,7 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     if (originalContent) {
       applyCellMountedChildLayoutSafeguards(originalContent);
     }
-    element.append(container);
+    mountElement.append(container);
   } else {
     element.insertAdjacentElement("afterend", container);
   }
@@ -1045,7 +1053,8 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
     .filter((element) => isTableCell(element) && isElementVisible(element))
     .flatMap((element) => {
       applyProcessedCellLayoutSafeguards(element);
-      const container = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`);
+      const mountElement = ratingMountElementForCell(element, document);
+      const container = existingRatingContainerForCell(element, mountElement);
       const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
       if (!container || !originalContent) {
         if (container && isStaleRatingRoot(container)) {
@@ -1092,6 +1101,69 @@ function pruneStaleMountedProfessorCards(container, currentNameKeys) {
       card.remove();
     }
   }
+}
+
+function ratingMountElementForCell(element, document) {
+  const row = closestAlbertRow(element);
+  if (!row) {
+    return element;
+  }
+
+  const existingCell = row.querySelector(`:scope > [data-nyu-rmp-rating-cell='true']`);
+  if (existingCell) {
+    return existingCell;
+  }
+
+  const ratingCell = createRatingCellForRow(row, document);
+  row.append(ratingCell);
+  return ratingCell;
+}
+
+function existingRatingContainerForCell(sourceElement, mountElement) {
+  const mountedContainer = mountElement.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`);
+  if (mountedContainer) {
+    return mountedContainer;
+  }
+
+  if (sourceElement === mountElement) {
+    return null;
+  }
+
+  const legacyContainer = sourceElement.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted, :scope > .${ROOT_CLASS}`);
+  if (!legacyContainer) {
+    return null;
+  }
+
+  legacyContainer.classList.add("is-cell-mounted");
+  mountElement.append(legacyContainer);
+  return legacyContainer;
+}
+
+function closestAlbertRow(element) {
+  const row = element.closest?.("tr, [role='row']");
+  return row && row.contains(element) ? row : null;
+}
+
+function createRatingCellForRow(row, document) {
+  const ratingCell = document.createElement(row.tagName === "TR" ? "td" : "div");
+  ratingCell.className = RATING_CELL_CLASS;
+  ratingCell.dataset.nyuRmpRatingCell = "true";
+  ratingCell.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  if (row.getAttribute("role")?.trim().toLowerCase() === "row") {
+    ratingCell.setAttribute("role", "gridcell");
+  }
+  ratingCell.setAttribute("aria-label", "Rate My Professor rating");
+  applyRatingCellLayoutSafeguards(ratingCell);
+  return ratingCell;
+}
+
+function applyRatingCellLayoutSafeguards(element) {
+  element.style.setProperty("box-sizing", "border-box", "important");
+  element.style.setProperty("min-width", "280px", "important");
+  element.style.setProperty("min-inline-size", "280px", "important");
+  element.style.setProperty("width", "clamp(320px, 32vw, 560px)", "important");
+  element.style.setProperty("white-space", "normal", "important");
+  element.style.setProperty("vertical-align", "top", "important");
 }
 
 function resetStaleRatingRoot(container) {
@@ -2165,6 +2237,19 @@ export function injectStyles(document = globalThis.document) {
 	      grid-column: 1 / -1;
 	      justify-self: start;
 	      margin-top: 6px;
+	    }
+	    .nyu-rmp-rating-cell {
+	      box-sizing: border-box !important;
+	      min-inline-size: 280px !important;
+	      min-width: 280px !important;
+	      vertical-align: top !important;
+	      white-space: normal !important;
+	      width: clamp(320px, 32vw, 560px) !important;
+	    }
+	    .nyu-rmp-rating-cell > .nyu-rmp-rating-root {
+	      margin: 2px 0 4px;
+	      max-width: 100%;
+	      width: 100%;
 	    }
 	    td[data-nyu-rmp-processed="true"],
 	    th[data-nyu-rmp-processed="true"],
