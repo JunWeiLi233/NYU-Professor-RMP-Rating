@@ -1082,11 +1082,15 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ratingsCount: result.ratingsCount,
     wouldTakeAgain,
   });
+  const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
+  const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
+  card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
+  card.dataset.nyuRmpExpandedLabel = expandedCardLabel;
 
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote }),
+    collapsedCardLabel,
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -2135,6 +2139,10 @@ function wireCommentsExpandActions(card) {
     }
     if (note) {
       note.textContent = nextExpanded ? button.dataset.expandedNote : button.dataset.collapsedNote;
+    }
+    const nextCardLabel = nextExpanded ? card.dataset.nyuRmpExpandedLabel : card.dataset.nyuRmpCollapsedLabel;
+    if (nextCardLabel) {
+      card.setAttribute("aria-label", nextCardLabel);
     }
   });
 }
