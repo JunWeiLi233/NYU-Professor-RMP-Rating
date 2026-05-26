@@ -147,6 +147,20 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands comma-less uppercase Albert last-name-first instructor formatting", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: YAP CHEE KENG
+      Instructor(s): HOPPER GRACE B.; Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+
   it("ignores comma-separated placeholder instructors without corrupting real names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

@@ -186,6 +186,11 @@ export function splitInstructorList(value) {
     return pairAlbertLastFirstParts(commaParts);
   }
 
+  const commaLessLastFirstName = formatCommaLessUppercaseAlbertLastFirst(cleaned);
+  if (commaLessLastFirstName) {
+    return [commaLessLastFirstName];
+  }
+
   return cleaned
     .split(/\s*,\s*/)
     .map((part) => part.trim())
@@ -277,6 +282,22 @@ function pairAlbertLastFirstParts(parts) {
   return names;
 }
 
+function formatCommaLessUppercaseAlbertLastFirst(value) {
+  const parts = String(value ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 3 || parts.length > 5 || !parts.every(isUppercaseNameToken)) {
+    return "";
+  }
+
+  const surnamePartCount = SURNAME_PARTICLES.has(parts[0].toLowerCase()) && parts.length >= 4 ? 2 : 1;
+  const surnameParts = parts.slice(0, surnamePartCount);
+  const firstParts = parts.slice(surnamePartCount);
+  if (firstParts.length < 2 || isInitialNameToken(firstParts[0])) {
+    return "";
+  }
+
+  return [...firstParts, ...surnameParts].join(" ");
+}
+
 function looksLikeAlbertLastFirst(lastName, firstNames) {
   return looksLikeLastName(lastName) && /^\p{L}[\p{L}'. -]+$/u.test(firstNames);
 }
@@ -306,6 +327,14 @@ function formatAlbertLastFirst(lastName, firstNames) {
 
 function isNameToken(value) {
   return /^\p{L}[\p{L}'-]+$/u.test(value);
+}
+
+function isUppercaseNameToken(value) {
+  return /^(?:\p{Lu}[\p{Lu}'-]+|\p{Lu}\.?)$/u.test(value);
+}
+
+function isInitialNameToken(value) {
+  return /^\p{L}\.?$/u.test(value);
 }
 
 function isNameSuffix(value) {
