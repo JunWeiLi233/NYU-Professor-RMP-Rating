@@ -1417,6 +1417,41 @@ describe("Albert content DOM injection", () => {
     expect(card.getAttribute("aria-label")).toContain("3 useful comments shown");
   });
 
+  it("updates the visible comments heading when hidden useful comments are expanded", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.3,
+      difficulty: 2.7,
+      ratingsCount: 44,
+      tags: [],
+      topComments: [
+        "Most useful comment.",
+        "Second useful comment.",
+        "Third useful comment.",
+        "Fourth useful comment should be revealable.",
+        "Fifth useful comment should be revealable.",
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const heading = document.querySelector(".nyu-rmp-comments-heading");
+    const toggle = document.querySelector(".nyu-rmp-comments-expand");
+
+    expect(heading.childNodes[0].textContent).toBe("Most useful comments (3)");
+
+    toggle.click();
+
+    expect(heading.childNodes[0].textContent).toBe("Most useful comments (5)");
+
+    toggle.click();
+
+    expect(heading.childNodes[0].textContent).toBe("Most useful comments (3)");
+  });
+
   it("counts hidden Albert course-matched useful comments in the CS201 badge", async () => {
     document.body.innerHTML = `
       <table>

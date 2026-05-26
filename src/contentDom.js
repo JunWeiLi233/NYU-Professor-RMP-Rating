@@ -2069,7 +2069,7 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
     ? `<p class="nyu-rmp-comments-truncated">Showing ${shownCommentCount} of ${usefulCommentCount} useful comments</p>`
     : "";
   const expandControl = hiddenCommentCount > 0
-    ? `<button class="nyu-rmp-comments-expand" type="button" aria-expanded="false" aria-controls="${escapeHtml(listId)}" data-collapsed-text="${escapeHtml(`Show ${hiddenCommentCount} more comments`)}" data-expanded-text="Show fewer comments" data-collapsed-note="${escapeHtml(`Showing ${shownCommentCount} of ${usefulCommentCount} useful comments`)}" data-expanded-note="${escapeHtml(`Showing ${usefulCommentCount} of ${usefulCommentCount} useful comments`)}" data-collapsed-label="${escapeHtml(listLabel)}" data-expanded-label="${escapeHtml(expandedListLabel)}">Show ${hiddenCommentCount} more comments</button>`
+    ? `<button class="nyu-rmp-comments-expand" type="button" aria-expanded="false" aria-controls="${escapeHtml(listId)}" data-collapsed-text="${escapeHtml(`Show ${hiddenCommentCount} more comments`)}" data-expanded-text="Show fewer comments" data-collapsed-note="${escapeHtml(`Showing ${shownCommentCount} of ${usefulCommentCount} useful comments`)}" data-expanded-note="${escapeHtml(`Showing ${usefulCommentCount} of ${usefulCommentCount} useful comments`)}" data-collapsed-heading="${escapeHtml(heading)}" data-expanded-heading="${escapeHtml(`Most useful comments (${usefulCommentCount})`)}" data-collapsed-label="${escapeHtml(listLabel)}" data-expanded-label="${escapeHtml(expandedListLabel)}">Show ${hiddenCommentCount} more comments</button>`
     : "";
   const body = comments
     ? `<ul class="nyu-rmp-comments" id="${escapeHtml(listId)}" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
@@ -2125,6 +2125,7 @@ function wireCommentsExpandActions(card) {
     const panel = button.closest(".nyu-rmp-comments-panel");
     const list = panel?.querySelector(".nyu-rmp-comments");
     const note = panel?.querySelector(".nyu-rmp-comments-truncated");
+    const heading = panel?.querySelector(".nyu-rmp-comments-heading");
 
     for (const comment of panel?.querySelectorAll(".nyu-rmp-comment.is-hidden") ?? []) {
       comment.hidden = !nextExpanded;
@@ -2139,6 +2140,9 @@ function wireCommentsExpandActions(card) {
     }
     if (note) {
       note.textContent = nextExpanded ? button.dataset.expandedNote : button.dataset.collapsedNote;
+    }
+    if (heading?.firstChild) {
+      heading.firstChild.textContent = nextExpanded ? button.dataset.expandedHeading : button.dataset.collapsedHeading;
     }
     const nextCardLabel = nextExpanded ? card.dataset.nyuRmpExpandedLabel : card.dataset.nyuRmpCollapsedLabel;
     if (nextCardLabel) {
