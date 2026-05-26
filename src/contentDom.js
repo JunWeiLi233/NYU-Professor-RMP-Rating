@@ -350,11 +350,82 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, section, article, h1, h2, h3, h4, h5, h6, a, button, [role='button'], [role='cell'], [role='gridcell'], label, strong, b, input, textarea, select, [data-instructor-name]"))
-    .filter(isUnprocessedVisibleCandidate)
-    .flatMap((element) => findInstructorTargetsForElement(element));
+  const candidates = [
+    ...Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, section, article, h1, h2, h3, h4, h5, h6, a, button, [role='button'], [role='cell'], [role='gridcell'], label, strong, b, input, textarea, select, [data-instructor-name]"))
+      .filter(isUnprocessedVisibleCandidate)
+      .flatMap((element) => findInstructorTargetsForElement(element)),
+    ...findSelectButtonRowInstructorTargets(document),
+  ];
 
   return preferMostSpecificTargets(candidates);
+}
+
+function findSelectButtonRowInstructorTargets(document) {
+  const rows = uniqueElements(Array.from(document.querySelectorAll("button, input, a, [role='button'], [id], [name], [data-automation-id], [data-automationid], [data-testid]"))
+    .filter(isAlbertSelectButton)
+    .map((button) => closestAlbertRow(button))
+    .filter((row) => row && isElementVisible(row)));
+
+  return rows
+    .flatMap(selectButtonRowInstructorTargets)
+    .filter((target) => target.names.length > 0);
+}
+
+function selectButtonRowInstructorTargets(row) {
+  const cells = visibleRowCells(row)
+    .filter((cell) => cell.dataset.nyuRmpRatingCell !== "true")
+    .filter((cell) => !cell.querySelector?.(`.${ROOT_CLASS}, [data-nyu-rmp-rating-cell='true']`))
+    .filter((cell) => !cell.querySelector?.("button, input, a, [role='button']") || !Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton));
+  const labelledTargets = cells
+    .filter((cell) => cellHeaderText(cell).split("\n").some(isInstructorLabel))
+    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell) }))
+    .filter((target) => target.names.length > 0);
+  if (labelledTargets.length > 0) {
+    return labelledTargets;
+  }
+
+  return cells
+    .filter(isLikelySelectButtonRowInstructorCell)
+    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell) }))
+    .filter((target) => target.names.length > 0);
+}
+
+function isAlbertSelectButton(element) {
+  const values = [
+    element.id,
+    element.getAttribute?.("name"),
+    element.getAttribute?.("data-automation-id"),
+    element.getAttribute?.("data-automationid"),
+    element.getAttribute?.("data-testid"),
+    element.getAttribute?.("data-test-id"),
+  ];
+  return values.some((value) => String(value ?? "").replace(/[^a-z0-9]+/gi, "_").toUpperCase().includes("SELECT_BUTTON"));
+}
+
+function instructorNamesFromSelectButtonRowCell(cell) {
+  return instructorNameSegments(cell)
+    .flatMap(splitInstructorList)
+    .filter(isLikelyHeaderedInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
+function isLikelySelectButtonRowInstructorCell(cell) {
+  const text = visibleTextSegments(cell).join(" ");
+  if (!text || isSelectButtonRowNonInstructorText(text)) {
+    return false;
+  }
+  return instructorNamesFromSelectButtonRowCell(cell).length > 0;
+}
+
+function isSelectButtonRowNonInstructorText(value) {
+  const text = normalizeLabelText(value).toLowerCase();
+  return !text
+    || Boolean(courseCodeFromText(text))
+    || /^(?:select|view|details?|open|closed|wait\s*list|waitlist|enrolled|status|class|section|component|units?|credits?|days?|times?|location|room|campus|mode|topic|career|session|lecture|lec|lab|recitation|rec|online|tba)$/i.test(text)
+    || /\b(?:computer systems? organization|operating systems?|natural language processing|linear algebra|calculus)\b/i.test(text)
+    || /\b(?:mo|tu|we|th|fr|sa|su|mon|tue|wed|thu|fri|sat|sun)\b/i.test(text)
+    || /\b\d{1,2}:\d{2}\s*(?:am|pm)?\b/i.test(text);
 }
 
 function findInstructorTargetsForElement(element) {
@@ -1330,6 +1401,17 @@ function uniqueNames(names) {
       return false;
     }
     seen.add(key);
+    return true;
+  });
+}
+
+function uniqueElements(elements) {
+  const seen = new Set();
+  return elements.filter((element) => {
+    if (!element || seen.has(element)) {
+      return false;
+    }
+    seen.add(element);
     return true;
   });
 }

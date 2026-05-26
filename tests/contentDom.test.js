@@ -9553,6 +9553,84 @@ describe("Albert content DOM injection", () => {
     expect(ratingCell.style.getPropertyPriority("min-width")).toBe("important");
   });
 
+  it("adds the matching professor rating beside every Albert SELECT_BUTTON row", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="select-row-0">
+            <td><input id="DERIVED_CLS_DTL_SELECT_BUTTON$0" type="button" value="Select" /></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>Open</td>
+          </tr>
+          <tr id="select-row-1">
+            <td><input id="DERIVED_CLS_DTL_SELECT_BUTTON$1" type="button" value="Select" /></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Grace Hopper</td>
+            <td>Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: name === "Chee Keng Yap" ? 2.1 : 4.8,
+      difficulty: 3.2,
+      ratingsCount: 41,
+      topComments: [`${name} SELECT_BUTTON row comment`],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const firstRowRatingCell = document.querySelector("#select-row-0 > [data-nyu-rmp-rating-cell='true']");
+    const secondRowRatingCell = document.querySelector("#select-row-1 > [data-nyu-rmp-rating-cell='true']");
+    expect(firstRowRatingCell).toBe(document.getElementById("select-row-0").lastElementChild);
+    expect(secondRowRatingCell).toBe(document.getElementById("select-row-1").lastElementChild);
+    expect(firstRowRatingCell.textContent).toContain("Chee Keng Yap SELECT_BUTTON row comment");
+    expect(secondRowRatingCell.textContent).toContain("Grace Hopper SELECT_BUTTON row comment");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
+  it("renders the same professor rating on repeated SELECT_BUTTON class rows", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="morning-row">
+            <td><button name="SSR_CLSRCH_WRK_SELECT_BUTTON$0">Select</button></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>MoWe 9:30AM</td>
+          </tr>
+          <tr id="afternoon-row">
+            <td><button name="SSR_CLSRCH_WRK_SELECT_BUTTON$1">Select</button></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>TuTh 2:00PM</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: ["Same professor should appear for every selectable class row."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const rowCards = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
+    expect(rowCards).toHaveLength(2);
+    expect(rowCards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Chee Keng Yap", "Chee Keng Yap"]);
+    expect(rowCards.every((card) => card.textContent.includes("Same professor should appear for every selectable class row."))).toBe(true);
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+  });
+
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
     document.body.innerHTML = `
       <div role="row" id="grid-row">
