@@ -1063,6 +1063,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
+  const cacheNotice = formatCacheNotice(result.cacheStatus);
   const profileAction = rmpUrl
     ? `<a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>`
     : "";
@@ -1097,8 +1098,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     recommendationClassName: recommendation.className,
   });
   const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain });
-  const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
-  const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
+  const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
+  const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
   card.dataset.nyuRmpExpandedLabel = expandedCardLabel;
 
@@ -1120,6 +1121,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${courseContext}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
+    ${cacheNotice ? `<div class="nyu-rmp-cache-note" role="note">${escapeHtml(cacheNotice)}.</div>` : ""}
     <div class="nyu-rmp-recommendation is-${escapeHtml(recommendation.className)}" role="note" aria-label="${escapeHtml(`RMP pick recommendation: ${recommendation.label}`)}">
       <strong>${escapeHtml(recommendation.label)}</strong>
       <span>${escapeHtml(recommendation.detail)}</span>
@@ -1569,6 +1571,17 @@ export function injectStyles(document = globalThis.document) {
 	      color: #7a8699;
 	      font-size: 10px;
 	      margin: -3px 0 6px;
+	    }
+	    .nyu-rmp-cache-note {
+	      background: #fff8e5;
+	      border: 1px solid #ecd48b;
+	      border-radius: 6px;
+	      color: #7c5600;
+	      font-size: 10px;
+	      font-weight: 650;
+	      line-height: 1.35;
+	      margin: -2px 0 7px;
+	      padding: 5px 6px;
 	    }
 	    .nyu-rmp-card a,
 	    .nyu-rmp-refresh,
@@ -2148,7 +2161,7 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote }) {
+function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote, cacheNotice }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
@@ -2165,7 +2178,14 @@ function formatCardSummaryLabel({ professorName, department, rating, ratingVerdi
     formatTagSummary(tagNames),
     updatedAt,
     matchNote,
+    cacheNotice,
   ].filter(Boolean).join(", ");
+}
+
+function formatCacheNotice(cacheStatus) {
+  return cacheStatus === "stale-refresh-failed"
+    ? "Showing cached RMP data; refresh failed"
+    : "";
 }
 
 function formatRadarFitSummary(radarFit) {

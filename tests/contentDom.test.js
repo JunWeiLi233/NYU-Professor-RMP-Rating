@@ -2699,6 +2699,30 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("Updated May 24, 2026");
   });
 
+  it("shows a cached-data notice when a stale RMP refresh failed", async () => {
+    document.body.innerHTML = `<div>Instructor: Alan Turing</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 3.1,
+      difficulty: 3.8,
+      ratingsCount: 18,
+      topComments: ["Older cached comment shown during RMP outage."],
+      cacheUpdatedAt: new Date("2026-05-17T12:00:00Z").getTime(),
+      cacheStatus: "stale-refresh-failed",
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const notice = document.querySelector(".nyu-rmp-cache-note");
+    expect(notice.getAttribute("role")).toBe("note");
+    expect(notice.textContent).toBe("Showing cached RMP data; refresh failed.");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "Showing cached RMP data; refresh failed",
+    );
+  });
+
   it("shows the original Albert instructor name when the RMP match name differs", async () => {
     document.body.innerHTML = `<div>Instructor: Chee Keng Yap</div>`;
     const lookupProfessor = vi.fn(async () => ({

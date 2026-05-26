@@ -138,7 +138,7 @@ async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating
   } catch (error) {
     if (staleFallback) {
       memoryCache.set(key, staleFallback);
-      return withCacheMetadata(staleFallback.value, staleFallback.cachedAt);
+      return withCacheMetadata(staleFallback.value, staleFallback.cachedAt, { cacheStatus: "stale-refresh-failed" });
     }
     throw error;
   }
@@ -157,9 +157,9 @@ async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating
   return withCacheMetadata(result, currentTime);
 }
 
-function withCacheMetadata(value, cachedAt) {
+function withCacheMetadata(value, cachedAt, metadata = {}) {
   if (!value || typeof value !== "object") {
     return value;
   }
-  return { ...value, cacheUpdatedAt: cachedAt };
+  return { ...value, cacheUpdatedAt: cachedAt, ...metadata };
 }

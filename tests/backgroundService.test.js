@@ -292,6 +292,7 @@ describe("background professor lookup service", () => {
     await expect(service.lookup("Alan Turing")).resolves.toEqual({
       ...staleRating,
       cacheUpdatedAt: cachedAt,
+      cacheStatus: "stale-refresh-failed",
     });
 
     expect(findProfessorRating).toHaveBeenCalledWith("Alan Turing");
