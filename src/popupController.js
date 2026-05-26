@@ -74,18 +74,21 @@ export async function initPopup({
       clearButton.setAttribute("aria-busy", "true");
       status.textContent = "Clearing cache";
       try {
+        let clearedCount = 0;
         if (runtime?.sendMessage) {
           const response = await runtime.sendMessage({ type: "NYU_RMP_CLEAR_CACHE" });
           if (!response?.ok) {
             throw new Error(response?.error ?? "Cache clear failed");
           }
+          clearedCount = nonNegativeInteger(response.cleared);
         } else {
           const cached = await getProfessorCacheKeys(storage);
+          clearedCount = cached.length;
           if (cached.length > 0) {
             await storage.remove(cached);
           }
         }
-        status.textContent = "Cache cleared";
+        status.textContent = formatCacheClearedStatus(clearedCount);
         clearButton.disabled = true;
       } catch (error) {
         status.textContent = `Cache clear failed: ${error.message}`;
@@ -108,4 +111,15 @@ function syncSwitchState(input) {
   if (input?.getAttribute("role") === "switch") {
     input.setAttribute("aria-checked", String(input.checked));
   }
+}
+
+function formatCacheClearedStatus(count) {
+  return count === 1
+    ? "1 cached professor rating cleared"
+    : `${count} cached professor ratings cleared`;
+}
+
+function nonNegativeInteger(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
 }

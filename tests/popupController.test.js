@@ -218,7 +218,7 @@ describe("extension popup controller", () => {
 
     expect(runtime.sendMessage).toHaveBeenCalledWith({ type: "NYU_RMP_CLEAR_CACHE" });
     expect(storage.remove).not.toHaveBeenCalled();
-    expect(document.getElementById("status").textContent).toBe("Cache cleared");
+    expect(document.getElementById("status").textContent).toBe("2 cached professor ratings cleared");
   });
 
   it("disables and marks the clear button busy while cache clearing is in progress", async () => {
@@ -250,7 +250,7 @@ describe("extension popup controller", () => {
 
     expect(clearButton.disabled).toBe(true);
     expect(clearButton.getAttribute("aria-busy")).toBe("false");
-    expect(document.getElementById("status").textContent).toBe("Cache cleared");
+    expect(document.getElementById("status").textContent).toBe("1 cached professor rating cleared");
   });
 
   it("shows an inline error when the background cache clear fails", async () => {
