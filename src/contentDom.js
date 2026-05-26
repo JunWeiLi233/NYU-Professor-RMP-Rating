@@ -6,6 +6,7 @@ const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}\s*\d{3,4})\b/i;
+const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}[A-Z]{2}0?\d{3,4})\b/i;
 const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-checked], [data-current], [data-focus], [data-focused], [data-highlighted], [data-pressed], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
   childList: true,
@@ -932,7 +933,8 @@ function courseCodeForElement(element) {
 }
 
 function courseCodeFromText(value) {
-  return String(value ?? "").match(COURSE_CODE_PATTERN)?.[1] ?? "";
+  const text = String(value ?? "");
+  return text.match(COURSE_CODE_PATTERN)?.[1] ?? text.match(COMPACT_COURSE_CODE_PATTERN)?.[1] ?? "";
 }
 
 function normalizeCourseCode(value) {
