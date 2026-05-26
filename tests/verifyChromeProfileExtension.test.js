@@ -111,6 +111,39 @@ describe("Chrome profile extension verifier", () => {
 
     await rm(userData, { recursive: true, force: true });
   });
+
+  it("reports where mismatched NYU RMP extension installs were found", async () => {
+    const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
+    const oldDist = resolve("old-dist");
+    await createProfile({
+      profile: join(userData, "Default"),
+      extensions: {
+        abcdefghijklmnopabcdefghijklmnop: {
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+          path: oldDist,
+          state: 1,
+          from_webstore: false,
+        },
+      },
+    });
+    await createProfile({
+      profile: join(userData, "Profile 2"),
+      extensions: {
+        abcdefghijklmnopabcdefghijklmnop: {
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.1" },
+          path: resolve("dist"),
+          state: 0,
+          from_webstore: false,
+        },
+      },
+    });
+
+    await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
+      `Profile details: Default: NYU Albert RMP Ratings is installed from a different path: ${oldDist}; Profile 2: NYU Albert RMP Ratings is installed but disabled`,
+    );
+
+    await rm(userData, { recursive: true, force: true });
+  });
 });
 
 async function createProfile({ profile = null, extensions }) {

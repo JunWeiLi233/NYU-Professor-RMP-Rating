@@ -50,24 +50,28 @@ export async function verifyChromeUserDataExtension({
 } = {}) {
   const profiles = await chromeProfileDirs(userDataDir);
   const scanned = [];
+  const misses = [];
   for (const profileDir of profiles) {
-    scanned.push(basename(profileDir));
+    const profileName = basename(profileDir);
+    scanned.push(profileName);
     try {
       const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
       return {
         ...result,
         profileDir,
-        profileName: basename(profileDir),
+        profileName,
       };
     } catch (error) {
       if (!isExpectedProfileMiss(error)) {
         throw error;
       }
+      misses.push(`${profileName}: ${error.message}`);
     }
   }
 
+  const details = misses.length > 0 ? `\nProfile details: ${misses.join("; ")}` : "";
   throw new Error(
-    `${EXTENSION_NAME} is not installed from ${extensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}`,
+    `${EXTENSION_NAME} is not installed from ${extensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}${details}`,
   );
 }
 
