@@ -1034,7 +1034,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
-  const comments = asArray(result.topComments)
+  const comments = prioritizeCourseMatchedComments(result.topComments, courseCode)
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
   const commentCount = countRenderedComments(comments);
@@ -1819,6 +1819,18 @@ function formatComment(comment, textId, albertCourseCode = "") {
       ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta${isCourseMatch ? " is-course-match" : ""}">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
   `;
+}
+
+function prioritizeCourseMatchedComments(comments, albertCourseCode = "") {
+  return asArray(comments)
+    .map((comment, index) => ({ comment, index, isCourseMatch: commentMatchesCourse(comment, albertCourseCode) }))
+    .sort((left, right) => Number(right.isCourseMatch) - Number(left.isCourseMatch) || left.index - right.index)
+    .map(({ comment }) => comment);
+}
+
+function commentMatchesCourse(comment, albertCourseCode = "") {
+  const normalized = normalizeComment(comment);
+  return Boolean(normalized.course) && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
 }
 
 function renderCommentsPanel(comments) {

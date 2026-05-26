@@ -764,6 +764,54 @@ describe("Albert content DOM injection", () => {
     expect(metadata.classList.contains("is-course-match")).toBe(true);
   });
 
+  it("shows Albert course-matched useful comments before generic comments", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Generic high-helpfulness comment about another section.",
+          course: "CSCI-UA 102",
+          helpfulRating: 44,
+        },
+        {
+          text: "Systems-specific comment for CS201.",
+          course: "CSCI-UA 201",
+          helpfulRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const comments = Array.from(document.querySelectorAll(".nyu-rmp-comment-text")).map((comment) => comment.textContent);
+    expect(comments).toEqual([
+      "Systems-specific comment for CS201.",
+      "Generic high-helpfulness comment about another section.",
+    ]);
+  });
+
   it("labels the useful comments panel as most useful RMP comments", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
