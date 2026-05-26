@@ -604,7 +604,7 @@ describe("Albert content DOM injection", () => {
     expect(fit.getAttribute("aria-label")).toBe("Professor fit score 81 out of 100, based on 2 of 4 radar metrics, limited data");
     expect(fit.textContent).toContain("Limited data");
     expect(fit.textContent).toContain("2/4 metrics");
-    expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
+    expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, limited data, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
     expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 81 out of 100. Limited data: 2 of 4 radar metrics available. Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
     expect(shapePoints).not.toMatch(/NaN|Infinity/);
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toEqual([
