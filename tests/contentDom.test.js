@@ -478,8 +478,9 @@ describe("Albert content DOM injection", () => {
     const radar = document.querySelector(".nyu-rmp-radar");
     const fit = document.querySelector(".nyu-rmp-radar-fit");
     expect(fit).not.toBeNull();
-    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 82 out of 100");
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 82 out of 100, based on 4 of 4 radar metrics");
     expect(fit.textContent).toContain("Fit 82");
+    expect(fit.textContent).toContain("4/4 metrics");
     expect(radar.getAttribute("aria-label")).toContain("professor fit 82 out of 100");
     expect(radar.querySelector("desc")?.textContent).toContain("Professor fit 82 out of 100.");
   });
@@ -502,8 +503,9 @@ describe("Albert content DOM injection", () => {
 
     const fit = document.querySelector(".nyu-rmp-radar-fit");
     const radar = document.querySelector(".nyu-rmp-radar");
-    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 66 out of 100");
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 66 out of 100, based on 4 of 4 radar metrics");
     expect(fit.textContent).toContain("Fit 66");
+    expect(fit.textContent).toContain("4/4 metrics");
     expect(radar.getAttribute("aria-label")).toContain("professor fit 66 out of 100");
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again 0%");
   });
@@ -596,7 +598,10 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const radar = document.querySelector(".nyu-rmp-radar");
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
     const shapePoints = radar.querySelector(".nyu-rmp-radar-shape").getAttribute("points");
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 81 out of 100, based on 2 of 4 radar metrics");
+    expect(fit.textContent).toContain("2/4 metrics");
     expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
     expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 81 out of 100. Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
     expect(shapePoints).not.toMatch(/NaN|Infinity/);

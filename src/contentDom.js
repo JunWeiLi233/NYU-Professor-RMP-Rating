@@ -1099,6 +1099,9 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
     { label: "Again", value: scalePercent(wouldTakeAgain), available: wouldTakeAgain != null },
   ];
   const fitScore = radarFitScore(axes);
+  const availableMetricCount = axes.filter((axis) => axis.available).length;
+  const metricCountLabel = `${availableMetricCount} of ${axes.length} radar metrics`;
+  const compactMetricCountLabel = `${availableMetricCount}/${axes.length} metrics`;
   const fitSummary = `professor fit ${fitScore} out of 100`;
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
@@ -1123,7 +1126,7 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
-        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${fitScore} out of 100"><span>Fit</span> <strong>${fitScore}</strong></div>
+        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${fitScore} out of 100, based on ${metricCountLabel}"><span>Fit</span> <strong>${fitScore}</strong> <em>${compactMetricCountLabel}</em></div>
         <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
@@ -1450,14 +1453,14 @@ export function injectStyles(document = globalThis.document) {
 	      min-width: 0;
 	    }
 	    .nyu-rmp-radar-fit {
-	      align-items: baseline;
+	      align-items: center;
 	      background: #1f1a2e;
 	      border: 1px solid #1f1a2e;
 	      border-radius: 7px;
 	      color: #ffffff;
-	      display: flex;
+	      display: grid;
 	      gap: 6px;
-	      justify-content: space-between;
+	      grid-template-columns: auto 1fr;
 	      line-height: 1;
 	      padding: 6px 7px;
 	    }
@@ -1472,6 +1475,15 @@ export function injectStyles(document = globalThis.document) {
 	      color: #ffffff;
 	      font-size: 18px;
 	      font-weight: 800;
+	      justify-self: end;
+	      letter-spacing: 0;
+	    }
+	    .nyu-rmp-radar-fit em {
+	      color: #bfb6cf;
+	      font-size: 9.5px;
+	      font-style: normal;
+	      font-weight: 650;
+	      grid-column: 1 / -1;
 	      letter-spacing: 0;
 	    }
 	    .nyu-rmp-radar-legend li {
