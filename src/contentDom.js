@@ -1082,6 +1082,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ratingsCount: result.ratingsCount,
     wouldTakeAgain,
   });
+  const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain });
   const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
   const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
@@ -1109,6 +1110,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <strong>${escapeHtml(recommendation.label)}</strong>
       <span>${escapeHtml(recommendation.detail)}</span>
     </div>
+    ${recommendationEvidence}
     <dl class="nyu-rmp-score-row nyu-rmp-metrics" aria-label="${escapeHtml(`RMP metrics for ${professorName}`)}">
       <div class="nyu-rmp-metric nyu-rmp-rating-metric">
         <dt class="nyu-rmp-metric-label">Rating</dt>
@@ -1296,6 +1298,66 @@ function getPickRecommendation(radarFit) {
     label: "Avoid if possible",
     detail: "Weak fit from RMP signals",
   };
+}
+
+function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain }) {
+  const chips = [
+    ratingEvidenceLabel(rating),
+    difficultyEvidenceLabel(difficulty),
+    takeAgainEvidenceLabel(wouldTakeAgain),
+    ratingsCountEvidenceLabel(ratingsCount),
+  ].filter(Boolean);
+
+  return `
+    <div class="nyu-rmp-evidence" role="list" aria-label="RMP recommendation evidence">
+      ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip" role="listitem">${escapeHtml(chip)}</span>`).join("")}
+    </div>
+  `;
+}
+
+function ratingEvidenceLabel(rating) {
+  if (rating == null) {
+    return "Rating N/A";
+  }
+  if (rating >= 4) {
+    return `Strong rating ${formatScore(rating)}/5`;
+  }
+  if (rating < 3) {
+    return `Low rating ${formatScore(rating)}/5`;
+  }
+  return `Mixed rating ${formatScore(rating)}/5`;
+}
+
+function difficultyEvidenceLabel(difficulty) {
+  if (difficulty == null) {
+    return "Difficulty N/A";
+  }
+  if (difficulty >= 4) {
+    return `High difficulty ${formatScore(difficulty)}/5`;
+  }
+  if (difficulty <= 2.5) {
+    return `Manageable difficulty ${formatScore(difficulty)}/5`;
+  }
+  return `Moderate difficulty ${formatScore(difficulty)}/5`;
+}
+
+function takeAgainEvidenceLabel(wouldTakeAgain) {
+  if (wouldTakeAgain == null) {
+    return "Take-again N/A";
+  }
+  const rounded = Math.round(wouldTakeAgain);
+  if (rounded >= 80) {
+    return `High take-again ${rounded}%`;
+  }
+  if (rounded < 50) {
+    return `Low take-again ${rounded}%`;
+  }
+  return `Mixed take-again ${rounded}%`;
+}
+
+function ratingsCountEvidenceLabel(ratingsCount) {
+  const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
+  return normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
 }
 
 function optionalNonNegativeCount(value) {
@@ -1620,6 +1682,23 @@ export function injectStyles(document = globalThis.document) {
 	      background: #f6f4f8;
 	      border-color: #ddd6e8;
 	      border-left-color: #7a6a90;
+	    }
+	    .nyu-rmp-evidence {
+	      display: flex;
+	      flex-wrap: wrap;
+	      gap: 5px;
+	      margin: -1px 0 7px;
+	    }
+	    .nyu-rmp-evidence-chip {
+	      background: #ffffff;
+	      border: 1px solid #dbe3ee;
+	      border-radius: 999px;
+	      color: #344054;
+	      font-size: 10px;
+	      font-weight: 700;
+	      letter-spacing: 0;
+	      line-height: 1.15;
+	      padding: 4px 7px;
 	    }
 	    .nyu-rmp-radar-wrap {
 	      align-items: center;

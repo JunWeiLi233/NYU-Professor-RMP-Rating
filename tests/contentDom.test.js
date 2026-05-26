@@ -440,6 +440,66 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Pick with confidence");
   });
 
+  it("shows the metric evidence behind a strong pick recommendation", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.1,
+      ratingsCount: 64,
+      wouldTakeAgain: 91,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const evidence = document.querySelector(".nyu-rmp-evidence");
+    expect(evidence.getAttribute("role")).toBe("list");
+    expect(evidence.getAttribute("aria-label")).toBe("RMP recommendation evidence");
+    expect(Array.from(evidence.children).map((node) => node.getAttribute("role"))).toEqual([
+      "listitem",
+      "listitem",
+      "listitem",
+      "listitem",
+    ]);
+    expect(Array.from(evidence.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toEqual([
+      "Strong rating 4.7/5",
+      "Manageable difficulty 2.1/5",
+      "High take-again 91%",
+      "64 ratings",
+    ]);
+  });
+
+  it("shows concrete risk evidence for a weak pick recommendation", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      wouldTakeAgain: 24,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const evidence = document.querySelector(".nyu-rmp-evidence");
+    expect(evidence.getAttribute("aria-label")).toBe("RMP recommendation evidence");
+    expect(Array.from(evidence.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toEqual([
+      "Low rating 2.1/5",
+      "High difficulty 4.5/5",
+      "Low take-again 24%",
+      "92 ratings",
+    ]);
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Avoid if possible");
+  });
+
   it("warns when a high professor fit score is based on sparse RMP data", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
