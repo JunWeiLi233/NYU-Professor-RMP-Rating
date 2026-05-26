@@ -1040,7 +1040,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(professorName)}</strong>
-      <div class="nyu-rmp-actions">
+      <div class="nyu-rmp-actions" aria-label="${escapeHtml(`RMP actions for ${professorName}`)}">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
         <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
       </div>
