@@ -4,6 +4,7 @@ const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
+const RMP_COMMENT_SAMPLE_SIZE = 20;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
@@ -1876,6 +1877,18 @@ export function injectStyles(document = globalThis.document) {
 	      margin: 0 0 5px;
 	      text-transform: uppercase;
 	    }
+	    .nyu-rmp-comments-sample {
+	      background: #eef2f7;
+	      border: 1px solid #dbe3ee;
+	      border-radius: 999px;
+	      color: #526173;
+	      font-size: 9px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      line-height: 1;
+	      padding: 2px 6px;
+	      text-transform: uppercase;
+	    }
 	    .nyu-rmp-comments-course-match {
 	      background: #eaf7f0;
 	      border: 1px solid #b9dfca;
@@ -2175,6 +2188,8 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
   const renderedCommentCount = countRenderedComments(comments);
   const shownCommentCount = Number.isFinite(visibleCommentCount) ? visibleCommentCount : renderedCommentCount;
   const heading = shownCommentCount > 0 ? `Most useful comments (${shownCommentCount})` : "Most useful comments";
+  const sampleLabel = `Useful comments selected from a ${RMP_COMMENT_SAMPLE_SIZE}-rating RMP sample`;
+  const sampleText = `${RMP_COMMENT_SAMPLE_SIZE}-rating sample`;
   const usefulCommentCount = Number.isFinite(totalUsefulCommentCount) ? totalUsefulCommentCount : renderedCommentCount;
   const hiddenCommentCount = Math.max(0, usefulCommentCount - shownCommentCount);
   const hasCourseContext = Boolean(courseCode);
@@ -2194,11 +2209,11 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
     : `${shownCommentCount} shown`;
   const expandedShownLabel = `${usefulCommentCount} of ${usefulCommentCount} useful comments shown`;
   const listLabel = courseMatchLabel
-    ? `Most useful RMP comments, ${shownLabel}, ${courseMatchLabel}`
-    : `Most useful RMP comments, ${shownLabel}`;
+    ? `Most useful RMP comments from a ${RMP_COMMENT_SAMPLE_SIZE}-rating sample, ${shownLabel}, ${courseMatchLabel}`
+    : `Most useful RMP comments from a ${RMP_COMMENT_SAMPLE_SIZE}-rating sample, ${shownLabel}`;
   const expandedListLabel = courseMatchLabel
-    ? `Most useful RMP comments, ${expandedShownLabel}, ${courseMatchLabel}`
-    : `Most useful RMP comments, ${expandedShownLabel}`;
+    ? `Most useful RMP comments from a ${RMP_COMMENT_SAMPLE_SIZE}-rating sample, ${expandedShownLabel}, ${courseMatchLabel}`
+    : `Most useful RMP comments from a ${RMP_COMMENT_SAMPLE_SIZE}-rating sample, ${expandedShownLabel}`;
   const truncationNote = hiddenCommentCount > 0
     ? `<p class="nyu-rmp-comments-truncated">Showing ${shownCommentCount} of ${usefulCommentCount} useful comments</p>`
     : "";
@@ -2210,7 +2225,7 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
   return `
     <div class="nyu-rmp-comments-panel" role="region" aria-label="${escapeHtml(listLabel)}">
-      <div class="nyu-rmp-comments-heading">${heading}${matchBadge}</div>
+      <div class="nyu-rmp-comments-heading">${heading}<span class="nyu-rmp-comments-sample" aria-label="${escapeHtml(sampleLabel)}">${escapeHtml(sampleText)}</span>${matchBadge}</div>
       ${body}
       ${truncationNote}
       ${expandControl}

@@ -588,7 +588,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const comments = document.querySelector(".nyu-rmp-comments");
-    expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments, 2 shown");
+    expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 2 shown");
     expect(comments.querySelectorAll("li")).toHaveLength(2);
   });
 
@@ -610,7 +610,7 @@ describe("Albert content DOM injection", () => {
 
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(panel.getAttribute("role")).toBe("region");
-    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 0 shown");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 0 shown");
     expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found on RMP.");
   });
 
@@ -1020,8 +1020,8 @@ describe("Albert content DOM injection", () => {
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(badge.textContent).toBe("No CSCI-UA 201 matches");
     expect(badge.classList.contains("is-empty")).toBe(true);
-    expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
-    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
+    expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 1 shown, no CSCI-UA 201 comment matches");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 1 shown, no CSCI-UA 201 comment matches");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
       "1 useful comment shown, no CSCI-UA 201 comment matches",
     );
@@ -1508,7 +1508,7 @@ describe("Albert content DOM injection", () => {
     const hiddenComments = Array.from(document.querySelectorAll(".nyu-rmp-comment.is-hidden"));
     const toggle = document.querySelector(".nyu-rmp-comments-expand");
 
-    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments, 3 of 5 useful comments shown");
+    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 3 of 5 useful comments shown");
     expect(hiddenComments).toHaveLength(2);
     expect(hiddenComments.every((comment) => comment.hidden)).toBe(true);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
@@ -1519,7 +1519,7 @@ describe("Albert content DOM injection", () => {
     expect(hiddenComments.every((comment) => comment.hidden)).toBe(false);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(toggle.textContent).toBe("Show fewer comments");
-    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments, 5 of 5 useful comments shown");
+    expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 5 of 5 useful comments shown");
   });
 
   it("updates the card summary when hidden useful comments are expanded", async () => {
@@ -1730,7 +1730,7 @@ describe("Albert content DOM injection", () => {
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (2)");
     expect(panel.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
-    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 2 shown, 1 useful comment matches Albert course CSCI-UA 201");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 2 shown, 1 useful comment matches Albert course CSCI-UA 201");
   });
 
   it("labels the useful comments panel as most useful RMP comments", async () => {
@@ -1749,8 +1749,31 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const panel = document.querySelector(".nyu-rmp-comments-panel");
-    expect(panel.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments (1)");
-    expect(panel.querySelector(".nyu-rmp-comments").getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown");
+    expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (1)");
+    expect(panel.querySelector(".nyu-rmp-comments").getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 1 shown");
+  });
+
+  it("shows that useful comments come from the 20-rating RMP sample", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Explains low-level systems clearly and gives practical labs."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const panel = document.querySelector(".nyu-rmp-comments-panel");
+    const sample = panel.querySelector(".nyu-rmp-comments-sample");
+    expect(sample.textContent).toBe("20-rating sample");
+    expect(sample.getAttribute("aria-label")).toBe("Useful comments selected from a 20-rating RMP sample");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 1 shown");
+    expect(panel.querySelector(".nyu-rmp-comments").getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 1 shown");
   });
 
   it("shows how many useful comments are displayed", async () => {
@@ -1771,7 +1794,7 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments (2)");
+    expect(document.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (2)");
   });
 
   it("summarizes displayed useful-comment count in the rating card accessible label", async () => {
@@ -1811,7 +1834,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const panel = document.querySelector(".nyu-rmp-comments-panel");
-    expect(panel.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments");
+    expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments");
     expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found on RMP.");
     expect(document.querySelector(".nyu-rmp-comments")).toBeNull();
   });
