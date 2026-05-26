@@ -6,6 +6,7 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const ORIGINAL_CONTENT_CLASS = "nyu-rmp-albert-original";
 const RATING_CELL_CLASS = "nyu-rmp-rating-cell";
 const PROCESSED_CELL_STYLE_SNAPSHOT_DATA = "nyuRmpProcessedCellStyleSnapshot";
+const ALBERT_RESCAN_DELAY_MS = 120;
 const PROCESSED_CELL_LAYOUT_PROPERTIES = [
   ["align-items", "flex-start"],
   ["flex-wrap", "wrap"],
@@ -186,7 +187,6 @@ const ALBERT_OBSERVER_OPTIONS = {
     "role",
     "selected",
     "slot",
-    "style",
     "title",
     "value",
   ],
@@ -208,19 +208,17 @@ export function startAlbertRmpEnhancer({
 
   let observer;
   let scanTimer = null;
-  const scheduleScan = () => {
+  const scheduleScan = (mutations = []) => {
+    if (mutations.length > 0 && mutations.every(isExtensionOwnedMutation)) {
+      return;
+    }
     if (scanTimer !== null) {
       return;
     }
-    const runScan = () => {
+    scanTimer = window.setTimeout(() => {
       scanTimer = null;
       scanAlbertPageOnce({ document, lookupProfessor });
-    };
-    if (typeof window.requestAnimationFrame === "function") {
-      scanTimer = window.requestAnimationFrame(runScan);
-    } else {
-      scanTimer = window.setTimeout(runScan, 0);
-    }
+    }, ALBERT_RESCAN_DELAY_MS);
   };
 
   observer = new window.MutationObserver(scheduleScan);
@@ -231,11 +229,7 @@ export function startAlbertRmpEnhancer({
   const disconnectObserver = observer.disconnect?.bind(observer) ?? (() => {});
   observer.disconnect = () => {
     if (scanTimer !== null) {
-      if (typeof window.cancelAnimationFrame === "function") {
-        window.cancelAnimationFrame(scanTimer);
-      } else {
-        window.clearTimeout(scanTimer);
-      }
+      window.clearTimeout(scanTimer);
       scanTimer = null;
     }
     document.removeEventListener("input", scheduleScan, true);
@@ -243,6 +237,27 @@ export function startAlbertRmpEnhancer({
     disconnectObserver();
   };
   return observer;
+}
+
+function isExtensionOwnedMutation(mutation) {
+  const target = mutation?.target;
+  if (isExtensionOwnedNode(target)) {
+    return true;
+  }
+
+  const changedNodes = [
+    ...Array.from(mutation?.addedNodes ?? []),
+    ...Array.from(mutation?.removedNodes ?? []),
+  ];
+  return changedNodes.length > 0 && changedNodes.every(isExtensionOwnedNode);
+}
+
+function isExtensionOwnedNode(node) {
+  if (!node) {
+    return false;
+  }
+  const element = node.nodeType === ELEMENT_NODE_TYPE ? node : node.parentElement;
+  return Boolean(element?.closest?.(`.${ROOT_CLASS}, .${RATING_CELL_CLASS}, .${ORIGINAL_CONTENT_CLASS}, #${STYLE_ID}`));
 }
 
 function isAlbertWindow(window) {
@@ -372,21 +387,32 @@ function findSelectButtonRowInstructorTargets(document) {
 }
 
 function selectButtonRowInstructorTargets(row) {
-  const cells = visibleRowCells(row)
+  const rowCells = visibleRowCells(row);
+  const cells = rowCells
     .filter((cell) => cell.dataset.nyuRmpRatingCell !== "true")
     .filter((cell) => !cell.querySelector?.(`.${ROOT_CLASS}, [data-nyu-rmp-rating-cell='true']`))
     .filter((cell) => !cell.querySelector?.("button, input, a, [role='button']") || !Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton));
   const labelledTargets = cells
     .filter((cell) => cellHeaderText(cell).split("\n").some(isInstructorLabel))
-    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell) }))
+    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
     .filter((target) => target.names.length > 0);
   if (labelledTargets.length > 0) {
     return labelledTargets;
   }
 
-  return cells
+  const inferredTargets = cells
     .filter(isLikelySelectButtonRowInstructorCell)
-    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell) }))
+    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
+    .filter((target) => target.names.length > 0);
+  if (inferredTargets.length > 0) {
+    return inferredTargets;
+  }
+
+  return rowCells
+    .filter((cell) => cell.dataset.nyuRmpRatingCell !== "true")
+    .filter((cell) => !cell.querySelector?.(`.${ROOT_CLASS}, [data-nyu-rmp-rating-cell='true']`))
+    .filter((cell) => cell.querySelector?.("button, input, a, [role='button']") && Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton))
+    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
     .filter((target) => target.names.length > 0);
 }
 
@@ -403,11 +429,22 @@ function isAlbertSelectButton(element) {
 }
 
 function instructorNamesFromSelectButtonRowCell(cell) {
-  return instructorNameSegments(cell)
+  const text = visibleTextSegments(cell).join("\n");
+  const descendantInstructorNames = Array.from(cell.querySelectorAll?.("*") ?? [])
+    .flatMap((element) => {
+      const elementText = visibleTextSegments(element).join("\n");
+      return hasInstructorText(elementText) ? extractInstructorNamesFromText(elementText) : [];
+    });
+  const explicitInstructorNames = hasInstructorText(text) ? extractInstructorNamesFromText(text) : [];
+  const preferredNames = descendantInstructorNames.length > 0
+    ? descendantInstructorNames
+    : explicitInstructorNames;
+  const candidateNames = preferredNames.length > 0 ? preferredNames : instructorNameSegments(cell);
+  return uniqueNames(candidateNames
     .flatMap(splitInstructorList)
     .filter(isLikelyHeaderedInstructorName)
     .map(normalizeInstructorName)
-    .filter(Boolean);
+    .filter(Boolean));
 }
 
 function isLikelySelectButtonRowInstructorCell(cell) {
@@ -477,7 +514,16 @@ function isUnprocessedVisibleCandidate(element) {
     && !element.closest("[data-nyu-rmp-rating-cell='true']")
     && !element.querySelector?.("[data-nyu-rmp-processed='true']")
     && !element.closest(`.${ROOT_CLASS}`)
+    && !containsAlbertSelectButton(element)
     && isElementVisible(element);
+}
+
+function containsAlbertSelectButton(element) {
+  if (isAlbertSelectButton(element)) {
+    return true;
+  }
+  return Array.from(element.querySelectorAll?.("button, input, a, [role='button']") ?? [])
+    .some(isAlbertSelectButton);
 }
 
 function isElementVisible(element) {
@@ -1057,9 +1103,15 @@ function preferMostSpecificTargets(targets) {
         return targets.indexOf(other) < targets.indexOf(target);
       }
       if (target.element.contains(other.element)) {
+        if (target.preferContainer) {
+          return false;
+        }
         return other.names.length >= target.names.length;
       }
       if (other.element.contains(target.element)) {
+        if (other.preferContainer) {
+          return true;
+        }
         return other.names.length > target.names.length;
       }
       return false;

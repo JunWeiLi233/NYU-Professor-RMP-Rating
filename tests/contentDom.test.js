@@ -344,8 +344,9 @@ describe("Albert content DOM injection", () => {
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: expect.arrayContaining(["aria-colindex", "aria-label", "aria-labelledby", "aria-describedby", "class", "data-instructor-name", "data-label", "data-name", "data-tooltip", "headers", "hidden", "role", "selected", "style", "title", "value"]),
+      attributeFilter: expect.arrayContaining(["aria-colindex", "aria-label", "aria-labelledby", "aria-describedby", "class", "data-instructor-name", "data-label", "data-name", "data-tooltip", "headers", "hidden", "role", "selected", "title", "value"]),
     }));
+    expect(observe.mock.calls[0][1].attributeFilter).not.toContain("style");
   });
 
   it("cancels a pending Albert rescan when the overlay observer disconnects", async () => {
@@ -377,6 +378,35 @@ describe("Albert content DOM injection", () => {
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
     expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
+  it("does not rescan when only extension-owned card markup changes", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+    let mutationCallback;
+    const windowMock = {
+      location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      MutationObserver: class {
+        constructor(callback) {
+          mutationCallback = callback;
+        }
+
+        observe = vi.fn();
+        disconnect = vi.fn();
+      },
+      clearTimeout,
+      setTimeout,
+    };
+
+    startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    const card = document.querySelector(".nyu-rmp-card");
+    mutationCallback([{ target: card, addedNodes: [], removedNodes: [] }]);
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
   it("rescans when Albert updates an existing instructor form control", async () => {
@@ -9628,6 +9658,43 @@ describe("Albert content DOM injection", () => {
     expect(rowCards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Chee Keng Yap", "Chee Keng Yap"]);
     expect(rowCards.every((card) => card.textContent.includes("Same professor should appear for every selectable class row."))).toBe(true);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+  });
+
+  it("shows a SELECT_BUTTON row rating when Albert puts the button and professor in one gridcell", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="compact-select-row" style="display: table-row;">
+            <td id="compact-cell" data-label="Instructor" style="display: table-cell;">
+          <button id="DERIVED_CLS_DTL_SELECT_BUTTON$0">Select</button>
+          <div>CSCI-UA 201 Computer Systems Organization</div>
+          <div>Instructor: YAP, CHEE KENG</div>
+          <div>Open</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: ["Compact SELECT_BUTTON row comment."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    const scan = scanAlbertPageOnce({ document, lookupProfessor });
+    await Promise.all(scan.pendingLookups);
+
+    const compactCell = document.getElementById("compact-cell");
+    expect(scan.targets.map((target) => target.element.id || target.element.textContent.trim())).toEqual(["compact-cell"]);
+    expect(compactCell.dataset.nyuRmpProcessed).toBe("true");
+    expect(compactCell.querySelector(":scope > .nyu-rmp-albert-original button")).not.toBeNull();
+    expect(compactCell.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(document.querySelector("#compact-select-row > [data-nyu-rmp-rating-cell='true']")).not.toBeNull();
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card").textContent).toContain("Compact SELECT_BUTTON row comment.");
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
   });
 
