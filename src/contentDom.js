@@ -1599,6 +1599,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bcurved\s+exams?\b/,
     /\bextra\s+credit\b/,
     /\bbonus\s+(?:points?|credit)\b/,
+    /\bdrops?\s+(?:the\s+)?lowest\s+(?:quiz|quizzes|homework|assignments?|grades?)\b/,
+    /\blowest\s+(?:quiz|quizzes|homework|assignments?|grades?)\s+(?:is|are|was|were)?\s*dropped\b/,
     /\b(?:slides?|recordings?|notes?)\s+(?:are|is|were|was)?\s*posted\b/,
     /\bposts?\s+(?:slides?|recordings?|notes?)\b/,
     /\bnot\s+hard\b/,
