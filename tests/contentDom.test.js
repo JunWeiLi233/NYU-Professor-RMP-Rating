@@ -38,6 +38,15 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("transform: none");
   });
 
+  it("marks injected styles with the extension version for live Albert checks", () => {
+    injectStyles(document);
+
+    const style = document.getElementById("nyu-rmp-rating-styles");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.1");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.1");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.1\"");
+  });
+
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
     injectStyles(document);
 
@@ -4497,6 +4506,16 @@ describe("Albert content DOM injection", () => {
 
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks injected rating roots and cards with the extension version", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.1");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.1");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {

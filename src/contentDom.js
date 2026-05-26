@@ -2,6 +2,7 @@ import { extractInstructorNamesFromText, isLikelyInstructorName, normalizeInstru
 
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
+const EXTENSION_VERSION = "0.1.1";
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
@@ -942,6 +943,7 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
   const container = document.createElement("div");
   container.className = ROOT_CLASS;
+  container.dataset.nyuRmpVersion = EXTENSION_VERSION;
   const courseCode = courseCodeForElement(element);
 
   const pendingLookups = [];
@@ -1032,6 +1034,7 @@ function createRatingShell(document, name, courseCode = "") {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
   card.dataset.nyuRmpCardId = String(++nextCardId);
+  card.dataset.nyuRmpVersion = EXTENSION_VERSION;
   if (courseCode) {
     card.dataset.nyuRmpCourseCode = courseCode;
   }
@@ -1844,8 +1847,11 @@ export function injectStyles(document = globalThis.document) {
 
   const style = document.createElement("style");
   style.id = STYLE_ID;
+  style.dataset.nyuRmpVersion = EXTENSION_VERSION;
   style.textContent = `
+      /* NYU Albert RMP Ratings v${EXTENSION_VERSION} */
 	    .${ROOT_CLASS} {
+	      --nyu-rmp-extension-version: "${EXTENSION_VERSION}";
 	      box-sizing: border-box;
 	      display: grid;
 	      gap: 6px;
