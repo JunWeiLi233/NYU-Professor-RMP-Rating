@@ -176,6 +176,24 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("passes CS Albert course context as a department hint for fresh RMP lookups", async () => {
+    const freshRating = {
+      name: "Michael Walfish",
+      rating: 3.5,
+      topComments: ["CS course context should steer last-name lookup."],
+    };
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Walfish", { courseCode: "CSCI-UA 202" })).resolves.toMatchObject(freshRating);
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Walfish", { departmentHint: "computer-science" });
+    expect(storage.data[professorCacheKey("Walfish", "CSCI-UA 202")]).toMatchObject({
+      value: freshRating,
+    });
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

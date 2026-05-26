@@ -16,12 +16,14 @@ export function createProfessorLookupService({
   const inFlightLookups = new Map();
 
   return {
-    async lookup(name, { forceRefresh = false } = {}) {
+    async lookup(name, { forceRefresh = false, courseCode = "" } = {}) {
       if (!String(name ?? "").trim()) {
         throw new Error("professor name is required");
       }
       const normalizedName = normalizeProfessorName(name);
-      const key = professorCacheKey(normalizedName);
+      const normalizedCourseCode = normalizeCourseCode(courseCode);
+      const departmentHint = departmentHintForCourseCode(normalizedCourseCode);
+      const key = professorCacheKey(normalizedName, normalizedCourseCode);
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
       let staleFallback = null;
@@ -56,7 +58,7 @@ export function createProfessorLookupService({
 
       const inFlightKey = forceRefresh ? `${key}:force` : key;
       if (!inFlightLookups.has(inFlightKey)) {
-        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage, staleFallback }));
+        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage, staleFallback, departmentHint }));
       }
 
       return inFlightLookups.get(inFlightKey).finally(() => {
@@ -75,12 +77,33 @@ export function createProfessorLookupService({
   };
 }
 
-export function professorCacheKey(name) {
-  return `professor:${foldDiacritics(normalizeProfessorName(name))
+export function professorCacheKey(name, courseCode = "") {
+  const normalizedNameKey = foldDiacritics(normalizeProfessorName(name))
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
     .replace(/\s+/g, " ")
-    .toLowerCase()}`;
+    .toLowerCase();
+  const normalizedCourseKey = normalizeCourseCode(courseCode)
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+  return `professor:${[normalizedNameKey, normalizedCourseKey].filter(Boolean).join(":course:")}`;
+}
+
+function normalizeCourseCode(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ").toUpperCase();
+}
+
+function departmentHintForCourseCode(courseCode) {
+  const normalized = normalizeCourseCode(courseCode);
+  if (/^CSCI-UA\b/.test(normalized)) {
+    return "computer-science";
+  }
+  if (/^MATH-UA\b/.test(normalized)) {
+    return "mathematics";
+  }
+  return "";
 }
 
 function normalizeProfessorName(name) {
@@ -131,10 +154,12 @@ function isFreshCacheEntry(entry, currentTime) {
   return entry.cachedAt <= currentTime && currentTime - entry.cachedAt <= CACHE_TTL_MS;
 }
 
-async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage, staleFallback = null }) {
+async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage, staleFallback = null, departmentHint = "" }) {
   let result;
   try {
-    result = await findProfessorRating(name);
+    result = departmentHint
+      ? await findProfessorRating(name, { departmentHint })
+      : await findProfessorRating(name);
   } catch (error) {
     if (staleFallback) {
       memoryCache.set(key, staleFallback);

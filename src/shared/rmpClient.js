@@ -45,10 +45,11 @@ const PROFESSOR_SEARCH_QUERY = `
 export async function findProfessorRating(name, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? DEFAULT_LOOKUP_TIMEOUT_MS;
+  const departmentHint = normalizeDepartmentHint(options.departmentHint);
   for (const queryText of searchNameVariants(name)) {
     const teachers = await searchTeachers(queryText, fetchImpl, timeoutMs);
-    const bestMatch = pickBestTeacher(name, teachers);
-    if (bestMatch && teacherScore(compactName(name), bestMatch) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
+    const bestMatch = pickBestTeacher(name, teachers, { departmentHint });
+    if (bestMatch && teacherScore(compactName(name), bestMatch, { departmentHint }) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
       return toProfessorRating(bestMatch, name);
     }
   }
@@ -105,13 +106,14 @@ async function searchTeachers(name, fetchImpl, timeoutMs) {
   return asArray(payload?.data?.newSearch?.teachers?.edges).map((edge) => edge?.node).filter(Boolean);
 }
 
-export function pickBestTeacher(name, teachers) {
+export function pickBestTeacher(name, teachers, { departmentHint = "" } = {}) {
   const target = compactName(name);
+  const normalizedDepartmentHint = normalizeDepartmentHint(departmentHint);
   return teachers
     .filter(Boolean)
     .sort((left, right) => {
-      const leftScore = teacherScore(target, left);
-      const rightScore = teacherScore(target, right);
+      const leftScore = teacherScore(target, left, { departmentHint: normalizedDepartmentHint });
+      const rightScore = teacherScore(target, right, { departmentHint: normalizedDepartmentHint });
       return rightScore - leftScore;
     })[0] ?? null;
 }
@@ -152,7 +154,7 @@ function toProfessorRating(teacher, requestedName) {
   };
 }
 
-function teacherScore(target, teacher) {
+function teacherScore(target, teacher, { departmentHint = "" } = {}) {
   const firstName = compactName(teacher.firstName ?? "");
   const lastName = compactName(teacher.lastName ?? "");
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
@@ -187,6 +189,7 @@ function teacherScore(target, teacher) {
   if (isComputerScienceDepartment(teacher.department)) {
     score += 10;
   }
+  score += departmentHintScore({ target, teacher, departmentHint });
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
 }
@@ -194,6 +197,41 @@ function teacherScore(target, teacher) {
 function isComputerScienceDepartment(value) {
   const department = String(value ?? "").toLowerCase();
   return /computer|courant|\bcs\b|\bc\.?\s*s\.?\b|\bcomp\.?\s+(?:sci\.?|science)\b/.test(department);
+}
+
+function departmentHintScore({ target, teacher, departmentHint }) {
+  if (!departmentHint) {
+    return 0;
+  }
+  if (departmentMatchesHint(teacher.department, departmentHint)) {
+    return 25;
+  }
+  return departmentHint === "computer-science" && isSingleNameTarget(target) ? -60 : 0;
+}
+
+function departmentMatchesHint(department, departmentHint) {
+  if (departmentHint === "computer-science") {
+    return isComputerScienceDepartment(department);
+  }
+  if (departmentHint === "mathematics") {
+    return isMathematicsDepartment(department);
+  }
+  return false;
+}
+
+function isMathematicsDepartment(value) {
+  return /\bmath(?:ematics)?\b/i.test(String(value ?? ""));
+}
+
+function normalizeDepartmentHint(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (["computer-science", "cs", "computer science", "courant"].includes(normalized)) {
+    return "computer-science";
+  }
+  if (["mathematics", "math", "maths"].includes(normalized)) {
+    return "mathematics";
+  }
+  return "";
 }
 
 function normalizeTagName(value) {

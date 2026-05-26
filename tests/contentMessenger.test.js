@@ -17,7 +17,7 @@ describe("content script professor messenger", () => {
     };
     const messenger = createProfessorMessenger(chrome);
 
-    await expect(messenger.lookupProfessor("Ada Lovelace", { forceRefresh: true })).resolves.toEqual({
+    await expect(messenger.lookupProfessor("Ada Lovelace", { forceRefresh: true, courseCode: "CSCI-UA 201" })).resolves.toEqual({
       name: "Ada Lovelace",
       rating: 4.7,
     });
@@ -26,6 +26,7 @@ describe("content script professor messenger", () => {
       type: "NYU_RMP_FIND_PROFESSOR",
       name: "Ada Lovelace",
       forceRefresh: true,
+      courseCode: "CSCI-UA 201",
     });
   });
 

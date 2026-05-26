@@ -286,9 +286,10 @@ function createScanLookupCache(lookupProfessor) {
       return lookupProfessor(name, options);
     }
 
-    const key = compactName(name);
+    const courseCode = shouldPassCourseContext(name) ? options.courseCode : "";
+    const key = [compactName(name), normalizeCourseCode(courseCode)].filter(Boolean).join("|");
     if (!lookups.has(key)) {
-      lookups.set(key, lookupProfessor(name));
+      lookups.set(key, courseCode ? lookupProfessor(name, { courseCode }) : lookupProfessor(name));
     }
     return lookups.get(key);
   };
@@ -1003,12 +1004,20 @@ function uniqueNames(names) {
 
 function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, courseCode = card.dataset.nyuRmpCourseCode ?? "" }) {
   setCardLoading(card, name, forceRefresh ? "Refreshing RMP" : "Checking RMP");
-  const lookupArgs = forceRefresh ? [name, { forceRefresh: true }] : [name];
+  const lookupOptions = {
+    ...(forceRefresh ? { forceRefresh: true } : {}),
+    ...(courseCode && shouldPassCourseContext(name) ? { courseCode } : {}),
+  };
+  const lookupArgs = Object.keys(lookupOptions).length > 0 ? [name, lookupOptions] : [name];
   return lookupProfessor(...lookupArgs)
     .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor, courseCode }))
     .catch((error) => {
       updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message, courseCode });
     });
+}
+
+function shouldPassCourseContext(name) {
+  return String(name ?? "").trim().split(/\s+/).filter(Boolean).length === 1;
 }
 
 function isTableCell(element) {

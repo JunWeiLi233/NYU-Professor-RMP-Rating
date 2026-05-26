@@ -160,6 +160,30 @@ describe("Albert content DOM injection", () => {
     expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({ childList: true, subtree: true }));
   });
 
+  it("passes Albert course context with professor lookup requests", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 202 Operating Systems</td>
+            <td>Walfish</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
+  });
+
   it("subscribes to in-place Albert text and metadata updates", async () => {
     document.body.innerHTML = `<div>Loading class details</div>`;
     const lookupProfessor = vi.fn(async () => null);
@@ -8103,7 +8127,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Walfish");
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Live Albert last-name instructor cells should render.");
     expect(document.body.textContent).toContain("Albert CSCI-UA 202");

@@ -2,11 +2,12 @@ const DEFAULT_MESSAGE_TIMEOUT_MS = 10000;
 
 export function createProfessorMessenger(chrome, { timeoutMs = DEFAULT_MESSAGE_TIMEOUT_MS } = {}) {
   return {
-    async lookupProfessor(name, { forceRefresh = false } = {}) {
+    async lookupProfessor(name, { forceRefresh = false, courseCode = "" } = {}) {
       const response = await sendRuntimeMessage(chrome, {
         type: "NYU_RMP_FIND_PROFESSOR",
         name,
         forceRefresh,
+        ...(courseCode ? { courseCode } : {}),
       }, { timeoutMs });
       if (!response?.ok) {
         throw new Error(response?.error ?? "RMP lookup failed");

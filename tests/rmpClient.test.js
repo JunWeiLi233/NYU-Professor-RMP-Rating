@@ -1742,6 +1742,54 @@ describe("Rate My Professors client", () => {
     expect(result.matchConfidence).toBe("fuzzy");
   });
 
+  it("does not accept unrelated department matches for CS last-name-only Albert rows", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "writing-meyers",
+                    legacyId: 2555340,
+                    firstName: "Michelle",
+                    lastName: "Meyers",
+                    department: "Writing",
+                    avgRating: 4.6,
+                    avgDifficulty: 2.5,
+                    numRatings: 29,
+                    wouldTakeAgainPercent: 93,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+                {
+                  node: {
+                    id: "bio-meyers",
+                    legacyId: 2135013,
+                    firstName: "Myrna",
+                    lastName: "Meyers",
+                    department: "Biological Sciences",
+                    avgRating: 0,
+                    avgDifficulty: 0,
+                    numRatings: 0,
+                    wouldTakeAgainPercent: -1,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Meyers", { fetchImpl, departmentHint: "computer-science" })).resolves.toBeNull();
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
