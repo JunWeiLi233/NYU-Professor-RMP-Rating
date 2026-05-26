@@ -1027,6 +1027,7 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
   return Array.from(document.querySelectorAll("[data-nyu-rmp-processed='true']"))
     .filter((element) => isTableCell(element) && isElementVisible(element))
     .flatMap((element) => {
+      applyProcessedCellLayoutSafeguards(element);
       const container = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`);
       const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
       if (!container || !originalContent) {

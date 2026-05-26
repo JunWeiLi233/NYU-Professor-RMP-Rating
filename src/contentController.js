@@ -1,5 +1,26 @@
 import { EXTENSION_VERSION } from "./shared/version.js";
 
+const PROCESSED_CELL_LAYOUT_GUARD_PROPERTIES = [
+  ["align-items", "flex-start"],
+  ["flex-wrap", "wrap"],
+  ["grid-template-columns", "minmax(0, 1fr)"],
+  ["min-inline-size", "0"],
+  ["min-width", "0"],
+  ["overflow-wrap", "normal"],
+  ["white-space", "normal"],
+  ["word-break", "normal"],
+];
+const PROCESSED_CELL_CHILD_GUARD_PROPERTIES = [
+  ["flex", "0 0 100%"],
+  ["grid-column", "1 / -1"],
+  ["min-inline-size", "0"],
+  ["min-width", "0"],
+  ["overflow-wrap", "normal"],
+  ["white-space", "normal"],
+  ["width", "100%"],
+  ["word-break", "normal"],
+];
+
 export async function initContentScript({
   chrome = globalThis.chrome,
   document = globalThis.document,
@@ -49,6 +70,7 @@ export async function initContentScript({
       cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
       radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
       processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
+      processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
     });
     return false;
   });
@@ -80,4 +102,44 @@ async function readOverlaySettings(chrome) {
   } catch {
     return {};
   }
+}
+
+function countProcessedCellLayoutWarnings(document) {
+  return Array.from(document?.querySelectorAll?.("[data-nyu-rmp-processed='true']") ?? [])
+    .filter(isProcessedAlbertCell)
+    .filter(hasProcessedCellLayoutWarning).length;
+}
+
+function isProcessedAlbertCell(element) {
+  const tagName = element.tagName;
+  const role = element.getAttribute?.("role")?.toLowerCase();
+  return tagName === "TD" || tagName === "TH" || role === "cell" || role === "gridcell";
+}
+
+function hasProcessedCellLayoutWarning(element) {
+  if (!hasRequiredInlineStyles(element, PROCESSED_CELL_LAYOUT_GUARD_PROPERTIES)) {
+    return true;
+  }
+
+  const originalContent = element.querySelector?.(":scope > .nyu-rmp-albert-original");
+  const ratingRoot = element.querySelector?.(":scope > .nyu-rmp-rating-root.is-cell-mounted");
+  return [originalContent, ratingRoot]
+    .filter(Boolean)
+    .some((child) => !hasRequiredInlineStyles(child, PROCESSED_CELL_CHILD_GUARD_PROPERTIES));
+}
+
+function hasRequiredInlineStyles(element, properties) {
+  return properties.every(([property, expectedValue]) => {
+    const value = normalizeInlineStyleValue(property, element.style.getPropertyValue(property));
+    const expected = normalizeInlineStyleValue(property, expectedValue);
+    return value === expected && element.style.getPropertyPriority(property) === "important";
+  });
+}
+
+function normalizeInlineStyleValue(property, value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if ((property === "min-inline-size" || property === "min-width") && normalized === "0px") {
+    return "0";
+  }
+  return normalized;
 }

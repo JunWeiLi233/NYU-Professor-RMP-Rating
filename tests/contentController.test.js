@@ -53,7 +53,32 @@ describe("content script controller", () => {
       cardCount: 2,
       radarCount: 1,
       processedCellCount: 2,
+      processedCellLayoutWarningCount: 0,
     });
+  });
+
+  it("reports processed Albert layout warnings when cell safeguards are missing", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div role="gridcell" data-nyu-rmp-processed="true">
+        <div class="nyu-rmp-albert-original">Ada Lovelace</div>
+        <div class="nyu-rmp-rating-root is-cell-mounted"></div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+
+    expect(sendResponse.mock.calls[0][0].processedCellLayoutWarningCount).toBe(1);
   });
 
   it("ignores unrelated content script messages", async () => {

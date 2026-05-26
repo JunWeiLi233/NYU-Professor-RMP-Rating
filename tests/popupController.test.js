@@ -113,7 +113,7 @@ describe("extension popup controller", () => {
 
     expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
@@ -141,9 +141,37 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 1 radar map, 2 Albert cells checked",
+      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 1 radar map, 2 Albert cells checked, layout OK",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
+  it("reports processed Albert layout warnings in the connected page status", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.1",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        radarCount: 3,
+        processedCellCount: 4,
+        processedCellLayoutWarningCount: 1,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, 1 layout warning");
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
   it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {
@@ -179,7 +207,7 @@ describe("extension popup controller", () => {
       files: ["content.js"],
     });
     expect(tabs.sendMessage).toHaveBeenCalledTimes(2);
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 

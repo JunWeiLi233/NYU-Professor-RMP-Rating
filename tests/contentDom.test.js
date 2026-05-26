@@ -9568,6 +9568,23 @@ describe("Albert content DOM injection", () => {
 
     const originalContent = document.querySelector("#grid-instructor > .nyu-rmp-albert-original");
     const ratingRoot = document.querySelector("#grid-instructor > .nyu-rmp-rating-root");
+    const instructorCell = document.getElementById("grid-instructor");
+    expect(instructorCell.style.alignItems).toBe("flex-start");
+    expect(instructorCell.style.flexWrap).toBe("wrap");
+    expect(instructorCell.style.gridTemplateColumns).toBe("minmax(0, 1fr)");
+    expect(instructorCell.style.minInlineSize).toBe("0px");
+    expect(instructorCell.style.minWidth).toBe("0px");
+    expect(instructorCell.style.overflowWrap).toBe("normal");
+    expect(instructorCell.style.whiteSpace).toBe("normal");
+    expect(instructorCell.style.wordBreak).toBe("normal");
+    expect(instructorCell.style.getPropertyPriority("align-items")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("flex-wrap")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("grid-template-columns")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("min-inline-size")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("overflow-wrap")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("white-space")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("word-break")).toBe("important");
     for (const mountedChild of [originalContent, ratingRoot]) {
       expect(mountedChild.style.flex).toBe("0 0 100%");
       expect(mountedChild.style.gridColumn).toBe("1 / -1");
