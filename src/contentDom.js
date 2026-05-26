@@ -1051,16 +1051,16 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ? `<a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>`
     : "";
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
-  const displayedTopComments = sortedTopComments
-    .filter((comment) => isUsefulCommentText(normalizeComment(comment).text))
-    .slice(0, MAX_RENDERED_COMMENTS);
+  const usefulTopComments = sortedTopComments
+    .filter((comment) => isUsefulCommentText(normalizeComment(comment).text));
+  const displayedTopComments = usefulTopComments.slice(0, MAX_RENDERED_COMMENTS);
   const courseMatchedCommentCount = countCourseMatchedComments(displayedTopComments, courseCode);
   const courseContext = renderCourseContext(courseCode);
   const comments = displayedTopComments
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
   const commentCount = countRenderedComments(comments);
-  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode });
+  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode, totalUsefulCommentCount: usefulTopComments.length });
   const tagNames = asArray(result.tags)
     .map(normalizeTagName)
     .filter(Boolean);
@@ -1773,6 +1773,13 @@ export function injectStyles(document = globalThis.document) {
 	      line-height: 1.35;
 	      margin: 0 0 4px;
 	    }
+	    .nyu-rmp-comments-truncated {
+	      color: #667085;
+	      font-size: 10px;
+	      font-weight: 650;
+	      line-height: 1.3;
+	      margin: 0 0 4px;
+	    }
 	    .nyu-rmp-comments li {
 	      margin-bottom: 6px;
 	    }
@@ -2006,15 +2013,23 @@ function commentMatchesCourse(comment, albertCourseCode = "") {
   return Boolean(normalized.course) && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
 }
 
-function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "" } = {}) {
+function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", totalUsefulCommentCount } = {}) {
   const commentCount = countRenderedComments(comments);
   const heading = commentCount > 0 ? `Most useful comments (${commentCount})` : "Most useful comments";
+  const usefulCommentCount = Number.isFinite(totalUsefulCommentCount) ? totalUsefulCommentCount : commentCount;
+  const hiddenCommentCount = Math.max(0, usefulCommentCount - commentCount);
   const matchBadge = courseMatchedCommentCount > 0 && courseCode
     ? `<span class="nyu-rmp-comments-course-match">${escapeHtml(formatCourseMatchBadge(courseMatchedCommentCount, courseCode))}</span>`
     : "";
+  const shownLabel = hiddenCommentCount > 0
+    ? `${commentCount} of ${usefulCommentCount} useful comments shown`
+    : `${commentCount} shown`;
   const listLabel = courseMatchedCommentCount > 0 && courseCode
-    ? `Most useful RMP comments, ${commentCount} shown, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
-    : `Most useful RMP comments, ${commentCount} shown`;
+    ? `Most useful RMP comments, ${shownLabel}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
+    : `Most useful RMP comments, ${shownLabel}`;
+  const truncationNote = hiddenCommentCount > 0
+    ? `<p class="nyu-rmp-comments-truncated">Showing ${commentCount} of ${usefulCommentCount} useful comments</p>`
+    : "";
   const body = comments
     ? `<ul class="nyu-rmp-comments" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
@@ -2022,6 +2037,7 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
     <div class="nyu-rmp-comments-panel" role="region" aria-label="${escapeHtml(listLabel)}">
       <div class="nyu-rmp-comments-heading">${heading}${matchBadge}</div>
       ${body}
+      ${truncationNote}
     </div>
   `;
 }

@@ -1111,6 +1111,8 @@ describe("Albert content DOM injection", () => {
     ]);
     expect(document.body.textContent).not.toContain("Fourth generic comment should stay hidden.");
     expect(document.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (3)");
+    expect(document.querySelector(".nyu-rmp-comments-truncated").textContent).toBe("Showing 3 of 5 useful comments");
+    expect(document.querySelector(".nyu-rmp-comments-panel").getAttribute("aria-label")).toContain("3 of 5 useful comments shown");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
       "3 useful comments shown, 1 matches Albert course CSCI-UA 201",
     );
