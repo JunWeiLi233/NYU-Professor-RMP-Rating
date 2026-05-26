@@ -163,7 +163,13 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
 
     const response = await pingAlbertContentScript(tabs, activeTab.id);
     if (isLoadedContentResponse(response)) {
-      const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, response);
+      const refreshedResponse = await refreshAlbertContentScriptIfStale({
+        tabs,
+        scripting,
+        tabId: activeTab.id,
+        response,
+      });
+      const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, refreshedResponse);
       setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedResponse), albertPageStatusState(repairedResponse));
       return;
     }
@@ -179,6 +185,31 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
   } catch {
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
   }
+}
+
+async function refreshAlbertContentScriptIfStale({ tabs, scripting, tabId, response }) {
+  if (!shouldRefreshAlbertContentScript(response)) {
+    return response;
+  }
+  if (!scripting?.executeScript) {
+    return response;
+  }
+  const wakeResponse = await wakeAlbertContentScript({ tabs, scripting, tabId });
+  if (!isLoadedContentResponse(wakeResponse)) {
+    return {
+      ...response,
+      contentScriptRefreshAttempted: true,
+    };
+  }
+  return {
+    ...wakeResponse,
+    contentScriptRefreshAttempted: true,
+    staleBeforeRefresh: {
+      version: response.version,
+      cardCount: response.cardCount,
+      quickGridCount: response.quickGridCount,
+    },
+  };
 }
 
 async function pingAlbertContentScript(tabs, tabId) {
@@ -258,16 +289,17 @@ function formatAlbertConnectedStatus(response) {
   const migrationLabel = formatStaleCardLayoutMigrationLabel(staleCardLayoutMigrationCount);
   const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, layoutWarningLabel, migrationLabel].filter(Boolean).join(", ");
   const versionLabel = formatVersionLabel(response.version);
+  const refreshLabel = response.contentScriptRefreshAttempted ? " Current content script rechecked." : "";
   if (isStaleContentVersion(response.version)) {
-    return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}. Reload the extension, then refresh Albert. ${renderedSummary}`;
+    return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}.${refreshLabel} Reload the extension, then refresh Albert. ${renderedSummary}`;
   }
   if (hasStaleQuickGridShape(response)) {
-    return `Albert connected${versionLabel}; old squeezed card layout detected. Reload the extension, then refresh Albert. ${renderedSummary}`;
+    return `Albert connected${versionLabel}; old squeezed card layout detected.${refreshLabel} Reload the extension, then refresh Albert. ${renderedSummary}`;
   }
   if (response.overlayState === "disabled") {
-    return `Albert connected${versionLabel}; overlay disabled. ${renderedSummary}`;
+    return `Albert connected${versionLabel}; overlay disabled.${refreshLabel} ${renderedSummary}`;
   }
-  return `Albert connected${versionLabel}: ${renderedSummary}`;
+  return `Albert connected${versionLabel}:${refreshLabel} ${renderedSummary}`;
 }
 
 function albertPageStatusState(response) {
@@ -326,7 +358,7 @@ function formatActiveLayoutWarningLabel(response, processedCellLayoutWarningCoun
 
 function isStaleContentVersion(version) {
   const normalized = String(version ?? "").trim();
-  return Boolean(normalized) && normalized !== EXTENSION_VERSION;
+  return normalized !== EXTENSION_VERSION;
 }
 
 function hasProcessedCellLayoutWarnings(response) {
@@ -339,6 +371,10 @@ function hasStaleQuickGridShape(response) {
     return false;
   }
   return nonNegativeInteger(response?.quickGridCount) < cardCount;
+}
+
+function shouldRefreshAlbertContentScript(response) {
+  return isStaleContentVersion(response?.version) || hasStaleQuickGridShape(response);
 }
 
 function formatVersionLabel(version) {

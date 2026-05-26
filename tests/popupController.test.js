@@ -148,6 +148,57 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
+  it("re-injects the current content script when Albert still renders old squeezed cards", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendResults: [
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.1",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          quickGridCount: 0,
+          radarCount: 3,
+          processedCellCount: 4,
+        },
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.1",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          quickGridCount: 4,
+          radarCount: 1,
+          processedCellCount: 4,
+          staleCardLayoutMigrationCount: 4,
+        },
+      ],
+    });
+    const scripting = {
+      executeScript: vi.fn(async () => []),
+    };
+
+    await initPopup({ document, storage: createStorageMock(), tabs, scripting });
+
+    expect(scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId: 12, allFrames: true },
+      files: ["content.js"],
+    });
+    expect(document.getElementById("page-status").textContent).toBe(
+      "Albert connected v0.1.1: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK, 4 stale card layouts migrated",
+    );
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+  });
+
   it("reports when stale squeezed Albert cards were migrated by the current content script", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
@@ -207,6 +258,53 @@ describe("extension popup controller", () => {
       "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 2 segmented quick views, 1 radar map, 2 Albert cells checked, layout OK",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
+  it("re-injects the current content script when Albert reports a stale content script version", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendResults: [
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          quickGridCount: 0,
+          radarCount: 3,
+          processedCellCount: 4,
+        },
+        {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.1",
+          overlayState: "enabled",
+          ratingRootCount: 4,
+          cardCount: 4,
+          quickGridCount: 4,
+          radarCount: 1,
+          processedCellCount: 4,
+        },
+      ],
+    });
+    const scripting = {
+      executeScript: vi.fn(async () => []),
+    };
+
+    await initPopup({ document, storage: createStorageMock(), tabs, scripting });
+
+    expect(scripting.executeScript).toHaveBeenCalledTimes(1);
+    expect(document.getElementById("page-status").textContent).toBe(
+      "Albert connected v0.1.1: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK",
+    );
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
   it("reports processed Albert layout warnings in the connected page status", async () => {
@@ -369,6 +467,7 @@ describe("extension popup controller", () => {
         {
           ok: true,
           contentScript: "loaded",
+          version: "0.1.1",
           overlayState: "enabled",
           ratingRootCount: 4,
           cardCount: 4,
@@ -389,7 +488,7 @@ describe("extension popup controller", () => {
       files: ["content.js"],
     });
     expect(tabs.sendMessage).toHaveBeenCalledTimes(2);
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
