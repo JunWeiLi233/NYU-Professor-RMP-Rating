@@ -9500,6 +9500,27 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
   });
 
+  it("removes stale cards when Albert replaces the instructor inside a processed gridcell", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">Ada Lovelace</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.querySelector("#grid-instructor .nyu-rmp-albert-original").textContent = "Grace Hopper";
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const cards = Array.from(document.querySelectorAll("#grid-instructor .nyu-rmp-card"));
+    expect(cards).toHaveLength(1);
+    expect(cards[0].dataset.nyuRmpRequestedName).toBe("Grace Hopper");
+    expect(document.getElementById("grid-instructor").textContent).not.toContain("Ada Lovelace");
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
   it("removes original-content wrappers when the overlay is disabled", async () => {
     document.body.innerHTML = `
       <div role="row">

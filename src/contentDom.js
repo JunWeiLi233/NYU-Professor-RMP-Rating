@@ -997,6 +997,8 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
         return [];
       }
 
+      const currentNameKeys = new Set(namesFromOriginalAlbertContent(originalContent).map(compactName).filter(Boolean));
+      pruneStaleMountedProfessorCards(container, currentNameKeys);
       const names = namesFromOriginalAlbertContent(originalContent)
         .filter((name) => !mountedProfessorNameKeys(container).has(compactName(name)));
       return names.length > 0 ? [{ element, names }] : [];
@@ -1015,6 +1017,15 @@ function mountedProfessorNameKeys(container) {
   return new Set(Array.from(container.querySelectorAll(".nyu-rmp-card"))
     .map((card) => compactName(card.dataset.nyuRmpRequestedName))
     .filter(Boolean));
+}
+
+function pruneStaleMountedProfessorCards(container, currentNameKeys) {
+  for (const card of container.querySelectorAll(".nyu-rmp-card")) {
+    const mountedKey = compactName(card.dataset.nyuRmpRequestedName);
+    if (mountedKey && !currentNameKeys.has(mountedKey)) {
+      card.remove();
+    }
+  }
 }
 
 function wrapOriginalAlbertCellContent(element, document) {
