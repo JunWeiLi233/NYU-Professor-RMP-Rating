@@ -1082,6 +1082,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     difficulty,
     ratingsCount: result.ratingsCount,
     wouldTakeAgain,
+    recommendationClassName: recommendation.className,
   });
   const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain });
   const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote });
@@ -1166,7 +1167,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message, course
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
 
-function renderRadarChart({ chartId, professorName = "Professor", rating, difficulty, ratingsCount, wouldTakeAgain }) {
+function renderRadarChart({ chartId, professorName = "Professor", rating, difficulty, ratingsCount, wouldTakeAgain, recommendationClassName = "" }) {
   const ease = difficulty == null ? null : 5 - difficulty;
   const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
   const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
@@ -1195,7 +1196,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
   const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
-    <div class="nyu-rmp-radar-wrap" role="group" aria-label="${escapeHtml(`Professor fit radar for ${professorName}`)}">
+    <div class="nyu-rmp-radar-wrap${recommendationClassName ? ` is-${escapeHtml(recommendationClassName)}` : ""}" role="group" aria-label="${escapeHtml(`Professor fit radar for ${professorName}`)}">
       <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" aria-labelledby="${titleId}" aria-describedby="${descId}" focusable="false">
         <title id="${titleId}">Professor rating radar</title>
         <desc id="${descId}">${escapeHtml(radarDescription)}</desc>
@@ -1210,7 +1211,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
-        <div class="nyu-rmp-radar-fit${isLimitedData ? " is-limited" : ""}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
+        <div class="nyu-rmp-radar-fit${recommendationClassName ? ` is-${escapeHtml(recommendationClassName)}` : ""}${isLimitedData ? " is-limited" : ""}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
         <ul class="nyu-rmp-radar-legend" aria-label="${escapeHtml(legendLabel)}">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
@@ -1733,10 +1734,38 @@ export function injectStyles(document = globalThis.document) {
 	      stroke-linejoin: round;
 	      stroke-width: 2;
 	    }
+	    .nyu-rmp-radar-wrap.is-strong .nyu-rmp-radar-shape {
+	      fill: rgba(26, 122, 76, 0.16);
+	      stroke: #1a7a4c;
+	    }
+	    .nyu-rmp-radar-wrap.is-mixed .nyu-rmp-radar-shape {
+	      fill: rgba(176, 105, 20, 0.16);
+	      stroke: #b7791f;
+	    }
+	    .nyu-rmp-radar-wrap.is-weak .nyu-rmp-radar-shape {
+	      fill: rgba(180, 35, 24, 0.14);
+	      stroke: #b42318;
+	    }
+	    .nyu-rmp-radar-wrap.is-limited .nyu-rmp-radar-shape {
+	      fill: rgba(122, 106, 144, 0.14);
+	      stroke: #7a6a90;
+	    }
 	    .nyu-rmp-radar-node {
 	      fill: #ffffff;
 	      stroke: #57068c;
 	      stroke-width: 2;
+	    }
+	    .nyu-rmp-radar-wrap.is-strong .nyu-rmp-radar-node {
+	      stroke: #1a7a4c;
+	    }
+	    .nyu-rmp-radar-wrap.is-mixed .nyu-rmp-radar-node {
+	      stroke: #b7791f;
+	    }
+	    .nyu-rmp-radar-wrap.is-weak .nyu-rmp-radar-node {
+	      stroke: #b42318;
+	    }
+	    .nyu-rmp-radar-wrap.is-limited .nyu-rmp-radar-node {
+	      stroke: #7a6a90;
 	    }
 	    .nyu-rmp-radar-node.is-unavailable {
 	      fill: #f8fafc;
@@ -1780,6 +1809,22 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-radar-fit.is-limited {
 	      background: #2f2a1f;
 	      border-color: #5f4a1f;
+	    }
+	    .nyu-rmp-radar-fit.is-strong {
+	      background: #183f2c;
+	      border-color: #1f6f48;
+	    }
+	    .nyu-rmp-radar-fit.is-mixed {
+	      background: #4a3318;
+	      border-color: #8a5a14;
+	    }
+	    .nyu-rmp-radar-fit.is-weak {
+	      background: #4a1f1d;
+	      border-color: #9f2f27;
+	    }
+	    .nyu-rmp-radar-fit.is-limited {
+	      background: #30283b;
+	      border-color: #685778;
 	    }
 	    .nyu-rmp-radar-fit span {
 	      color: #d8d1e6;

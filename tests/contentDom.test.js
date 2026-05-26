@@ -741,6 +741,50 @@ describe("Albert content DOM injection", () => {
     expect(radar.querySelector("desc")?.textContent).toContain("Professor fit 82 out of 100.");
   });
 
+  it("colors the radar with the strong recommendation state", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radarWrap = document.querySelector(".nyu-rmp-radar-wrap");
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
+    expect(radarWrap.classList.contains("is-strong")).toBe(true);
+    expect(fit.classList.contains("is-strong")).toBe(true);
+  });
+
+  it("colors the radar with the weak recommendation state", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      wouldTakeAgain: 24,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radarWrap = document.querySelector(".nyu-rmp-radar-wrap");
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
+    expect(radarWrap.classList.contains("is-weak")).toBe(true);
+    expect(fit.classList.contains("is-weak")).toBe(true);
+  });
+
   it("counts present zero-value radar metrics against the professor fit score", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
