@@ -9434,6 +9434,8 @@ describe("Albert content DOM injection", () => {
     const row = document.querySelector("#section-row");
     expect(Array.from(row.children).map((child) => child.tagName)).toEqual(["TH", "TD"]);
     expect(row.querySelector("td .nyu-rmp-rating-root")).not.toBeNull();
+    expect(row.querySelector("td").style.display).toBe("");
+    expect(row.querySelector("td").style.flexWrap).toBe("wrap");
   });
 
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
@@ -9456,6 +9458,11 @@ describe("Albert content DOM injection", () => {
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
     expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.1");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(instructorCell.style.display).toBe("block");
+    expect(instructorCell.style.alignItems).toBe("flex-start");
+    expect(instructorCell.style.flexWrap).toBe("wrap");
+    expect(instructorCell.style.gridTemplateColumns).toBe("minmax(0, 1fr)");
+    expect(instructorCell.style.minWidth).toBe("0px");
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",
       "nyu-rmp-rating-root is-cell-mounted",
@@ -9638,6 +9645,11 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.querySelector(".nyu-rmp-rating-root")).toBeNull();
     expect(instructorCell.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
+    expect(instructorCell.style.display).toBe("");
+    expect(instructorCell.style.alignItems).toBe("");
+    expect(instructorCell.style.flexWrap).toBe("");
+    expect(instructorCell.style.gridTemplateColumns).toBe("");
+    expect(instructorCell.style.minWidth).toBe("");
   });
 
   it("preserves original Albert instructor links when wrapping processed cell content", async () => {

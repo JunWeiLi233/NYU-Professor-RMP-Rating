@@ -286,6 +286,7 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
   }
 
   for (const element of document.querySelectorAll("[data-nyu-rmp-processed]")) {
+    removeProcessedCellLayoutSafeguards(element);
     delete element.dataset.nyuRmpProcessed;
   }
 }
@@ -974,6 +975,10 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     pendingLookups.push(pendingLookup);
   }
 
+  if (isCellMount) {
+    applyProcessedCellLayoutSafeguards(element);
+  }
+
   if (existingContainer) {
     return pendingLookups;
   }
@@ -1047,6 +1052,26 @@ function wrapOriginalAlbertCellContent(element, document) {
   element.insertBefore(wrapper, element.firstChild);
   for (const node of originalNodes) {
     wrapper.append(node);
+  }
+}
+
+function applyProcessedCellLayoutSafeguards(element) {
+  element.style.alignItems = "flex-start";
+  element.style.flexWrap = "wrap";
+  element.style.gridTemplateColumns = "minmax(0, 1fr)";
+  element.style.minWidth = "0";
+  if (isAriaCell(element)) {
+    element.style.display = "block";
+  }
+}
+
+function removeProcessedCellLayoutSafeguards(element) {
+  element.style.removeProperty("align-items");
+  element.style.removeProperty("flex-wrap");
+  element.style.removeProperty("grid-template-columns");
+  element.style.removeProperty("min-width");
+  if (isAriaCell(element)) {
+    element.style.removeProperty("display");
   }
 }
 
