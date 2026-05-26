@@ -7433,6 +7433,29 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
   });
 
+  it("injects ratings when Albert abbreviates visible instructor labels", async () => {
+    document.body.innerHTML = `
+      <div>
+        <span>Instr: YAP, CHEE KENG</span>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 2.8,
+      ratingsCount: 24,
+      topComments: [`${name} abbreviated label comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Chee Keng Yap abbreviated label comment");
+  });
+
   it("injects ratings when multiline Albert instructor labels omit the colon", async () => {
     document.body.innerHTML = `
       <div>
