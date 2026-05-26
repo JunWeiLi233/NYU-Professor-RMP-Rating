@@ -65,6 +65,7 @@ export async function verifyExtensionPackage(distDir = "dist") {
     const scriptPath = join(distDir, script);
     await assertFileExists(scriptPath, `content script is missing: ${script}`);
     await assertClassicContentScript(scriptPath);
+    await assertContentRuntimeVersion(scriptPath, packageJson.version);
   }
 
   const popupHtml = await readFile(join(distDir, popupPath), "utf8");
@@ -85,6 +86,16 @@ async function assertClassicContentScript(path) {
   }
   if (/(^|[;}]\s*)await\s+/.test(source)) {
     throw new Error("content script must not use top-level await");
+  }
+}
+
+async function assertContentRuntimeVersion(path, expectedVersion) {
+  const source = await readFile(path, "utf8");
+  if (!source.includes("nyuRmpVersion")) {
+    throw new Error("content script must include the runtime version marker");
+  }
+  if (!source.includes(JSON.stringify(expectedVersion))) {
+    throw new Error("content script runtime marker must match package.json version");
   }
 }
 

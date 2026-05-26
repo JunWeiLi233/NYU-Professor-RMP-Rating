@@ -60,7 +60,11 @@ async function createWorkspace({ installedFromDist }) {
     permissions: ["storage", "activeTab", "scripting"],
   }), "utf8");
   await writeFile(join(dist, "background.js"), "", "utf8");
-  await writeFile(join(dist, "content.js"), "(() => {})();", "utf8");
+  await writeFile(
+    join(dist, "content.js"),
+    '(() => { const version = "0.1.1"; document.documentElement.dataset.nyuRmpVersion = version; })();',
+    "utf8",
+  );
   await writeFile(join(dist, "popup.html"), '<script src="popup.js"></script>', "utf8");
   await writeFile(join(dist, "popup.js"), "", "utf8");
   await writeFile(join(profile, "Preferences"), JSON.stringify({

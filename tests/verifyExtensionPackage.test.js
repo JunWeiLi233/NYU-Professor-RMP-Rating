@@ -224,6 +224,30 @@ describe("extension package verifier", () => {
 
     await rm(dist, { recursive: true, force: true });
   });
+
+  it("fails when a content script omits the runtime version marker", async () => {
+    const dist = await createPackageDist({
+      files: {
+        "content.js": '(() => { document.body.dataset.nyuRmpContentScript = "loaded"; })();',
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("content script must include the runtime version marker");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
+  it("fails when a content script runtime marker drifts from package.json", async () => {
+    const dist = await createPackageDist({
+      files: {
+        "content.js": '(() => { const version = "0.1.0"; document.body.dataset.nyuRmpVersion = version; })();',
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("content script runtime marker must match package.json version");
+
+    await rm(dist, { recursive: true, force: true });
+  });
 });
 
 async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
@@ -251,7 +275,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   await mkdir(dist, { recursive: true });
   await writeFile(join(dist, "manifest.json"), JSON.stringify(manifest), "utf8");
   await writeFile(join(dist, "background.js"), "", "utf8");
-  await writeFile(join(dist, "content.js"), files["content.js"] ?? "", "utf8");
+  await writeFile(join(dist, "content.js"), files["content.js"] ?? '(() => { const version = "0.1.1"; document.body.dataset.nyuRmpVersion = version; })();', "utf8");
   await writeFile(join(dist, "popup.html"), files["popup.html"] ?? '<script type="module" src="/popup.js"></script>', "utf8");
   await writeFile(join(dist, "popup.js"), "", "utf8");
   return dist;
