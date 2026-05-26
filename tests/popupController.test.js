@@ -122,6 +122,29 @@ describe("extension popup controller", () => {
     expect(storage.set).toHaveBeenCalledWith({ "settings:overlayEnabled": true });
   });
 
+  it("keeps the overlay switch ARIA checked state synchronized", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" role="switch" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "settings:overlayEnabled": false,
+    });
+
+    await initPopup({ document, storage });
+    const checkbox = document.getElementById("enable-overlay");
+
+    expect(checkbox.checked).toBe(false);
+    expect(checkbox.getAttribute("aria-checked")).toBe("false");
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+    await flushPromises();
+
+    expect(checkbox.getAttribute("aria-checked")).toBe("true");
+  });
+
   it("disables and marks the overlay toggle busy while saving the setting", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

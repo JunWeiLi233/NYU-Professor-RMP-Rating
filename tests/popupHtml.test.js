@@ -24,4 +24,14 @@ describe("extension popup markup", () => {
     expect(popup).toContain("Most useful RMP comments from a 20-rating sample");
     expect(popup).toContain("CS201 course-match counts across hidden comments");
   });
+
+  it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('id="enable-overlay" type="checkbox" role="switch"');
+    expect(popup).toContain('aria-describedby="overlay-helper"');
+    expect(popup).toContain('id="overlay-helper"');
+    expect(popup).toContain(".toggle-switch input:focus-visible + .toggle-track");
+    expect(popup).toContain("outline: 2px solid var(--gold)");
+  });
 });

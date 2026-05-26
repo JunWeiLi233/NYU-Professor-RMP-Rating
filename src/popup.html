@@ -155,6 +155,16 @@
         font-weight: 600;
         letter-spacing: -0.1px;
       }
+      .toggle-copy {
+        display: grid;
+        gap: 3px;
+      }
+      .toggle-helper {
+        color: var(--muted);
+        font-size: 10.5px;
+        font-weight: 500;
+        line-height: 1.35;
+      }
       .toggle-switch {
         display: inline-block;
         height: 22px;
@@ -195,6 +205,10 @@
       .toggle-switch input:checked + .toggle-track::after {
         transform: translateX(18px);
       }
+      .toggle-switch input:focus-visible + .toggle-track {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+      }
       @media (prefers-reduced-motion: reduce) {
         .dot,
         button,
@@ -220,9 +234,12 @@
       </header>
       <section class="panel">
         <label class="toggle-row">
-          <span>Show ratings on Albert</span>
+          <span class="toggle-copy">
+            <span>Show ratings on Albert</span>
+            <span class="toggle-helper" id="overlay-helper">Applies to open and future Albert pages.</span>
+          </span>
           <span class="toggle-switch">
-            <input id="enable-overlay" type="checkbox" checked />
+            <input id="enable-overlay" type="checkbox" role="switch" aria-describedby="overlay-helper" checked />
             <span class="toggle-track"></span>
           </span>
         </label>

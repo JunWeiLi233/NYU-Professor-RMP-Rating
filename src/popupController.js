@@ -30,8 +30,10 @@ export async function initPopup({
   const overlayEnabled = settings["settings:overlayEnabled"] !== false;
   if (enableOverlay) {
     enableOverlay.checked = overlayEnabled;
+    syncSwitchState(enableOverlay);
     enableOverlay.addEventListener("change", async () => {
       const nextValue = enableOverlay.checked;
+      syncSwitchState(enableOverlay);
       enableOverlay.disabled = true;
       enableOverlay.setAttribute("aria-busy", "true");
       status.textContent = "Saving overlay setting";
@@ -40,6 +42,7 @@ export async function initPopup({
         status.textContent = nextValue ? "Ratings overlay enabled" : "Ratings overlay disabled";
       } catch (error) {
         enableOverlay.checked = !nextValue;
+        syncSwitchState(enableOverlay);
         status.textContent = `Overlay setting failed: ${error.message}`;
       } finally {
         enableOverlay.disabled = false;
@@ -99,4 +102,10 @@ export async function initPopup({
 async function getProfessorCacheKeys(storage) {
   const items = await storage.get(null);
   return Object.keys(items ?? {}).filter((key) => key.startsWith("professor:"));
+}
+
+function syncSwitchState(input) {
+  if (input?.getAttribute("role") === "switch") {
+    input.setAttribute("aria-checked", String(input.checked));
+  }
 }
