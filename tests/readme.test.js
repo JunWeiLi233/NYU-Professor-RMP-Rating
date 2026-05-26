@@ -38,6 +38,8 @@ describe("README", () => {
     expect(readme).toContain('node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\\Google\\Chrome\\User Data" "%CD%\\dist" "student-account@nyu.example"');
     expect(readme).toContain("npm run verify:live:account");
     expect(readme).toContain("not installed from `dist`");
+    expect(readme).toContain("Run `npm run verify:local` first");
+    expect(readme).toContain("remaining issue is loading this repository's `dist` folder");
     expect(readme).toContain("your local repository `dist` folder");
     expect(readme).toContain("A current build should report segmented quick views");
     expect(readme).toContain("confirm it reports segmented quick views");

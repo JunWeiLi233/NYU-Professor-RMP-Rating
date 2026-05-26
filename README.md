@@ -102,6 +102,7 @@ npm run verify:live:account
 ## Live Albert Verification Troubleshooting
 
 If `npm run verify:live` reports that NYU Albert RMP Ratings is not installed from `dist`, Chrome is not running the built extension from this checkout yet.
+Run `npm run verify:local` first; if that passes, the package and local trailing-column smoke layout are valid, and the remaining issue is loading this repository's `dist` folder into the Albert Chrome profile.
 
 1. Run `npm run build`.
 2. Open the same Chrome profile you use for Albert and go to `chrome://extensions`.

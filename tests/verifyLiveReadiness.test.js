@@ -49,6 +49,16 @@ describe("live Albert readiness verifier", () => {
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
+    })).rejects.toThrow("npm run verify:local");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow("Chrome is not loading this checkout's dist folder yet");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
     })).rejects.toThrow("Load the generated dist folder as an unpacked Chrome extension");
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,

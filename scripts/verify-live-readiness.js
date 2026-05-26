@@ -26,6 +26,8 @@ export async function verifyLiveReadiness({
     const expectedPath = redactPath(resolve(extensionPath));
     throw new Error([
       error.message,
+      "First run npm run verify:local to confirm the built package and local Albert trailing-column smoke test pass.",
+      "If verify:local passes but verify:live fails, Chrome is not loading this checkout's dist folder yet.",
       "Load the generated dist folder as an unpacked Chrome extension in the Chrome profile used for Albert.",
       "Use the same Chrome profile where Albert is already logged in, then reload the Albert tab.",
       `Expected extension folder: ${expectedPath}`,
