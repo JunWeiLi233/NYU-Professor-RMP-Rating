@@ -9458,6 +9458,28 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("still scans a newly added instructor gridcell beside an already processed cell", async () => {
+    document.body.innerHTML = `
+      <div role="row" id="grid-row">
+        <div role="gridcell">CSCI-UA 201 Computer Systems Organization</div>
+        <div role="gridcell" id="primary-instructor" aria-label="Instructor">Ada Lovelace</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.getElementById("grid-row").insertAdjacentHTML("beforeend", `
+      <div role="gridcell" id="secondary-instructor" aria-label="Instructor">Grace Hopper</div>
+    `);
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.getElementById("primary-instructor").querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.getElementById("secondary-instructor").querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
   it("removes original-content wrappers when the overlay is disabled", async () => {
     document.body.innerHTML = `
       <div role="row">
