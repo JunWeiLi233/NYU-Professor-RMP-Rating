@@ -175,6 +175,9 @@ function teacherScore(target, teacher) {
   if (initialLastName && initialLastName === target) {
     score += 85;
   }
+  if (isSingleNameTarget(target) && lastName === target) {
+    score += 70;
+  }
   if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
     score += 25;
   }
@@ -303,6 +306,10 @@ function compactInitialLastName(firstName, lastName) {
   }
 
   return `${firstParts[0].charAt(0)}${last}`;
+}
+
+function isSingleNameTarget(target) {
+  return /^[a-z]{2,}$/.test(target);
 }
 
 function nameParts(value) {

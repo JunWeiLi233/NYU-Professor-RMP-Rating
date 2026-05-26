@@ -1691,6 +1691,57 @@ describe("Rate My Professors client", () => {
     expect(result.matchConfidence).toBe("fuzzy");
   });
 
+  it("matches live Albert last-name-only instructor rows to full RMP professor names", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "wrong-department",
+                    legacyId: 4441,
+                    firstName: "Sam",
+                    lastName: "Walfish",
+                    department: "Mathematics",
+                    avgRating: 4.8,
+                    avgDifficulty: 2.2,
+                    numRatings: 80,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+                {
+                  node: {
+                    id: "cs-professor",
+                    legacyId: 4442,
+                    firstName: "Michael",
+                    lastName: "Walfish",
+                    department: "Computer Science",
+                    avgRating: 4.2,
+                    avgDifficulty: 3.8,
+                    numRatings: 18,
+                    wouldTakeAgainPercent: 79,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Walfish", { fetchImpl });
+
+    expect(result.name).toBe("Michael Walfish");
+    expect(result.matchConfidence).toBe("fuzzy");
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
