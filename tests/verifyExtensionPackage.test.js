@@ -43,12 +43,52 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
-  it("fails when the Albert content script is not enabled for nested frames", async () => {
+  it("fails when the content script uses a broad NYU match instead of explicit Albert surfaces", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        content_scripts: [
+          {
+            matches: ["https://albert.nyu.edu/*", "https://*.nyu.edu/*"],
+            js: ["content.js"],
+            run_at: "document_idle",
+            all_frames: true,
+            match_about_blank: true,
+          },
+        ],
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("content script matches must be limited to Albert surfaces");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
+  it("fails when the content script omits the SIS Albert surface", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {
         content_scripts: [
           {
             matches: ["https://albert.nyu.edu/*"],
+            js: ["content.js"],
+            run_at: "document_idle",
+            all_frames: true,
+            match_about_blank: true,
+          },
+        ],
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("SIS Albert content script match is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
+  it("fails when the Albert content script is not enabled for nested frames", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        content_scripts: [
+          {
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
             js: ["content.js"],
             run_at: "document_idle",
           },
@@ -66,7 +106,7 @@ describe("extension package verifier", () => {
       manifestOverrides: {
         content_scripts: [
           {
-            matches: ["https://albert.nyu.edu/*"],
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
             run_at: "document_idle",
             all_frames: true,
             match_about_blank: true,
@@ -85,7 +125,7 @@ describe("extension package verifier", () => {
       manifestOverrides: {
         content_scripts: [
           {
-            matches: ["https://albert.nyu.edu/*"],
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
             js: ["content.js"],
             run_at: "document_idle",
             all_frames: true,
@@ -134,7 +174,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [
       {
-        matches: ["https://albert.nyu.edu/*"],
+        matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
         js: ["content.js"],
         run_at: "document_idle",
         all_frames: true,

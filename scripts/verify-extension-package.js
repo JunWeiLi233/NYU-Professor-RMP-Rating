@@ -25,6 +25,12 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (!albertContentScript) {
     throw new Error("Albert content script match is required");
   }
+  if (albertContentScript.matches?.some((match) => /(^|\*)\.?nyu\.edu\/\*/i.test(match.replace(/^https:\/\//, "")))) {
+    throw new Error("content script matches must be limited to Albert surfaces");
+  }
+  if (!albertContentScript.matches?.includes("https://sis.nyu.edu/*")) {
+    throw new Error("SIS Albert content script match is required");
+  }
   if (!Array.isArray(albertContentScript.js) || albertContentScript.js.length === 0) {
     throw new Error("Albert content script JavaScript entry is required");
   }
