@@ -937,7 +937,11 @@ function courseCodeFromText(value) {
 
 function normalizeCourseCode(value) {
   const code = courseCodeFromText(value) || String(value ?? "");
-  return code.trim().replace(/\s+/g, " ").toUpperCase();
+  return code
+    .trim()
+    .replace(/\s+/g, " ")
+    .toUpperCase()
+    .replace(/\b([A-Z]{2,5}-[A-Z]{2})\s*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
 }
 
 function uniqueNames(names) {

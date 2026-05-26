@@ -807,6 +807,50 @@ describe("Albert content DOM injection", () => {
     expect(metadata.classList.contains("is-course-match")).toBe(true);
   });
 
+  it("matches useful comments when Albert pads CS201 course numbers with a leading zero", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 0201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Systems-specific comment for CS201.",
+          course: "CSCI-UA 201",
+          helpfulRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+    );
+  });
+
   it("shows Albert course-matched useful comments before generic comments", async () => {
     document.body.innerHTML = `
       <table>
