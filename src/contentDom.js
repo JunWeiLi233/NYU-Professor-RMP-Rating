@@ -2147,6 +2147,13 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comments li {
 	      margin-bottom: 6px;
 	    }
+	    .nyu-rmp-comment.is-course-match {
+	      background: #f3fbf6;
+	      border-left: 2px solid #4f9b6e;
+	      border-radius: 5px;
+	      margin-left: -8px;
+	      padding: 5px 7px 5px 8px;
+	    }
 	    .nyu-rmp-comments p {
 	      margin: 0;
 	      line-height: 1.45;
@@ -2430,7 +2437,7 @@ function formatComment(comment, textId, albertCourseCode = "", { hidden = false 
   ].filter(Boolean);
 
   return `
-    <li class="nyu-rmp-comment${hidden ? " is-hidden" : ""}"${hidden ? " hidden" : ""}>
+    <li class="nyu-rmp-comment${isCourseMatch ? " is-course-match" : ""}${hidden ? " is-hidden" : ""}"${hidden ? " hidden" : ""}>
       <p class="nyu-rmp-comment-text" id="${escapeHtml(textId)}">${escapeHtml(preview)}</p>
       ${isTruncated ? `
         <button

@@ -1205,8 +1205,10 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    const comment = document.querySelector(".nyu-rmp-comment");
     expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
     expect(metadata.classList.contains("is-course-match")).toBe(true);
+    expect(comment.classList.contains("is-course-match")).toBe(true);
   });
 
   it("labels when useful RMP comments do not match the nearby Albert course", async () => {
