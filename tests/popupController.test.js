@@ -102,6 +102,7 @@ describe("extension popup controller", () => {
         contentScript: "loaded",
         version: "0.1.1",
         overlayState: "enabled",
+        ratingRootCount: 4,
         cardCount: 4,
         radarCount: 3,
         processedCellCount: 4,
@@ -112,7 +113,7 @@ describe("extension popup controller", () => {
 
     expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 cards, 3 radar maps, 4 Albert cells checked");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
@@ -130,6 +131,7 @@ describe("extension popup controller", () => {
         contentScript: "loaded",
         version: "0.1.0",
         overlayState: "enabled",
+        ratingRootCount: 2,
         cardCount: 2,
         radarCount: 1,
         processedCellCount: 2,
@@ -139,7 +141,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe(
-      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 cards, 1 radar map, 2 Albert cells checked",
+      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 rating roots, 2 cards, 1 radar map, 2 Albert cells checked",
     );
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
@@ -159,6 +161,7 @@ describe("extension popup controller", () => {
           ok: true,
           contentScript: "loaded",
           overlayState: "enabled",
+          ratingRootCount: 4,
           cardCount: 4,
           radarCount: 3,
           processedCellCount: 4,
@@ -176,7 +179,7 @@ describe("extension popup controller", () => {
       files: ["content.js"],
     });
     expect(tabs.sendMessage).toHaveBeenCalledTimes(2);
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 cards, 3 radar maps, 4 Albert cells checked");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 

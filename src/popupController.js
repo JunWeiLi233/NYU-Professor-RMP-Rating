@@ -218,15 +218,17 @@ function isAlbertUrl(url) {
 }
 
 function formatAlbertConnectedStatus(response) {
+  const ratingRootCount = nonNegativeInteger(response.ratingRootCount);
   const cardCount = nonNegativeInteger(response.cardCount);
   const radarCount = nonNegativeInteger(response.radarCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
+  const ratingRootLabel = ratingRootCount === 1 ? "1 rating root" : `${ratingRootCount} rating roots`;
   const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
   const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
   const processedCellLabel = processedCellCount === 1
     ? "1 Albert cell checked"
     : `${processedCellCount} Albert cells checked`;
-  const renderedSummary = `${cardLabel}, ${radarLabel}, ${processedCellLabel}`;
+  const renderedSummary = `${ratingRootLabel}, ${cardLabel}, ${radarLabel}, ${processedCellLabel}`;
   const versionLabel = formatVersionLabel(response.version);
   if (isStaleContentVersion(response.version)) {
     return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}. Reload the extension, then refresh Albert. ${renderedSummary}`;

@@ -45,6 +45,7 @@ export async function initContentScript({
       contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
       version: document?.documentElement?.dataset.nyuRmpVersion ?? EXTENSION_VERSION,
       overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
+      ratingRootCount: document?.querySelectorAll?.(".nyu-rmp-rating-root").length ?? 0,
       cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
       radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
       processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
