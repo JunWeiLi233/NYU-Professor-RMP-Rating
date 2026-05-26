@@ -5,6 +5,7 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
+const MIN_CONFIDENT_RATING_COUNT = 5;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
@@ -1257,6 +1258,7 @@ function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain 
     axes,
     score: radarFitScore(axes),
     availableMetricCount: axes.filter((axis) => axis.available).length,
+    ratingsCount: normalizedRatingsCount,
     totalMetricCount: axes.length,
   };
 }
@@ -1279,6 +1281,13 @@ function getPickRecommendation(radarFit) {
       className: "limited",
       label: "Limited RMP data",
       detail: "Check RMP before picking",
+    };
+  }
+  if (Number.isFinite(radarFit.ratingsCount) && radarFit.ratingsCount > 0 && radarFit.ratingsCount < MIN_CONFIDENT_RATING_COUNT) {
+    return {
+      className: "limited",
+      label: "Limited RMP data",
+      detail: `Only ${radarFit.ratingsCount} RMP ${radarFit.ratingsCount === 1 ? "rating" : "ratings"}`,
     };
   }
   if (radarFit.score >= 80) {
