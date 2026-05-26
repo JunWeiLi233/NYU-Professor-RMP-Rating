@@ -6,6 +6,8 @@ describe("README", () => {
     const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
+    expect(readme).toContain("npm run verify:chrome-profile");
+    expect(readme).toContain("refresh Albert");
     expect(readme).toContain("Show ratings on Albert");
     expect(readme).toContain("Clear cached ratings");
     expect(readme).toContain("Refresh");

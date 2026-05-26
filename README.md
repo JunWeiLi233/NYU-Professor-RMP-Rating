@@ -8,6 +8,7 @@ Chrome extension that displays Rate My Professors ratings and useful comments be
 npm install
 npm test
 npm run build
+npm run verify:package
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -16,7 +17,8 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 2. Enable Developer mode.
 3. Choose Load unpacked.
 4. Select the generated `dist` folder.
-5. Open or refresh an NYU Albert page.
+5. Run `npm run verify:chrome-profile` to confirm Chrome has the unpacked extension enabled from `dist`.
+6. Open or refresh Albert, then use the popup status to confirm the page is connected.
 
 ## Albert Workflow
 
@@ -45,4 +47,5 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 npm test
 npm run build
 npm run verify:package
+npm run verify:chrome-profile
 ```

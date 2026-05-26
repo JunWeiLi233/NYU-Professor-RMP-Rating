@@ -2,7 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { verifyChromeProfileExtension } from "../scripts/verify-chrome-profile-extension.js";
+import {
+  verifyChromeProfileExtension,
+  verifyChromeUserDataExtension,
+} from "../scripts/verify-chrome-profile-extension.js";
 
 describe("Chrome profile extension verifier", () => {
   it("reports an enabled unpacked NYU RMP extension loaded from the expected dist path", async () => {
@@ -63,10 +66,55 @@ describe("Chrome profile extension verifier", () => {
 
     await rm(profile, { recursive: true, force: true });
   });
+
+  it("finds the enabled unpacked extension across Chrome user-data profiles", async () => {
+    const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
+    await createProfile({
+      profile: join(userData, "Default"),
+      extensions: {},
+    });
+    await createProfile({
+      profile: join(userData, "Profile 1"),
+      extensions: {
+        abcdefghijklmnopabcdefghijklmnop: {
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+          path: resolve("dist"),
+          state: 1,
+          from_webstore: false,
+        },
+      },
+    });
+
+    await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).resolves.toMatchObject({
+      profileName: "Profile 1",
+      id: "abcdefghijklmnopabcdefghijklmnop",
+      installedFromExpectedPath: true,
+    });
+
+    await rm(userData, { recursive: true, force: true });
+  });
+
+  it("reports all scanned Chrome profiles when the unpacked extension is missing", async () => {
+    const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
+    await createProfile({
+      profile: join(userData, "Default"),
+      extensions: {},
+    });
+    await createProfile({
+      profile: join(userData, "Profile 2"),
+      extensions: {},
+    });
+
+    await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
+      "NYU Albert RMP Ratings is not installed from dist in any scanned Chrome profile: Default, Profile 2",
+    );
+
+    await rm(userData, { recursive: true, force: true });
+  });
 });
 
-async function createProfile({ extensions }) {
-  const profile = await mkdtemp(join(tmpdir(), "nyu-rmp-chrome-profile-"));
+async function createProfile({ profile = null, extensions }) {
+  profile ??= await mkdtemp(join(tmpdir(), "nyu-rmp-chrome-profile-"));
   await mkdir(profile, { recursive: true });
   await writeFile(
     join(profile, "Preferences"),

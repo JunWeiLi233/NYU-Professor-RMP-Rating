@@ -1,5 +1,5 @@
-import { access, readFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { access, readFile, readdir } from "node:fs/promises";
+import { basename, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const EXTENSION_NAME = "NYU Albert RMP Ratings";
@@ -44,12 +44,69 @@ export async function verifyChromeProfileExtension({
   };
 }
 
+export async function verifyChromeUserDataExtension({
+  userDataDir = defaultUserDataDir(),
+  extensionPath = "dist",
+} = {}) {
+  const profiles = await chromeProfileDirs(userDataDir);
+  const scanned = [];
+  for (const profileDir of profiles) {
+    scanned.push(basename(profileDir));
+    try {
+      const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
+      return {
+        ...result,
+        profileDir,
+        profileName: basename(profileDir),
+      };
+    } catch (error) {
+      if (!isExpectedProfileMiss(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error(
+    `${EXTENSION_NAME} is not installed from ${extensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}`,
+  );
+}
+
+async function chromeProfileDirs(userDataDir) {
+  const entries = await readdir(userDataDir, { withFileTypes: true });
+  const dirs = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => resolve(userDataDir, entry.name));
+  const profiles = [];
+  for (const dir of dirs) {
+    try {
+      await access(resolve(dir, "Preferences"));
+      profiles.push(dir);
+    } catch {
+      // Not a Chrome profile directory.
+    }
+  }
+  return profiles.sort((left, right) => profileSortKey(left).localeCompare(profileSortKey(right)));
+}
+
+function profileSortKey(profileDir) {
+  const name = basename(profileDir);
+  return name === "Default" ? "000 Default" : name;
+}
+
+function isExpectedProfileMiss(error) {
+  return /not installed in this Chrome profile|installed from a different path|installed but disabled/i.test(error?.message ?? "");
+}
+
 function normalizePath(path) {
   return resolve(path).toLowerCase();
 }
 
 function defaultProfileDir() {
-  return resolve(process.env.LOCALAPPDATA ?? "", "Google", "Chrome", "User Data", "Default");
+  return resolve(defaultUserDataDir(), "Default");
+}
+
+function defaultUserDataDir() {
+  return resolve(process.env.LOCALAPPDATA ?? "", "Google", "Chrome", "User Data");
 }
 
 async function assertFileExists(path, message) {
@@ -61,10 +118,12 @@ async function assertFileExists(path, message) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const profileDir = process.argv[2] ?? defaultProfileDir();
+  const profileDir = process.argv[2];
   const extensionPath = process.argv[3] ?? "dist";
-  const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
+  const result = profileDir
+    ? await verifyChromeProfileExtension({ profileDir, extensionPath })
+    : await verifyChromeUserDataExtension({ extensionPath });
   console.log(
-    `${EXTENSION_NAME} ${result.version} is enabled in ${profileDir} from ${result.path} (${result.id})`,
+    `${EXTENSION_NAME} ${result.version} is enabled in ${result.profileDir ?? profileDir} from ${result.path} (${result.id})`,
   );
 }
