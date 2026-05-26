@@ -1195,6 +1195,13 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
   const limitedDataDescription = isLimitedData ? ` Limited data: ${metricCountLabel} available.` : "";
   const radarDescription = `${capitalizeSentence(fitSummary)}.${limitedDataDescription} Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}.`;
   const ariaLabel = `Professor radar: ${radarSummary}`;
+  const radarFitClassName = [
+    "nyu-rmp-radar-fit",
+    recommendationClassName ? `is-${recommendationClassName}` : "",
+    isLimitedData && recommendationClassName !== "limited" ? "is-limited" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return `
     <div class="nyu-rmp-radar-wrap${recommendationClassName ? ` is-${escapeHtml(recommendationClassName)}` : ""}" role="group" aria-label="${escapeHtml(`Professor fit radar for ${professorName}`)}">
@@ -1212,7 +1219,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
-        <div class="nyu-rmp-radar-fit${recommendationClassName ? ` is-${escapeHtml(recommendationClassName)}` : ""}${isLimitedData ? " is-limited" : ""}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
+        <div class="${escapeHtml(radarFitClassName)}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
         <ul class="nyu-rmp-radar-legend" aria-label="${escapeHtml(legendLabel)}">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>

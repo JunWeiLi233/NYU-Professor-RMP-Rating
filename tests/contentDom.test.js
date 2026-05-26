@@ -561,9 +561,11 @@ describe("Albert content DOM injection", () => {
 
     const recommendation = document.querySelector(".nyu-rmp-recommendation");
     const evidence = document.querySelector(".nyu-rmp-evidence");
+    const fitClassTokens = document.querySelector(".nyu-rmp-radar-fit").getAttribute("class").split(/\s+/);
     expect(recommendation.getAttribute("aria-label")).toBe("RMP pick recommendation: Limited RMP data");
     expect(recommendation.textContent.replace(/\s+/g, " ").trim()).toBe("Limited RMP data RMP rating count unavailable");
     expect(evidence.textContent).toContain("N/A ratings");
+    expect(fitClassTokens.filter((token) => token === "is-limited")).toHaveLength(1);
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Limited RMP data");
   });
 
