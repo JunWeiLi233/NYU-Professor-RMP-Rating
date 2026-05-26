@@ -76,6 +76,9 @@ export async function verifyExtensionPackage(distDir = "dist") {
 
 async function assertClassicContentScript(path) {
   const source = await readFile(path, "utf8");
+  if (/(^|[;\n]\s*)import\s+(?:[\w*{]|["'])/.test(source) || /(^|[;\n]\s*)export\s+/.test(source)) {
+    throw new Error("content script must be a classic script without imports");
+  }
   if (/(^|[;}]\s*)await\s+/.test(source)) {
     throw new Error("content script must not use top-level await");
   }

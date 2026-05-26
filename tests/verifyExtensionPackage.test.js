@@ -202,6 +202,18 @@ describe("extension package verifier", () => {
 
     await rm(dist, { recursive: true, force: true });
   });
+
+  it("fails when a content script imports a generated chunk", async () => {
+    const dist = await createPackageDist({
+      files: {
+        "content.js": 'import { boot } from "./chunks/shared.js"; boot();',
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("content script must be a classic script without imports");
+
+    await rm(dist, { recursive: true, force: true });
+  });
 });
 
 async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
