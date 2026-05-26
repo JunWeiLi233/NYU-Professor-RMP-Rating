@@ -1109,6 +1109,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.querySelector(".nyu-rmp-updated").textContent).toBe("Updated May 24, 2026");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("Updated May 24, 2026");
   });
 
   it("shows the original Albert instructor name when the RMP match name differs", async () => {
