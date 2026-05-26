@@ -1610,6 +1610,10 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\b(?:reply|respond)s?\s+quickly\b/,
     /\banswers?\s+questions?\b/,
     /\b(?:ed|piazza)\s+posts?\s+(?:clarify|clarifies|explain|explains)\b/,
+    /\bstarter\s+code\b/,
+    /\bautograder\s+feedback\b/,
+    /\btest\s+cases?\s+(?:are|is|were|was)?\s*provided\b/,
+    /\bprovided\s+test\s+cases?\b/,
     /\bpractice\s+(?:exams?|tests?|problems?)\b/,
     /\breview\s+sessions?\b/,
     /\bstudy\s+guides?\b/,
@@ -2575,6 +2579,12 @@ export function injectStyles(document = globalThis.document) {
 	      }
 	      .nyu-rmp-score-row .nyu-rmp-verdict {
 	        justify-self: start;
+	      }
+	      .nyu-rmp-radar {
+	        overflow: hidden;
+	      }
+	      .nyu-rmp-radar-axis {
+	        display: none;
 	      }
 	    }
 	    @container (max-width: 180px) {

@@ -60,6 +60,17 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("display: none");
   });
 
+  it("hides decorative radar axis labels in narrow Albert instructor cells", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const narrowStart = styles.indexOf("@container (max-width: 360px)");
+    const nextContainerStart = styles.indexOf("@container (max-width: 180px)");
+    const narrowContainerStyles = styles.slice(narrowStart, nextContainerStart);
+    expect(narrowContainerStyles).toContain(".nyu-rmp-radar-axis");
+    expect(narrowContainerStyles).toContain("display: none");
+  });
+
   it("styles course-match badges by comment signal state", () => {
     injectStyles(document);
 
@@ -1859,6 +1870,42 @@ describe("Albert content DOM injection", () => {
       topComments: [
         {
           text: "CS201 answers questions on Ed and Piazza posts clarify labs.",
+          course: "CSCI-UA 201",
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("CSCI-UA 201 comment support 100/100");
+    expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 100 out of 100");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").className).toBe("nyu-rmp-comments-course-match is-strong");
+    expect(document.querySelector(".nyu-rmp-comment").className).toBe("nyu-rmp-comment is-course-match is-strong");
+  });
+
+  it("treats CS201 starter code and autograder feedback as course support", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.2,
+      difficulty: 2.8,
+      ratingsCount: 61,
+      wouldTakeAgain: 82,
+      tags: [],
+      topComments: [
+        {
+          text: "CS201 provides starter code and autograder feedback for projects.",
           course: "CSCI-UA 201",
         },
       ],
