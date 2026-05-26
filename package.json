@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "build": "node scripts/build-extension.js",
-    "verify:package": "node scripts/verify-extension-package.js dist"
+    "verify:package": "node scripts/verify-extension-package.js dist",
+    "verify:chrome-profile": "node scripts/verify-chrome-profile-extension.js"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
