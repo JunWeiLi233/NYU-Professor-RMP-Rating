@@ -313,6 +313,7 @@ function formatAlbertConnectedStatus(response) {
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
   const processedCellLayoutWarningCount = nonNegativeInteger(response.processedCellLayoutWarningCount);
   const staleCardLayoutMigrationCount = nonNegativeInteger(response.staleCardLayoutMigrationCount);
+  const ratingColumnLabel = formatRatingColumnLabel(response);
   const ratingRootLabel = ratingRootCount === 1 ? "1 rating root" : `${ratingRootCount} rating roots`;
   const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
   const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
@@ -322,7 +323,7 @@ function formatAlbertConnectedStatus(response) {
   const layoutWarningLabel = formatLayoutWarningLabel(response, processedCellLayoutWarningCount);
   const quickGridLabel = formatQuickGridLabel(cardCount, quickGridCount);
   const migrationLabel = formatStaleCardLayoutMigrationLabel(staleCardLayoutMigrationCount);
-  const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, layoutWarningLabel, migrationLabel].filter(Boolean).join(", ");
+  const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, ratingColumnLabel, layoutWarningLabel, migrationLabel].filter(Boolean).join(", ");
   const versionLabel = formatVersionLabel(response.version);
   const refreshLabel = response.contentScriptRefreshAttempted ? " Current content script rechecked." : "";
   if (isStaleContentVersion(response.version)) {
@@ -340,9 +341,29 @@ function formatAlbertConnectedStatus(response) {
 function albertPageStatusState(response) {
   return isStaleContentVersion(response.version)
     || hasStaleQuickGridShape(response)
+    || hasRatingColumnWarnings(response)
     || hasProcessedCellLayoutWarnings(response)
     ? "warning"
     : "connected";
+}
+
+function formatRatingColumnLabel(response) {
+  if (!hasRatingColumnDiagnostics(response)) {
+    return "";
+  }
+  const ratingCellCount = nonNegativeInteger(response.ratingCellCount);
+  const trailingRatingRootCount = nonNegativeInteger(response.trailingRatingRootCount);
+  const inlineProcessedRatingRootCount = nonNegativeInteger(response.inlineProcessedRatingRootCount);
+  const ratingCellLabel = ratingCellCount === 1
+    ? "1 trailing rating column"
+    : `${ratingCellCount} trailing rating columns`;
+  if (inlineProcessedRatingRootCount > 0) {
+    return `${ratingCellLabel}, ${inlineProcessedRatingRootCount} inline ${inlineProcessedRatingRootCount === 1 ? "rating root" : "rating roots"}`;
+  }
+  if (ratingCellCount > 0 && trailingRatingRootCount < ratingCellCount) {
+    return `${ratingCellLabel}, ${ratingCellCount - trailingRatingRootCount} empty ${ratingCellCount - trailingRatingRootCount === 1 ? "rating column" : "rating columns"}`;
+  }
+  return ratingCellLabel;
 }
 
 function formatQuickGridLabel(cardCount, quickGridCount) {
@@ -400,6 +421,23 @@ function hasProcessedCellLayoutWarnings(response) {
   return nonNegativeInteger(response?.processedCellLayoutWarningCount) > 0;
 }
 
+function hasRatingColumnWarnings(response) {
+  if (!hasRatingColumnDiagnostics(response)) {
+    return false;
+  }
+  const cardCount = nonNegativeInteger(response?.cardCount);
+  const processedCellCount = nonNegativeInteger(response?.processedCellCount);
+  const ratingCellCount = nonNegativeInteger(response?.ratingCellCount);
+  const trailingRatingRootCount = nonNegativeInteger(response?.trailingRatingRootCount);
+  const inlineProcessedRatingRootCount = nonNegativeInteger(response?.inlineProcessedRatingRootCount);
+  if (cardCount === 0 || processedCellCount === 0 || response?.overlayState === "disabled") {
+    return inlineProcessedRatingRootCount > 0;
+  }
+  return inlineProcessedRatingRootCount > 0
+    || ratingCellCount === 0
+    || trailingRatingRootCount < Math.min(cardCount, ratingCellCount);
+}
+
 function hasStaleQuickGridShape(response) {
   const cardCount = nonNegativeInteger(response?.cardCount);
   if (cardCount === 0 || response?.overlayState === "disabled") {
@@ -409,7 +447,7 @@ function hasStaleQuickGridShape(response) {
 }
 
 function shouldRefreshAlbertContentScript(response) {
-  return isStaleContentVersion(response?.version) || hasStaleQuickGridShape(response);
+  return isStaleContentVersion(response?.version) || hasStaleQuickGridShape(response) || hasRatingColumnWarnings(response);
 }
 
 function formatVersionLabel(version) {
@@ -425,7 +463,17 @@ function formatDiagnosticSummary(response = null) {
   const cardCount = nonNegativeInteger(response.cardCount);
   const quickGridCount = nonNegativeInteger(response.quickGridCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
-  return `Build v${EXTENSION_VERSION} | Albert ${version} | ${cardCount} cards | ${quickGridCount} quick views | ${processedCellCount} cells`;
+  const ratingCellCount = nonNegativeInteger(response.ratingCellCount);
+  const ratingColumnSummary = hasRatingColumnDiagnostics(response)
+    ? ` | ${ratingCellCount} rating columns`
+    : "";
+  return `Build v${EXTENSION_VERSION} | Albert ${version} | ${cardCount} cards | ${quickGridCount} quick views | ${processedCellCount} cells${ratingColumnSummary}`;
+}
+
+function hasRatingColumnDiagnostics(response) {
+  return Object.hasOwn(response ?? {}, "ratingCellCount")
+    || Object.hasOwn(response ?? {}, "trailingRatingRootCount")
+    || Object.hasOwn(response ?? {}, "inlineProcessedRatingRootCount");
 }
 
 function formatDiagnosticsClipboardText({ diagnosticSummary, pageStatus }) {

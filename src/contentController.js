@@ -95,6 +95,7 @@ export async function initContentScript({
 }
 
 function contentStatusResponse(document) {
+  const trailingRatingColumnStatus = ratingColumnStatusResponse(document);
   return {
     ok: true,
     contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
@@ -105,11 +106,21 @@ function contentStatusResponse(document) {
     quickGridCount: document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0,
     radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
     processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
+    ...trailingRatingColumnStatus,
     processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
     staleCardLayoutMigrationCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpStaleCardLayoutMigrationCount),
     processedCellLastRepairCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairCount),
     processedCellLastRepairWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairWarningCount),
     processedCellLastRepairRemainingWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairRemainingWarningCount),
+  };
+}
+
+function ratingColumnStatusResponse(document) {
+  const ratingCellSelector = "[data-nyu-rmp-rating-cell='true']";
+  return {
+    ratingCellCount: document?.querySelectorAll?.(ratingCellSelector).length ?? 0,
+    trailingRatingRootCount: document?.querySelectorAll?.(`${ratingCellSelector} > .nyu-rmp-rating-root`).length ?? 0,
+    inlineProcessedRatingRootCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true'] > .nyu-rmp-rating-root").length ?? 0,
   };
 }
 

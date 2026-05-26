@@ -40,7 +40,7 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 - Show ratings on Albert toggles the overlay on already-open and future Albert pages.
 - Clear cached ratings removes stored professor lookup results.
 - The popup shows how many professor lookups are cached locally.
-- Copy diagnostics copies only build, Albert content version, card count, quick-view count, cell count, and page status.
+- Copy diagnostics copies only build, Albert content version, card count, quick-view count, cell count, trailing rating-column count, and page status.
 - The popup warns when Albert is still rendering an old squeezed card layout instead of the segmented score/tools quick view.
 - If the current content script migrates stale card markup, the popup reports how many stale card layouts were cleaned up.
 
@@ -113,8 +113,8 @@ Run `npm run verify:local` first; if that passes, the package and local trailing
 7. Run `npm run verify:chrome-profile`.
 8. Run `npm run verify:live`.
 9. Refresh Albert after both verifiers pass.
-10. Open the extension popup on Albert and confirm it reports segmented quick views.
+10. Open the extension popup on Albert and confirm it reports segmented quick views and trailing rating columns.
 11. If Albert still shows old squeezed cards, save an Albert page snapshot and run `npm run verify:albert-shape -- .\albert-snapshot.html`.
 12. Do not click enrollment, cart, or class-selection controls while testing the overlay.
 
-If the popup says `old squeezed card layout detected`, Chrome is still showing stale injected cards on Albert. Reload the unpacked extension from this repository's `dist` folder, refresh Albert, and open the popup again. A current build should report segmented quick views instead of the stale-layout warning.
+If the popup says `old squeezed card layout detected`, Chrome is still showing stale injected cards on Albert. Reload the unpacked extension from this repository's `dist` folder, refresh Albert, and open the popup again. A current build should report segmented quick views and trailing rating columns instead of the stale-layout warning.

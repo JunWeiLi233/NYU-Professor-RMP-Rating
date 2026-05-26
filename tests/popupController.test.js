@@ -108,13 +108,16 @@ describe("extension popup controller", () => {
         quickGridCount: 4,
         radarCount: 3,
         processedCellCount: 4,
+        ratingCellCount: 4,
+        trailingRatingRootCount: 4,
+        inlineProcessedRatingRootCount: 0,
       },
     });
 
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("diagnostic-summary").textContent).toBe(
-      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells",
+      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells | 4 rating columns",
     );
   });
 
@@ -138,13 +141,16 @@ describe("extension popup controller", () => {
         quickGridCount: 0,
         radarCount: 3,
         processedCellCount: 4,
+        ratingCellCount: 4,
+        trailingRatingRootCount: 4,
+        inlineProcessedRatingRootCount: 0,
       },
     });
 
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("diagnostic-summary").textContent).toBe(
-      "Build v0.1.2 | Albert missing | 4 cards | 0 quick views | 4 cells",
+      "Build v0.1.2 | Albert missing | 4 cards | 0 quick views | 4 cells | 4 rating columns",
     );
   });
 
@@ -175,6 +181,9 @@ describe("extension popup controller", () => {
         quickGridCount: 4,
         radarCount: 3,
         processedCellCount: 4,
+        ratingCellCount: 4,
+        trailingRatingRootCount: 4,
+        inlineProcessedRatingRootCount: 0,
       },
     });
 
@@ -184,8 +193,8 @@ describe("extension popup controller", () => {
 
     expect(writeText).toHaveBeenCalledWith([
       "NYU Albert RMP Ratings diagnostics",
-      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells",
-      "Page status: Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK",
+      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells | 4 rating columns",
+      "Page status: Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 4 trailing rating columns, layout OK",
     ].join("\n"));
     expect(writeText.mock.calls[0][0]).not.toContain("nyu.edu");
     expect(writeText.mock.calls[0][0]).not.toContain("sis.portal.nyu.edu");
@@ -241,6 +250,9 @@ describe("extension popup controller", () => {
         quickGridCount: 4,
         radarCount: 3,
         processedCellCount: 4,
+        ratingCellCount: 4,
+        trailingRatingRootCount: 4,
+        inlineProcessedRatingRootCount: 0,
       },
     });
 
@@ -248,7 +260,7 @@ describe("extension popup controller", () => {
 
     expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, layout OK");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.2: 4 rating roots, 4 cards, 4 segmented quick views, 3 radar maps, 4 Albert cells checked, 4 trailing rating columns, layout OK");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
