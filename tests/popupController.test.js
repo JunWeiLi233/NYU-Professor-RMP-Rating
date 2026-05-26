@@ -225,6 +225,37 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
+  it("shows the last Albert layout repair count on later clean checks", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.1",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        radarCount: 3,
+        processedCellCount: 4,
+        processedCellLayoutWarningCount: 0,
+        processedCellLastRepairCount: 4,
+        processedCellLastRepairWarningCount: 1,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(tabs.sendMessage).toHaveBeenCalledTimes(1);
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, layout OK; last repair 4 cells");
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+  });
+
   it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

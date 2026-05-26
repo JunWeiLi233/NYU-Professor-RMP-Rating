@@ -54,6 +54,8 @@ describe("content script controller", () => {
       radarCount: 1,
       processedCellCount: 2,
       processedCellLayoutWarningCount: 0,
+      processedCellLastRepairCount: 0,
+      processedCellLastRepairWarningCount: 0,
     });
   });
 
@@ -111,6 +113,9 @@ describe("content script controller", () => {
       beforeWarningCount: 1,
       afterWarningCount: 1,
     });
+    expect(document.documentElement.dataset.nyuRmpLastLayoutRepairCount).toBe("1");
+    expect(document.documentElement.dataset.nyuRmpLastLayoutRepairWarningCount).toBe("1");
+    expect(document.documentElement.dataset.nyuRmpLastLayoutRepairRemainingWarningCount).toBe("1");
   });
 
   it("ignores unrelated content script messages", async () => {

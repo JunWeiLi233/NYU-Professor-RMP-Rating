@@ -68,6 +68,11 @@ export async function initContentScript({
       const beforeWarningCount = countProcessedCellLayoutWarnings(document);
       const repairResult = repairAlbertRmpLayoutSafeguards(document) ?? {};
       const afterWarningCount = countProcessedCellLayoutWarnings(document);
+      markLayoutRepairResult(document, {
+        repairedCount: nonNegativeInteger(repairResult.repairedCount),
+        beforeWarningCount,
+        afterWarningCount,
+      });
       sendResponse({
         ok: true,
         repairedCount: nonNegativeInteger(repairResult.repairedCount),
@@ -99,6 +104,8 @@ function contentStatusResponse(document) {
     radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
     processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
     processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
+    processedCellLastRepairCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairCount),
+    processedCellLastRepairWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairWarningCount),
   };
 }
 
@@ -113,6 +120,15 @@ function markOverlayState(document, state) {
   if (document?.documentElement) {
     document.documentElement.dataset.nyuRmpOverlayState = state;
   }
+}
+
+function markLayoutRepairResult(document, { repairedCount, beforeWarningCount, afterWarningCount }) {
+  if (!document?.documentElement) {
+    return;
+  }
+  document.documentElement.dataset.nyuRmpLastLayoutRepairCount = String(repairedCount);
+  document.documentElement.dataset.nyuRmpLastLayoutRepairWarningCount = String(beforeWarningCount);
+  document.documentElement.dataset.nyuRmpLastLayoutRepairRemainingWarningCount = String(afterWarningCount);
 }
 
 async function readOverlaySettings(chrome) {

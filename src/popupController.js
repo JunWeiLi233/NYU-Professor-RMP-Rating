@@ -274,6 +274,13 @@ function formatLayoutWarningLabel(response, processedCellLayoutWarningCount) {
       return `${repairedCount} layout ${repairedCount === 1 ? "warning" : "warnings"} repaired`;
     }
   }
+  if (processedCellLayoutWarningCount === 0) {
+    const lastRepairWarningCount = nonNegativeInteger(response?.processedCellLastRepairWarningCount);
+    const lastRepairCount = nonNegativeInteger(response?.processedCellLastRepairCount);
+    if (lastRepairWarningCount > 0 && lastRepairCount > 0) {
+      return `layout OK; last repair ${lastRepairCount} ${lastRepairCount === 1 ? "cell" : "cells"}`;
+    }
+  }
   return processedCellLayoutWarningCount === 0
     ? "layout OK"
     : `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning" : "warnings"}`;
