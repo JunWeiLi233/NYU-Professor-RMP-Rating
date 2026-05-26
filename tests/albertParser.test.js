@@ -274,6 +274,22 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts names from professor-name Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Professor Name: YAP, CHEE KENG
+      Prof. Name: Grace B. Hopper
+      Professor Names: Alan Turing + Barbara Liskov
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+      "Barbara Liskov",
+    ]);
+  });
+
   it("extracts names from faculty-labeled Albert rows", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
@@ -284,6 +300,20 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText(text)).toEqual([
       "Ada Lovelace",
       "Chee Keng Yap",
+    ]);
+  });
+
+  it("extracts names from faculty-name and teacher-name Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Faculty Name: YAP, CHEE KENG
+      Teacher Names: Grace B. Hopper + Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
     ]);
   });
 
