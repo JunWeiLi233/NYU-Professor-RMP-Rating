@@ -46,6 +46,11 @@ describe("live Albert readiness verifier", () => {
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
+    })).rejects.toThrow("Use the same Chrome profile where Albert is already logged in");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
     })).rejects.toThrow(`Expected extension folder: ${resolve(workspace.dist)}`);
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,
