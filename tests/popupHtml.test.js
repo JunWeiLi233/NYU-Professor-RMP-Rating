@@ -39,6 +39,15 @@ describe("extension popup markup", () => {
     expect(popup).toContain('class="notice"');
   });
 
+  it("renders a dedicated active Albert page connection status", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('id="page-status"');
+    expect(popup).toContain('class="page-status"');
+    expect(popup).toContain('aria-live="polite"');
+    expect(popup).toContain("Checking active Albert page");
+  });
+
   it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
     const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
 

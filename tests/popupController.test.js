@@ -74,6 +74,68 @@ describe("extension popup controller", () => {
     expect(status.getAttribute("aria-atomic")).toBe("true");
   });
 
+  it("reports when the active Albert page is connected to the content script", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        overlayState: "enabled",
+        cardCount: 4,
+        radarCount: 3,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
+    expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 cards, 3 radar maps");
+    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+  });
+
+  it("prompts a refresh when the active Albert page is not connected", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      sendError: new Error("Receiving end does not exist"),
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("page-status").textContent).toBe("Albert not connected. Reload the extension, then refresh Albert.");
+    expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
+  it("asks students to open Albert when the active tab is not an Albert page", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://www.nyu.edu/" },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(tabs.sendMessage).not.toHaveBeenCalled();
+    expect(document.getElementById("page-status").textContent).toBe("Open an Albert tab to check page connection.");
+    expect(document.getElementById("page-status").dataset.state).toBe("idle");
+  });
+
   it("shows an inline error when popup storage cannot be read on startup", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
@@ -311,6 +373,18 @@ function createStorageMock(initialData = {}) {
 function createRuntimeMock() {
   return {
     sendMessage: vi.fn(async () => ({ ok: true, cleared: 2 })),
+  };
+}
+
+function createTabsMock({ activeTab = null, contentStatus = null, sendError = null } = {}) {
+  return {
+    query: vi.fn(async () => (activeTab ? [activeTab] : [])),
+    sendMessage: vi.fn(async () => {
+      if (sendError) {
+        throw sendError;
+      }
+      return contentStatus;
+    }),
   };
 }
 

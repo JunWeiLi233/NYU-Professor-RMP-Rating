@@ -2,8 +2,10 @@ export async function initPopup({
   document = globalThis.document,
   storage = globalThis.chrome?.storage?.local,
   runtime = globalThis.chrome?.runtime,
+  tabs = globalThis.chrome?.tabs,
 } = {}) {
   const status = document.getElementById("status");
+  const pageStatus = document.getElementById("page-status");
   const clearButton = document.getElementById("clear-cache");
   const enableOverlay = document.getElementById("enable-overlay");
   if (!status || !storage) {
@@ -12,6 +14,11 @@ export async function initPopup({
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
   status.setAttribute("aria-atomic", "true");
+  if (pageStatus) {
+    pageStatus.setAttribute("role", "status");
+    pageStatus.setAttribute("aria-live", "polite");
+    pageStatus.setAttribute("aria-atomic", "true");
+  }
 
   let settings;
   try {
@@ -100,6 +107,7 @@ export async function initPopup({
   }
 
   await refreshStatus();
+  await refreshAlbertPageStatus({ pageStatus, tabs });
 }
 
 async function getProfessorCacheKeys(storage) {
@@ -128,4 +136,58 @@ function formatCacheCountStatus(count) {
 function nonNegativeInteger(value) {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
+}
+
+async function refreshAlbertPageStatus({ pageStatus, tabs }) {
+  if (!pageStatus) {
+    return;
+  }
+  if (!tabs?.query || !tabs?.sendMessage) {
+    setPageStatus(pageStatus, "Open Albert to check page connection.", "idle");
+    return;
+  }
+
+  try {
+    const [activeTab] = await tabs.query({ active: true, currentWindow: true });
+    if (!activeTab?.id || !isAlbertUrl(activeTab.url)) {
+      setPageStatus(pageStatus, "Open an Albert tab to check page connection.", "idle");
+      return;
+    }
+
+    const response = await tabs.sendMessage(activeTab.id, { type: "NYU_RMP_CONTENT_STATUS" });
+    if (!response?.ok || response.contentScript !== "loaded") {
+      setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
+      return;
+    }
+
+    setPageStatus(pageStatus, formatAlbertConnectedStatus(response), "connected");
+  } catch {
+    setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
+  }
+}
+
+function setPageStatus(pageStatus, message, state) {
+  pageStatus.textContent = message;
+  pageStatus.dataset.state = state;
+}
+
+function isAlbertUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:"
+      && ["albert.nyu.edu", "sis.nyu.edu", "sis.portal.nyu.edu"].includes(parsed.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+function formatAlbertConnectedStatus(response) {
+  const cardCount = nonNegativeInteger(response.cardCount);
+  const radarCount = nonNegativeInteger(response.radarCount);
+  const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
+  const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
+  if (response.overlayState === "disabled") {
+    return `Albert connected; overlay disabled. ${cardLabel}, ${radarLabel}`;
+  }
+  return `Albert connected: ${cardLabel}, ${radarLabel}`;
 }

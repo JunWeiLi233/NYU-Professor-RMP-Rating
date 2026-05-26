@@ -43,6 +43,16 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the manifest omits active tab permission for popup Albert checks", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: { permissions: ["storage"] },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("activeTab permission is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when the content script uses a broad NYU match instead of explicit Albert surfaces", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {
@@ -202,7 +212,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
       },
     ],
     host_permissions: ["https://www.ratemyprofessors.com/*"],
-    permissions: ["storage"],
+    permissions: ["storage", "activeTab"],
     ...manifestOverrides,
   };
 

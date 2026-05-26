@@ -19,6 +19,53 @@ describe("content script controller", () => {
     expect(document.documentElement.dataset.nyuRmpOverlayState).toBe("enabled");
   });
 
+  it("responds to popup status pings with overlay state and rendered card counts", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div class="nyu-rmp-card"></div>
+      <div class="nyu-rmp-card"></div>
+      <svg class="nyu-rmp-radar"></svg>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+
+    expect(sendResponse).toHaveBeenCalledWith({
+      ok: true,
+      contentScript: "loaded",
+      overlayState: "enabled",
+      cardCount: 2,
+      radarCount: 1,
+    });
+  });
+
+  it("ignores unrelated content script messages", async () => {
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document: globalThis.document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    const result = chrome.runtime.onMessage.listener({ type: "OTHER_MESSAGE" }, {}, sendResponse);
+
+    expect(result).toBe(false);
+    expect(sendResponse).not.toHaveBeenCalled();
+  });
+
   it("starts the overlay when the stored setting is enabled", async () => {
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
     const startAlbertRmpEnhancer = vi.fn(() => ({ disconnect: vi.fn() }));
@@ -120,6 +167,11 @@ function createChromeMock(settings = {}) {
     },
     runtime: {
       sendMessage: vi.fn(),
+      onMessage: {
+        addListener: vi.fn(function addListener(listener) {
+          this.listener = listener;
+        }),
+      },
     },
   };
 }

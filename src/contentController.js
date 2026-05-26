@@ -34,6 +34,19 @@ export async function initContentScript({
       removeAlbertRmpEnhancements();
     }
   });
+  chrome.runtime?.onMessage?.addListener((message, sender, sendResponse) => {
+    if (message?.type !== "NYU_RMP_CONTENT_STATUS") {
+      return false;
+    }
+    sendResponse({
+      ok: true,
+      contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
+      overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
+      cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
+      radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
+    });
+    return false;
+  });
 
   function startOverlay() {
     return startAlbertRmpEnhancer({
