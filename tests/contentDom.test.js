@@ -2352,7 +2352,9 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const profileLink = document.querySelector(".nyu-rmp-actions a");
-    expect(profileLink.getAttribute("href")).toBe("https://www.ratemyprofessors.com/");
+    expect(profileLink.textContent).toBe("Search RMP");
+    expect(profileLink.getAttribute("href")).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
+    expect(profileLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
   });
 
   it("labels matched RMP profile links with the professor name", async () => {
@@ -2799,7 +2801,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("No rating");
     expect(document.body.textContent).toContain("N/A ratings");
     expect(document.body.textContent).toContain("Difficulty N/A");
-    expect(document.querySelector(".nyu-rmp-card a").href).toBe("https://www.ratemyprofessors.com/");
+    const fallbackLink = document.querySelector(".nyu-rmp-card a");
+    expect(fallbackLink.textContent).toBe("Search RMP");
+    expect(fallbackLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
+  });
+
+  it("uses an RMP professor search action when a matched result has no profile URL", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Ada Lovelace",
+      department: "Computer Science",
+      rating: 4.2,
+      difficulty: 3.1,
+      ratingsCount: 12,
+      topComments: [],
+      url: "",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const actions = document.querySelector(".nyu-rmp-actions");
+    const links = Array.from(actions.querySelectorAll("a"));
+    expect(links).toHaveLength(1);
+    expect(links[0].textContent).toBe("Search RMP");
+    expect(links[0].href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
+    expect(links[0].getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
   });
 
   it("lets students refresh a no-match card without rescanning Albert", async () => {

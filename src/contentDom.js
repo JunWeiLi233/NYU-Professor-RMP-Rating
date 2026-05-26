@@ -6,7 +6,6 @@ const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
 const MIN_CONFIDENT_RATING_COUNT = 5;
-const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
 const SPACED_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}\s+[A-Z]{2}\s*0?\d{3,4})\b/i;
@@ -1060,11 +1059,14 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     wouldTakeAgain,
   });
   const recommendation = getPickRecommendation(radarFit);
-  const rmpUrl = safeRmpUrl(result.url);
+  const rmpUrl = safeRmpProfileUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
-  const fuzzySearchAction = matchNote
+  const profileAction = rmpUrl
+    ? `<a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>`
+    : "";
+  const searchAction = (matchNote || !rmpUrl)
     ? `<a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>`
     : "";
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
@@ -1110,8 +1112,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <strong>${escapeHtml(professorName)}</strong>
       <div class="nyu-rmp-actions" aria-label="${escapeHtml(`RMP actions for ${professorName}`)}">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
-        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
-        ${fuzzySearchAction}
+        ${profileAction}
+        ${searchAction}
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
@@ -2611,18 +2613,18 @@ function rmpSearchUrl(name) {
   return `https://www.ratemyprofessors.com/search/professors/1381?q=${encodeURIComponent(name)}`;
 }
 
-function safeRmpUrl(value) {
+function safeRmpProfileUrl(value) {
   try {
     const url = new URL(String(value ?? ""));
     const host = url.hostname.toLowerCase();
-    if (url.protocol === "https:" && (host === "www.ratemyprofessors.com" || host === "ratemyprofessors.com")) {
+    if (url.protocol === "https:" && (host === "www.ratemyprofessors.com" || host === "ratemyprofessors.com") && /^\/professor\/\d+\/?$/.test(url.pathname)) {
       return url.href;
     }
   } catch {
-    return DEFAULT_RMP_URL;
+    return "";
   }
 
-  return DEFAULT_RMP_URL;
+  return "";
 }
 
 function getRatingVerdict(value) {
