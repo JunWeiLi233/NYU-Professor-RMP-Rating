@@ -12,6 +12,7 @@ export async function verifyChromeProfileExtension({
   await assertFileExists(preferencesPath, `Chrome Preferences file is missing: ${preferencesPath}`);
 
   const expectedPath = normalizePath(extensionPath);
+  const expectedVersion = await extensionManifestVersion(extensionPath);
   const preferences = JSON.parse(await readFile(preferencesPath, "utf8"));
   const settings = preferences.extensions?.settings ?? {};
   const installed = Object.entries(settings)
@@ -38,9 +39,14 @@ export async function verifyChromeProfileExtension({
     throw new Error(`${EXTENSION_NAME} is installed but disabled`);
   }
 
+  if (expectedVersion && installed.version !== expectedVersion) {
+    throw new Error(`${EXTENSION_NAME} is installed from the expected path but Chrome reports version ${installed.version}; expected ${expectedVersion}. Reload the unpacked extension in chrome://extensions`);
+  }
+
   return {
     ...installed,
     installedFromExpectedPath: true,
+    expectedVersion,
   };
 }
 
@@ -119,11 +125,20 @@ function profileSortKey(profileDir) {
 }
 
 function isExpectedProfileMiss(error) {
-  return /not installed in this Chrome profile|installed from a different path|installed but disabled/i.test(error?.message ?? "");
+  return /not installed in this Chrome profile|installed from a different path|installed but disabled|Chrome reports version/i.test(error?.message ?? "");
 }
 
 function normalizePath(path) {
   return resolve(path).toLowerCase();
+}
+
+async function extensionManifestVersion(extensionPath) {
+  try {
+    const manifest = JSON.parse(await readFile(resolve(extensionPath, "manifest.json"), "utf8"));
+    return String(manifest.version ?? "").trim();
+  } catch {
+    return "";
+  }
 }
 
 function defaultProfileDir() {

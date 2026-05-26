@@ -12,7 +12,7 @@ describe("Chrome profile extension verifier", () => {
     const profile = await createProfile({
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.1" },
           path: resolve("dist"),
           state: 1,
           from_webstore: false,
@@ -24,7 +24,27 @@ describe("Chrome profile extension verifier", () => {
       id: "abcdefghijklmnopabcdefghijklmnop",
       enabled: true,
       installedFromExpectedPath: true,
+      expectedVersion: "0.1.1",
     });
+
+    await rm(profile, { recursive: true, force: true });
+  });
+
+  it("fails when Chrome has not reloaded the current dist manifest version", async () => {
+    const profile = await createProfile({
+      extensions: {
+        abcdefghijklmnopabcdefghijklmnop: {
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+          path: resolve("dist"),
+          state: 1,
+          from_webstore: false,
+        },
+      },
+    });
+
+    await expect(verifyChromeProfileExtension({ profileDir: profile, extensionPath: "dist" })).rejects.toThrow(
+      "NYU Albert RMP Ratings is installed from the expected path but Chrome reports version 0.1.0; expected 0.1.1. Reload the unpacked extension in chrome://extensions",
+    );
 
     await rm(profile, { recursive: true, force: true });
   });
@@ -80,7 +100,7 @@ describe("Chrome profile extension verifier", () => {
       profile: join(userData, "Profile 1"),
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.1" },
           path: resolve("dist"),
           state: 1,
           from_webstore: false,
