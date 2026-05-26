@@ -5,6 +5,7 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
+const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}\s*\d{3,4})\b/i;
 const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-checked], [data-current], [data-focus], [data-focused], [data-highlighted], [data-pressed], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
   childList: true,
@@ -904,12 +905,13 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
   const container = document.createElement("div");
   container.className = ROOT_CLASS;
+  const courseCode = courseCodeForElement(element);
 
   const pendingLookups = [];
   for (const name of uniqueNames(names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean))) {
-    const card = createRatingShell(document, name);
+    const card = createRatingShell(document, name, courseCode);
     container.append(card);
-    const pendingLookup = loadRatingCard({ card, name, lookupProfessor });
+    const pendingLookup = loadRatingCard({ card, name, lookupProfessor, courseCode });
     pendingLookups.push(pendingLookup);
   }
 
@@ -919,6 +921,23 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     element.insertAdjacentElement("afterend", container);
   }
   return pendingLookups;
+}
+
+function courseCodeForElement(element) {
+  return normalizeCourseCode([
+    rowForCell(element) ? visibleTextSegments(rowForCell(element)).join(" ") : "",
+    element.closest?.("[role='row']") ? visibleTextSegments(element.closest("[role='row']")).join(" ") : "",
+    element.parentElement ? visibleTextSegments(element.parentElement).join(" ") : "",
+  ].find(courseCodeFromText));
+}
+
+function courseCodeFromText(value) {
+  return String(value ?? "").match(COURSE_CODE_PATTERN)?.[1] ?? "";
+}
+
+function normalizeCourseCode(value) {
+  const code = courseCodeFromText(value) || String(value ?? "");
+  return code.trim().replace(/\s+/g, " ").toUpperCase();
 }
 
 function uniqueNames(names) {
@@ -933,11 +952,11 @@ function uniqueNames(names) {
   });
 }
 
-function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
+function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, courseCode = card.dataset.nyuRmpCourseCode ?? "" }) {
   setCardLoading(card, name, forceRefresh ? "Refreshing RMP" : "Checking RMP");
   const lookupArgs = forceRefresh ? [name, { forceRefresh: true }] : [name];
   return lookupProfessor(...lookupArgs)
-    .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor }))
+    .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor, courseCode }))
     .catch((error) => {
       updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message });
     });
@@ -951,10 +970,13 @@ function isAriaCell(element) {
   return ["cell", "gridcell"].includes(element.getAttribute("role")?.trim().toLowerCase());
 }
 
-function createRatingShell(document, name) {
+function createRatingShell(document, name, courseCode = "") {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
   card.dataset.nyuRmpCardId = String(++nextCardId);
+  if (courseCode) {
+    card.dataset.nyuRmpCourseCode = courseCode;
+  }
   card.setAttribute("role", "group");
   setCardLoading(card, name, "Checking RMP");
   return card;
@@ -974,7 +996,7 @@ function setCardLoading(card, name, status) {
   card.querySelector("strong").textContent = name;
 }
 
-function updateRatingCard(card, result, { requestedName = "Professor", lookupProfessor } = {}) {
+function updateRatingCard(card, result, { requestedName = "Professor", lookupProfessor, courseCode = "" } = {}) {
   card.classList.remove("is-loading");
   card.removeAttribute("aria-busy");
   if (!result) {
@@ -1013,7 +1035,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
   const comments = asArray(result.topComments)
-    .map((comment, index) => formatComment(comment, commentTextId(card, index)))
+    .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
   const commentCount = countRenderedComments(comments);
   const commentsPanel = renderCommentsPanel(comments);
@@ -1232,7 +1254,7 @@ function statusMarkup(message) {
 
 function wireRefreshAction(card, requestedName, lookupProfessor) {
   card.querySelector(".nyu-rmp-refresh")?.addEventListener("click", () => {
-    loadRatingCard({ card, name: requestedName, lookupProfessor, forceRefresh: true });
+    loadRatingCard({ card, name: requestedName, lookupProfessor, forceRefresh: true, courseCode: card.dataset.nyuRmpCourseCode ?? "" });
   });
 }
 
@@ -1626,6 +1648,10 @@ export function injectStyles(document = globalThis.document) {
 	      font-size: 10px;
 	      margin-top: 2px;
 	    }
+	    .nyu-rmp-comment-meta.is-course-match {
+	      color: #155b3a;
+	      font-weight: 700;
+	    }
 	    .nyu-rmp-skeleton {
 	      animation: nyu-rmp-shimmer 1.3s infinite linear;
 	      background: linear-gradient(105deg, #f0ecf6 8%, #faf8fd 18%, #f0ecf6 33%);
@@ -1761,7 +1787,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function formatComment(comment, textId) {
+function formatComment(comment, textId, albertCourseCode = "") {
   const normalized = normalizeComment(comment);
   if (!isUsefulCommentText(normalized.text)) {
     return "";
@@ -1769,8 +1795,9 @@ function formatComment(comment, textId) {
 
   const preview = truncateComment(normalized.text);
   const isTruncated = preview !== normalized.text;
+  const isCourseMatch = normalized.course && normalizeCourseCode(normalized.course) === normalizeCourseCode(albertCourseCode);
   const metadata = [
-    normalized.course ? `Course ${normalized.course}` : "",
+    normalized.course ? `Course ${normalized.course}${isCourseMatch ? " (Albert match)" : ""}` : "",
     normalized.helpfulRating == null ? "" : `${normalized.helpfulRating} useful`,
     normalized.clarityRating == null ? "" : `Clarity ${formatScore(normalized.clarityRating)}`,
     normalized.difficultyRating == null ? "" : `Difficulty ${formatScore(normalized.difficultyRating)}`,
@@ -1789,7 +1816,7 @@ function formatComment(comment, textId) {
           data-full-text="${escapeHtml(normalized.text)}"
         >Show more</button>
       ` : ""}
-      ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
+      ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta${isCourseMatch ? " is-course-match" : ""}">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
   `;
 }

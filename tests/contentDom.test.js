@@ -721,6 +721,49 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Difficulty 2.0");
   });
 
+  it("marks useful comments that match the nearby Albert course", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Useful context for the systems organization section.",
+          course: "CSCI-UA 201",
+          helpfulRating: 14,
+          clarityRating: 2,
+          difficultyRating: 5,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
+    expect(metadata.classList.contains("is-course-match")).toBe(true);
+  });
+
   it("labels the useful comments panel as most useful RMP comments", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
