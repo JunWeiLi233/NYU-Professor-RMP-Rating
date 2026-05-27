@@ -194,6 +194,24 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("passes CS course context as a department hint for full-name Course Search lookups", async () => {
+    const freshRating = {
+      name: "Grace Hopper",
+      rating: 4.8,
+      topComments: ["Full-name CS course searches should still get department context."],
+    };
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("Grace Hopper", { courseCode: "CSCI-UA 201" })).resolves.toMatchObject(freshRating);
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Grace Hopper", { departmentHint: "computer-science" });
+    expect(storage.data[professorCacheKey("Grace Hopper", "CSCI-UA 201")]).toMatchObject({
+      value: freshRating,
+    });
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

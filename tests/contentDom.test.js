@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.8");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.8");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.8\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.9");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.9");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.9\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -489,7 +489,7 @@ describe("Albert content DOM injection", () => {
     const mounted = scanAlbertPageOnce({ document, lookupProfessor });
     await Promise.all(mounted.pendingLookups);
 
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.querySelector(".nyu-rmp-score").textContent).toBe("2.1");
     expect(document.querySelector(".nyu-rmp-score").getAttribute("aria-label")).toBe("RMP rating 2.1 out of 5");
@@ -4738,8 +4738,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.8");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.8");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.9");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.9");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -7081,7 +7081,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Multiple ARIA controlled lists should render.");
   });
@@ -8309,7 +8309,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Header-referenced instructor cells should render.");
   });
@@ -8346,7 +8346,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Column-header instructor cells should render.");
   });
@@ -8525,7 +8525,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Responsive cell labels should render.");
   });
@@ -8555,7 +8555,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("ARIA-labeled table cells should render.");
   });
@@ -8608,7 +8608,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("ARIA grid cells should render.");
   });
@@ -8641,7 +8641,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("ARIA column headers should render.");
   });
@@ -8670,7 +8670,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("ARIA-labelled-by instructor cells should render.");
   });
@@ -8699,7 +8699,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("ARIA-described-by instructor cells should render.");
   });
@@ -8761,7 +8761,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Field-name instructor cells should render.");
   });
@@ -8791,7 +8791,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Underscored field labels should render.");
   });
@@ -8821,7 +8821,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Abbreviated field labels should render.");
   });
@@ -8851,7 +8851,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Embedded field labels should render.");
   });
@@ -8881,7 +8881,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Field-label metadata should render.");
   });
@@ -8911,7 +8911,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Abbreviated field metadata should render.");
   });
@@ -8941,7 +8941,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Abbreviated column metadata should render.");
   });
@@ -8971,7 +8971,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Column-name instructor cells should render.");
   });
@@ -9001,7 +9001,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Column-id instructor cells should render.");
   });
@@ -9031,7 +9031,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Generated field ids should render.");
   });
@@ -9061,7 +9061,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Generated field ids in attributes should render.");
   });
@@ -9091,7 +9091,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Prefixed PeopleSoft metadata should render.");
   });
@@ -9121,7 +9121,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Prefixed PeopleSoft field ids should render.");
   });
@@ -9151,7 +9151,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Hyphenated PeopleSoft field ids should render.");
   });
@@ -9181,7 +9181,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Prefixed PeopleSoft column metadata should render.");
   });
@@ -9211,7 +9211,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Prefixed PeopleSoft column ids should render.");
   });
@@ -9241,7 +9241,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Hyphenated PeopleSoft column ids should render.");
   });
@@ -9271,7 +9271,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Generated class names should render.");
   });
@@ -9301,7 +9301,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Test-id metadata should render.");
   });
@@ -9331,7 +9331,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("QA metadata should render.");
   });
@@ -9361,7 +9361,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Automation metadata should render.");
   });
@@ -9391,7 +9391,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Slot metadata should render.");
   });
@@ -9421,7 +9421,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Data-name metadata should render.");
   });
@@ -9451,7 +9451,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Panel-field metadata should render.");
   });
@@ -9481,7 +9481,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Tooltip metadata should render.");
   });
@@ -9685,8 +9685,8 @@ describe("Albert content DOM injection", () => {
     expect(firstSelectCell.querySelector(":scope > .nyu-rmp-albert-original input")).not.toBeNull();
     expect(firstSelectCell.querySelector(":scope > .nyu-rmp-rating-root").textContent).toContain("Chee Keng Yap SELECT_BUTTON row comment");
     expect(secondSelectCell.querySelector(":scope > .nyu-rmp-rating-root").textContent).toContain("Grace Hopper SELECT_BUTTON row comment");
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
-    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper", { courseCode: "CSCI-UA 201" });
   });
 
   it("renders the same professor rating on repeated SELECT_BUTTON class rows", async () => {
@@ -9725,7 +9725,7 @@ describe("Albert content DOM injection", () => {
     expect(rowCards.every((card) => card.textContent.includes("Same professor should appear for every selectable class row."))).toBe(true);
     expect(document.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
   });
 
   it("keeps SELECT_BUTTON ratings under the button after rescans", async () => {
@@ -9770,8 +9770,8 @@ describe("Albert content DOM injection", () => {
             <td>YAP, CHEE KENG</td>
             <td>Open</td>
             <td data-nyu-rmp-rating-cell="true">
-              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.8">
-                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.8">
+              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.9">
+                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.9">
                   <div class="nyu-rmp-quick-grid">RMP 2.1 Recent comments Radar map</div>
                 </article>
               </div>
@@ -9833,7 +9833,7 @@ describe("Albert content DOM injection", () => {
     expect(compactCell.dataset.nyuRmpSelectButtonRating).toBe("true");
     expect(document.querySelector("#compact-select-row > [data-nyu-rmp-rating-cell='true']")).toBeNull();
     expect(compactCell.querySelector(":scope > .nyu-rmp-rating-root .nyu-rmp-card").textContent).toContain("Compact SELECT_BUTTON row comment.");
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
   });
 
   it("shows ratings under PeopleSoft Course Search result SELECT_BUTTON cards", async () => {
@@ -9866,7 +9866,7 @@ describe("Albert content DOM injection", () => {
     expect(ratingRoot.querySelector(".nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Alfredo Canziani");
     expect(ratingRoot.textContent).toContain("Course Search result comment.");
     expect(document.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
-    expect(lookupProfessor).toHaveBeenCalledWith("Alfredo Canziani");
+    expect(lookupProfessor).toHaveBeenCalledWith("Alfredo Canziani", { courseCode: "CSCI-UA 1" });
   });
 
   it("renders repeated PeopleSoft Course Search result SELECT_BUTTON cards without duplicate lookups", async () => {
@@ -9907,7 +9907,7 @@ describe("Albert content DOM injection", () => {
     expect(cards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Chee Keng Yap", "Chee Keng Yap"]);
     expect(cards.every((card) => card.textContent.includes("Course Search should show this below every selectable class card."))).toBe(true);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap", { courseCode: "CSCI-UA 201" });
   });
 
   it("does not treat SCA Course Search notes about Faculty Electives as professor names", async () => {
@@ -9962,7 +9962,7 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).not.toContain("Elective For These Majors");
     expect(document.body.textContent).not.toContain("Minors: Africana");
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang");
+    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang", { courseCode: "SCA-UA 366" });
   });
 
   it("removes stale Course Search note ratings and remounts only the meeting-line instructor", async () => {
@@ -9973,8 +9973,8 @@ describe("Albert content DOM injection", () => {
             <b>SCA-UA 366</b> | 4 units
             <br>09/02/2026 - 12/14/2026 Tue,Thu 4.55 PM - 6.10 PM at Tisch Hall with Ouyang, Elizabeth
             <br><b>Notes: </b>Counts as SCA Faculty Elective for these majors/minors: Africana, American, Latino, and SCA.
-            <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.8">
-              <article class="nyu-rmp-card" data-nyu-rmp-requested-name="Elective For These Majors" data-nyu-rmp-version="0.1.8">Bogus note match</article>
+            <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.9">
+              <article class="nyu-rmp-card" data-nyu-rmp-requested-name="Elective For These Majors" data-nyu-rmp-version="0.1.9">Bogus note match</article>
             </div>
           </div>
         </div>
@@ -10005,7 +10005,7 @@ describe("Albert content DOM injection", () => {
     expect(cards[0].textContent).toContain("Elizabeth Ouyang repaired SCA result.");
     expect(document.body.textContent).not.toContain("Bogus note match");
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang");
+    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang", { courseCode: "SCA-UA 366" });
   });
 
   it("replaces stale under-button Course Search roots with the current result-card layout", async () => {
@@ -10039,13 +10039,13 @@ describe("Albert content DOM injection", () => {
     expect(selectButtonContainer.dataset.nyuRmpProcessed).toBe("true");
     expect(selectButtonContainer.dataset.nyuRmpSelectButtonRating).toBe("true");
     expect(selectButtonContainer.nextElementSibling.className).toBe("nyu-rmp-rating-root");
-    expect(selectButtonContainer.nextElementSibling.dataset.nyuRmpVersion).toBe("0.1.8");
+    expect(selectButtonContainer.nextElementSibling.dataset.nyuRmpVersion).toBe("0.1.9");
     expect(cards).toHaveLength(1);
     expect(cards[0].dataset.nyuRmpRequestedName).toBe("Elizabeth Ouyang");
     expect(cards[0].textContent).toContain("Elizabeth Ouyang replaced stale root.");
     expect(document.body.textContent).not.toContain("Old stale card");
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
-    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang");
+    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang", { courseCode: "SCA-UA 366" });
   });
 
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
@@ -10067,7 +10067,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.8");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.9");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -10163,7 +10163,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.8"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.9"></div>
         </div>
       </div>
     `;
@@ -10221,8 +10221,8 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.8">
-            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.8">
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.9">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.9">
               <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
               <div class="nyu-rmp-department">Computer Science</div>
               <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
@@ -10250,7 +10250,7 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
-    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.8");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.9");
     expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(quickGrid).not.toBeNull();
     expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
@@ -10296,7 +10296,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.8"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.9"></div>
       </div>
     `;
 
@@ -10338,8 +10338,8 @@ describe("Albert content DOM injection", () => {
     const rowCards = Array.from(document.querySelectorAll("#grid-row [data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
     expect(rowCards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Ada Lovelace", "Grace Hopper"]);
     expect(lookupProfessor).toHaveBeenCalledTimes(2);
-    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
-    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace", { courseCode: "CSCI-UA 201" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper", { courseCode: "CSCI-UA 201" });
   });
 
   it("scans PeopleSoft shopping cart instructor fields labeled by metadata", async () => {

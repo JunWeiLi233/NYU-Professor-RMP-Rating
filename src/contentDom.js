@@ -36,9 +36,9 @@ const RMP_COMMENT_SAMPLE_SIZE = 20;
 const MIN_CONFIDENT_RATING_COUNT = 5;
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const HEADERED_SINGLE_NAME_EXCLUSIONS = new Set(["course", "credits", "days", "department", "enrolled", "instructor", "location", "meeting", "open", "section", "status", "tba", "time", "times", "units", "waitlist"]);
-const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
-const SPACED_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}\s+[A-Z]{2}\s*0?\d{3,4})\b/i;
-const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}[A-Z]{2}0?\d{3,4})\b/i;
+const COURSE_CODE_PATTERN = /\b([A-Z0-9]{2,6}-(?:UA|UB|UD|UF|UG|UH|UY|SHU)[.\-\s]*\d{1,4})\b/i;
+const SPACED_COURSE_CODE_PATTERN = /\b([A-Z0-9]{2,6}\s+(?:UA|UB|UD|UF|UG|UH|UY|SHU)\s*0?\d{1,4})\b/i;
+const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z0-9]{2,6}(?:UA|UB|UD|UF|UG|UH|UY|SHU)0?\d{1,4})\b/i;
 const CSCI_SHORTHAND_COURSE_CODE_PATTERN = /\b(CSCI[-\s]*0?\d{3,4})\b/i;
 const CS_SHORTHAND_COURSE_CODE_PATTERN = /\b(CS[-\s]*0?\d{3,4})\b/i;
 const COURSE_TITLE_CODE_ALIASES = [
@@ -361,7 +361,7 @@ function createScanLookupCache(lookupProfessor) {
       return lookupProfessor(name, options);
     }
 
-    const courseCode = shouldPassCourseContext(name) ? options.courseCode : "";
+    const courseCode = options.courseCode ?? "";
     const key = [compactName(name), normalizeCourseCode(courseCode)].filter(Boolean).join("|");
     if (!lookups.has(key)) {
       lookups.set(key, courseCode ? lookupProfessor(name, { courseCode }) : lookupProfessor(name));
@@ -1763,9 +1763,9 @@ function normalizeCourseCode(value) {
     .toUpperCase()
     .replace(/\bCSCI[-\s]*0*(\d{1,4})\b/, (_match, courseNumber) => `CSCI-UA ${Number(courseNumber)}`)
     .replace(/\bCS[-\s]*0*(\d{1,4})\b/, (_match, courseNumber) => `CSCI-UA ${Number(courseNumber)}`)
-    .replace(/\b([A-Z]{2,5})\s+([A-Z]{2})\s*0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
-    .replace(/\b([A-Z]{2,5})([A-Z]{2})0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
-    .replace(/\b([A-Z]{2,5}-[A-Z]{2})[.\-\s]*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
+    .replace(/\b([A-Z0-9]{2,6})\s+(UA|UB|UD|UF|UG|UH|UY|SHU)\s*0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
+    .replace(/\b([A-Z0-9]{2,6})(UA|UB|UD|UF|UG|UH|UY|SHU)0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
+    .replace(/\b([A-Z0-9]{2,6}-(?:UA|UB|UD|UF|UG|UH|UY|SHU))[.\-\s]*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
 }
 
 function uniqueNames(names) {
@@ -1795,7 +1795,7 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, cou
   setCardLoading(card, name, forceRefresh ? "Refreshing RMP" : "Checking RMP");
   const lookupOptions = {
     ...(forceRefresh ? { forceRefresh: true } : {}),
-    ...(courseCode && shouldPassCourseContext(name) ? { courseCode } : {}),
+    ...(courseCode ? { courseCode } : {}),
   };
   const lookupArgs = Object.keys(lookupOptions).length > 0 ? [name, lookupOptions] : [name];
   return lookupProfessor(...lookupArgs)
@@ -1811,10 +1811,6 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, cou
       }
       updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message, courseCode });
     });
-}
-
-function shouldPassCourseContext(name) {
-  return String(name ?? "").trim().split(/\s+/).filter(Boolean).length === 1;
 }
 
 function isTableCell(element) {
