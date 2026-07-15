@@ -80,8 +80,20 @@ describe("extension popup markup", () => {
     expect(popup).toContain('aria-describedby="overlay-helper"');
     expect(popup).toContain('id="overlay-helper"');
     expect(popup).toContain(".toggle-switch input:focus-visible + .toggle-track");
-    expect(popup).toContain("outline: 2px solid var(--gold)");
+    expect(popup).toContain("outline: 2px solid var(--nyu-violet)");
     expect(popup).toMatch(/\.toggle-track\s*\{[^}]*display: block;/s);
     expect(popup).toMatch(/\.toggle-track\s*\{[^}]*position: relative;/s);
+  });
+
+  it("uses NYU branding with Albert's flat teal control language", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain("--nyu-violet: #57068c");
+    expect(popup).toContain("--albert-teal: #00866e");
+    expect(popup).toContain('font-family: Arial, "Helvetica Neue", sans-serif');
+    expect(popup).toMatch(/\.panel\s*\{[^}]*border-radius: 0;[^}]*box-shadow: none;/s);
+    expect(popup).toMatch(/button\s*\{[^}]*border: 2px solid var\(--albert-teal\);[^}]*border-radius: 0;/s);
+    expect(popup).toContain("border-bottom: 4px solid var(--nyu-violet)");
+    expect(popup).toContain("background: var(--albert-teal)");
   });
 });

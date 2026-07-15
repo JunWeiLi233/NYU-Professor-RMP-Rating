@@ -2790,6 +2790,11 @@ export function injectStyles(document = globalThis.document) {
       /* NYU Albert RMP Ratings v${EXTENSION_VERSION} */
 	    .${ROOT_CLASS} {
 	      --nyu-rmp-extension-version: "${EXTENSION_VERSION}";
+	      --nyu-rmp-albert-blue: #1f4e79;
+	      --nyu-rmp-albert-border: #b8c0c7;
+	      --nyu-rmp-albert-teal: #00866e;
+	      --nyu-rmp-albert-teal-dark: #006b59;
+	      --nyu-rmp-nyu-violet: #57068c;
 	      box-sizing: border-box;
 	      clear: both;
 	      display: block;
@@ -2798,7 +2803,7 @@ export function injectStyles(document = globalThis.document) {
 	      max-width: min(100%, 360px);
 	      min-width: 0;
 	      width: min(100%, 360px);
-	      font-family: Aptos, "Segoe UI", sans-serif;
+	      font-family: Arial, "Helvetica Neue", sans-serif;
 	    }
 	    .nyu-rmp-rating-root.is-cell-mounted {
 	      align-self: start;
@@ -2892,17 +2897,17 @@ export function injectStyles(document = globalThis.document) {
 	      width: min(100%, 320px);
 	    }
 	    .nyu-rmp-card {
-	      border: 1px solid #d9dee8;
+	      border: 1px solid var(--nyu-rmp-albert-border);
 	      border-left: 4px solid #667085;
-	      border-radius: 8px;
+	      border-radius: 0;
 	      background: #ffffff;
 	      box-sizing: border-box;
 	      color: #182033;
 	      container-type: inline-size;
 	      min-width: 0;
 	      padding: 12px 13px;
-	      box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 8px 20px rgba(16,24,40,0.07);
-	      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+	      box-shadow: none;
+	      transition: background 120ms ease, border-color 120ms ease;
 	      width: 100%;
 	    }
 	    td .nyu-rmp-card,
@@ -2912,12 +2917,11 @@ export function injectStyles(document = globalThis.document) {
 	    .ps_box-scrollarea .nyu-rmp-card,
 	    [class*="ps_box-scrollarea"] .nyu-rmp-card {
 	      padding: 8px 10px;
-	      border-radius: 7px;
+	      border-radius: 0;
 	    }
 	    .nyu-rmp-card:hover {
-	      border-color: #b9c2d0;
-	      box-shadow: 0 2px 4px rgba(16,24,40,0.08), 0 10px 26px rgba(16,24,40,0.1);
-	      transform: translateY(-1px);
+	      background: #fbfdfd;
+	      border-color: var(--nyu-rmp-albert-teal);
 	    }
 	    .nyu-rmp-card + .nyu-rmp-card {
 	      margin-top: 6px;
@@ -2966,7 +2970,7 @@ export function injectStyles(document = globalThis.document) {
 	      align-items: center;
 	      background: #f6f7fa;
 	      border: 1px solid #dde3ec;
-	      border-radius: 6px;
+	      border-radius: 0;
 	      color: #344054;
 	      display: inline-flex;
 	      gap: 5px;
@@ -2998,7 +3002,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-cache-note {
 	      background: #fff8e5;
 	      border: 1px solid #ecd48b;
-	      border-radius: 6px;
+	      border-radius: 0;
 	      color: #7c5600;
 	      font-size: 10px;
 	      font-weight: 650;
@@ -3009,7 +3013,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-empty-note {
 	      background: #f7f8fb;
 	      border: 1px solid #dfe5ee;
-	      border-radius: 6px;
+	      border-radius: 0;
 	      color: #526173;
 	      font-size: 10.5px;
 	      font-weight: 650;
@@ -3026,8 +3030,12 @@ export function injectStyles(document = globalThis.document) {
 	      letter-spacing: 0;
 	      text-transform: uppercase;
 	    }
+	    .nyu-rmp-card a {
+	      color: var(--nyu-rmp-albert-blue);
+	    }
 	    .nyu-rmp-card a:hover {
-	      color: #57068c;
+	      color: var(--nyu-rmp-albert-blue);
+	      text-decoration: underline;
 	    }
 	    .nyu-rmp-actions {
 	      align-items: center;
@@ -3049,8 +3057,8 @@ export function injectStyles(document = globalThis.document) {
 	      min-width: 0;
 	    }
 	    .nyu-rmp-quick-section {
-	      border: 1px solid #e3e8ef;
-	      border-radius: 7px;
+	      border: 1px solid var(--nyu-rmp-albert-border);
+	      border-radius: 0;
 	      box-sizing: border-box;
 	      display: grid;
 	      min-width: 0;
@@ -3073,9 +3081,9 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-feature-toggle {
 	      background: #ffffff;
-	      border: 1px solid #d6deea;
-	      border-radius: 7px;
-	      color: #344054;
+	      border: 2px solid var(--nyu-rmp-albert-teal);
+	      border-radius: 0;
+	      color: #1f2933;
 	      cursor: pointer;
 	      font-family: inherit;
 	      font-size: 10.5px;
@@ -3083,16 +3091,13 @@ export function injectStyles(document = globalThis.document) {
 	      letter-spacing: 0;
 	      line-height: 1;
 	      padding: 7px 8px;
-	      transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+	      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 	    }
 	    .nyu-rmp-feature-toggle:hover,
 	    .nyu-rmp-feature-toggle[aria-expanded="true"] {
-	      background: #f6f1fa;
-	      border-color: #cdb8dc;
-	      color: #57068c;
-	    }
-	    .nyu-rmp-feature-toggle:active {
-	      transform: translateY(1px);
+	      background: #e8f4f2;
+	      border-color: var(--nyu-rmp-albert-teal-dark);
+	      color: var(--nyu-rmp-albert-teal-dark);
 	    }
 	    table.accordion-table .nyu-rmp-quick-grid {
 	      grid-template-columns: minmax(96px, 0.72fr) minmax(150px, 1.28fr);
@@ -3104,18 +3109,19 @@ export function injectStyles(document = globalThis.document) {
 	      min-height: 36px;
 	    }
 	    .nyu-rmp-refresh {
-	      background: transparent;
-	      border: 0;
+	      background: #ffffff;
+	      border: 2px solid var(--nyu-rmp-albert-teal);
+	      border-radius: 0;
 	      cursor: pointer;
 	      font-family: inherit;
-	      padding: 0;
-	      transition: color 120ms ease;
+	      padding: 7px 10px;
+	      text-transform: none;
+	      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 	    }
 	    .nyu-rmp-refresh:hover {
-	      color: #57068c;
-	    }
-	    .nyu-rmp-refresh:active {
-	      transform: translateY(1px);
+	      background: #e8f4f2;
+	      border-color: var(--nyu-rmp-albert-teal-dark);
+	      color: var(--nyu-rmp-albert-teal-dark);
 	    }
 	    .nyu-rmp-score {
 	      font-size: 22px;
@@ -3136,7 +3142,7 @@ export function injectStyles(document = globalThis.document) {
 	      border-radius: 0;
 	      display: grid;
 	      gap: 4px 8px;
-	      grid-template-columns: auto auto minmax(0, 1fr);
+	      grid-template-columns: auto minmax(0, 1fr);
 	      margin: 0;
 	      min-width: 0;
 	      padding: 0;
@@ -3152,14 +3158,17 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-score-strip em {
 	      border: 1px solid #d0d5dd;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #344054;
 	      font-size: 10.5px;
 	      font-style: normal;
 	      font-weight: 650;
+	      grid-column: 1 / -1;
 	      justify-self: start;
 	      line-height: 1.15;
+	      overflow-wrap: normal;
 	      padding: 2px 7px;
+	      white-space: nowrap;
 	    }
 	    .nyu-rmp-score-strip small {
 	      grid-column: 1 / -1;
@@ -3207,7 +3216,7 @@ export function injectStyles(document = globalThis.document) {
 	      align-content: start;
 	      background: #f8fafc;
 	      border: 1px solid #e3e8ef;
-	      border-radius: 7px;
+	      border-radius: 0;
 	      display: grid;
 	      gap: 3px;
 	      min-width: 0;
@@ -3247,7 +3256,7 @@ export function injectStyles(document = globalThis.document) {
 	      background: #f7f8fb;
 	      border: 1px solid #dde4ee;
 	      border-left: 3px solid #667085;
-	      border-radius: 7px;
+	      border-radius: 0;
 	      color: #253044;
 	      display: grid;
 	      gap: 2px 8px;
@@ -3297,7 +3306,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-evidence-chip {
 	      background: #ffffff;
 	      border: 1px solid #dbe3ee;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #344054;
 	      font-size: 10px;
 	      font-weight: 700;
@@ -3379,7 +3388,7 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-radar-shape {
 	      fill: rgba(87, 6, 140, 0.16);
-	      stroke: #57068c;
+	      stroke: var(--nyu-rmp-nyu-violet);
 	      stroke-linejoin: round;
 	      stroke-width: 2;
 	    }
@@ -3401,7 +3410,7 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-radar-node {
 	      fill: #ffffff;
-	      stroke: #57068c;
+	      stroke: var(--nyu-rmp-nyu-violet);
 	      stroke-width: 2;
 	    }
 	    .nyu-rmp-radar-wrap.is-strong .nyu-rmp-radar-node {
@@ -3447,7 +3456,7 @@ export function injectStyles(document = globalThis.document) {
 	      align-items: center;
 	      background: #1f1a2e;
 	      border: 1px solid #1f1a2e;
-	      border-radius: 7px;
+	      border-radius: 0;
 	      color: #ffffff;
 	      display: grid;
 	      gap: 6px;
@@ -3511,7 +3520,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-radar-legend li {
 	      background: #f8fafc;
 	      border: 1px solid #e3e8ef;
-	      border-radius: 6px;
+	      border-radius: 0;
 	      color: #344054;
 	      font-size: 10.5px;
 	      font-weight: 650;
@@ -3541,7 +3550,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-score-row .nyu-rmp-verdict {
 	      align-self: center;
 	      border: 1px solid #d0d5dd;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #344054;
 	      font-size: 10.5px;
 	      font-weight: 600;
@@ -3572,7 +3581,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-tags span {
 	      background: #f6f8fb;
 	      border: 1px solid #e1e7ef;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #344054;
 	      font-size: 10px;
 	      font-weight: 500;
@@ -3604,7 +3613,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comments-sample {
 	      background: #eef2f7;
 	      border: 1px solid #dbe3ee;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #526173;
 	      font-size: 9px;
 	      font-weight: 750;
@@ -3616,7 +3625,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comments-course-match {
 	      background: #eaf7f0;
 	      border: 1px solid #b9dfca;
-	      border-radius: 999px;
+	      border-radius: 2px;
 	      color: #155b3a;
 	      font-size: 9px;
 	      font-weight: 800;
@@ -3673,7 +3682,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comment.is-course-match {
 	      background: #f3fbf6;
 	      border-left: 2px solid #4f9b6e;
-	      border-radius: 5px;
+	      border-radius: 0;
 	      margin-left: -8px;
 	      padding: 5px 7px 5px 8px;
 	    }
@@ -3700,7 +3709,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comment-toggle {
 	      background: transparent;
 	      border: 0;
-	      color: #57068c;
+	      color: var(--nyu-rmp-albert-blue);
 	      cursor: pointer;
 	      font-family: inherit;
 	      font-size: 10.5px;
@@ -3719,7 +3728,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-comments-expand {
 	      background: #f4f7f5;
 	      border: 1px solid #d8e1dc;
-	      border-radius: 5px;
+	      border-radius: 0;
 	      color: #245943;
 	      cursor: pointer;
 	      font-size: 10px;
@@ -3752,7 +3761,7 @@ export function injectStyles(document = globalThis.document) {
 	      animation: nyu-rmp-shimmer 1.3s infinite linear;
 	      background: linear-gradient(105deg, #f0ecf6 8%, #faf8fd 18%, #f0ecf6 33%);
 	      background-size: 280% 100%;
-	      border-radius: 5px;
+	      border-radius: 0;
 	      height: 18px;
 	    }
 	    .nyu-rmp-card.is-loading {
