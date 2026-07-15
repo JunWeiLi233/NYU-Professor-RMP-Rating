@@ -27,3 +27,7 @@ Write Vitest tests named `tests/<module>.test.js`, using descriptive `describe` 
 ## Commit & Pull Request Guidelines
 
 Recent commits use short, imperative, sentence-case subjects, such as `Detect Albert Course Search class cards`. Keep each commit focused and omit trailing punctuation. Pull requests should explain user-visible behavior, list verification commands, and link the relevant issue when one exists. Include before/after screenshots for popup or injected-card UI changes, and note any manifest permission or release-version changes explicitly.
+
+## Rights, Privacy, and Affiliation
+
+This is an unofficial personal project. Follow `NOTICE.md`: do not imply NYU endorsement, add unauthorized NYU-owned assets, or commit credentials, student records, private Albert content, or unredacted screenshots. Send copyright, trademark, affiliation, policy, or takedown concerns to `mcpejunwei@gmail.com`.

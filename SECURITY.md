@@ -25,3 +25,9 @@ Never submit NYU credentials, session cookies, access tokens, student records, p
 Maintainers will acknowledge a complete report as soon as practical, investigate its impact, and coordinate remediation and disclosure with the reporter. Please allow time for a fix before publishing details. Reports that require unsafe interaction with enrollment or other account-changing controls may be declined or require a safer reproduction.
 
 The project does not currently offer a bug bounty or guarantee a specific response deadline.
+
+## Copyright, Trademark, and Policy Concerns
+
+This is an independent personal project and not an official New York University product. For a copyright, trademark, affiliation, University-policy, or takedown concern, email [mcpejunwei@gmail.com](mailto:mcpejunwei@gmail.com) with the affected material and a concise explanation. Do not include credentials, student records, session data, or other sensitive information.
+
+These concerns are separate from software vulnerabilities. See [NOTICE.md](NOTICE.md) for the repository's full rights and affiliation statement.
