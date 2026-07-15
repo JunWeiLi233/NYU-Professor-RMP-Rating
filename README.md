@@ -121,3 +121,9 @@ Run `npm run verify:local` first; if that passes, the package and local trailing
 13. Do not click enrollment, cart, or class-selection controls while testing the overlay.
 
 If the popup says `old squeezed card layout detected`, Chrome is still showing stale injected cards on Albert. Reload the unpacked extension from this repository's `dist` folder, refresh Albert, and open the popup again. A current build should report segmented quick views and trailing rating columns instead of the stale-layout warning.
+
+## Community and License
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes, follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report vulnerabilities according to [SECURITY.md](SECURITY.md).
+
+This project is available under the [MIT License](LICENSE).

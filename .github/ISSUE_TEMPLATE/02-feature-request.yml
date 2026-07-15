@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest an improvement to the extension or contributor workflow
+title: "[Feature]: "
+labels: []
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the student or contributor need without including private NYU or Albert information.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      description: What is difficult or missing today, and who does it affect?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Explain the desired behavior rather than only its visual appearance.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe workarounds or other designs you considered.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area
+      options:
+        - Professor matching
+        - Rating card UI
+        - Albert page detection
+        - Extension popup
+        - Privacy or security
+        - Build, test, or contributor tooling
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for a similar request.
+          required: true
+        - label: This request does not include private NYU or Albert information.
+          required: true
+        - label: I agree to follow the Code of Conduct.
+          required: true
