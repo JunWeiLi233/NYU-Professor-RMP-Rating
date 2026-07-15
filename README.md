@@ -2,6 +2,9 @@
 
 Chrome extension that displays Rate My Professors ratings and useful comments beside instructor rows on NYU Albert.
 
+> [!IMPORTANT]
+> This is an independent personal project, not an official New York University product. It is not sponsored, approved, reviewed, or endorsed by NYU. NYU retains all rights in its name, trademarks, logos, visual identity, website content, and other NYU-owned materials. See [NOTICE.md](NOTICE.md). For copyright, trademark, affiliation, policy, or takedown concerns, contact [mcpejunwei@gmail.com](mailto:mcpejunwei@gmail.com).
+
 See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 ## Install Locally
@@ -128,4 +131,4 @@ If the popup says `old squeezed card layout detected`, Chrome is still showing s
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes, follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report vulnerabilities according to [SECURITY.md](SECURITY.md).
 
-This project is available under the [MIT License](LICENSE).
+Original project code is available under the [MIT License](LICENSE). NYU-owned and third-party material is excluded from that license; see the [Unofficial Project and Rights Notice](NOTICE.md).

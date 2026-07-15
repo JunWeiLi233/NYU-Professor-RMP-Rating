@@ -25,4 +25,5 @@
 - [ ] I removed credentials, student data, private URLs, and other sensitive information.
 - [ ] I documented manifest permission, storage, API, or version changes.
 - [ ] I kept generated `dist/` files out of the source diff.
+- [ ] I did not add unauthorized NYU-owned material or imply official NYU affiliation or endorsement.
 - [ ] I followed `CONTRIBUTING.md` and the Code of Conduct.
