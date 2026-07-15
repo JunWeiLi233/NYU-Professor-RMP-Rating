@@ -186,7 +186,7 @@ async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, sc
       return;
     }
 
-    const response = await pingAlbertContentScript(tabs, activeTab.id);
+    const response = await pingAlbertContentScript(tabs, activeTab.id, scripting);
     if (isLoadedContentResponse(response)) {
       const refreshedResponse = await refreshAlbertContentScriptIfStale({
         tabs,
@@ -194,7 +194,7 @@ async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, sc
         tabId: activeTab.id,
         response,
       });
-      const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, refreshedResponse);
+      const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, scripting, activeTab.id, refreshedResponse);
       setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedResponse), albertPageStatusState(repairedResponse));
       setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary(repairedResponse));
       return;
@@ -207,7 +207,7 @@ async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, sc
       return;
     }
 
-    const repairedWakeResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, wakeResponse);
+    const repairedWakeResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, scripting, activeTab.id, wakeResponse);
     setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedWakeResponse), albertPageStatusState(repairedWakeResponse));
     setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary(repairedWakeResponse));
   } catch {
@@ -242,21 +242,35 @@ async function refreshAlbertContentScriptIfStale({ tabs, scripting, tabId, respo
   };
 }
 
-async function pingAlbertContentScript(tabs, tabId) {
+async function pingAlbertContentScript(tabs, tabId, scripting) {
+  let fallbackResponse = null;
   try {
-    return await tabs.sendMessage(tabId, { type: "NYU_RMP_CONTENT_STATUS" });
+    fallbackResponse = await tabs.sendMessage(tabId, { type: "NYU_RMP_CONTENT_STATUS" });
   } catch {
-    return null;
+    // A frame-specific probe below can still find a responding Albert child frame.
   }
+
+  const frameIds = await loadedAlbertFrameIds(scripting, tabId);
+  if (frameIds.length < 2) {
+    return fallbackResponse;
+  }
+  const responses = await Promise.all(frameIds.map(async (frameId) => {
+    try {
+      return await tabs.sendMessage(tabId, { type: "NYU_RMP_CONTENT_STATUS" }, { frameId });
+    } catch {
+      return null;
+    }
+  }));
+  return aggregateContentStatusResponses(responses) ?? fallbackResponse;
 }
 
-async function repairAlbertLayoutWarningsIfNeeded(tabs, tabId, response) {
+async function repairAlbertLayoutWarningsIfNeeded(tabs, scripting, tabId, response) {
   if (!hasProcessedCellLayoutWarnings(response)) {
     return response;
   }
   try {
     await tabs.sendMessage(tabId, { type: "NYU_RMP_REPAIR_LAYOUT" });
-    const repairedResponse = await pingAlbertContentScript(tabs, tabId);
+    const repairedResponse = await pingAlbertContentScript(tabs, tabId, scripting);
     if (!isLoadedContentResponse(repairedResponse)) {
       return response;
     }
@@ -278,7 +292,73 @@ async function wakeAlbertContentScript({ tabs, scripting, tabId }) {
     target: { tabId, allFrames: true },
     files: ["content.js"],
   });
-  return pingAlbertContentScript(tabs, tabId);
+  return pingAlbertContentScript(tabs, tabId, scripting);
+}
+
+async function loadedAlbertFrameIds(scripting, tabId) {
+  if (!scripting?.executeScript) {
+    return [];
+  }
+  try {
+    const results = await scripting.executeScript({
+      target: { tabId, allFrames: true },
+      func: hasLoadedAlbertContentScript,
+    });
+    return Array.from(new Set((results ?? [])
+      .filter((entry) => entry?.result === true && Number.isInteger(entry.frameId))
+      .map((entry) => entry.frameId)));
+  } catch {
+    return [];
+  }
+}
+
+function hasLoadedAlbertContentScript() {
+  return document.documentElement?.dataset?.nyuRmpContentScript === "loaded";
+}
+
+function aggregateContentStatusResponses(responses) {
+  const loadedResponses = responses.filter(isLoadedContentResponse);
+  if (loadedResponses.length === 0) {
+    return null;
+  }
+  if (loadedResponses.length === 1) {
+    return loadedResponses[0];
+  }
+
+  const staleVersion = loadedResponses
+    .map((response) => String(response.version ?? "").trim())
+    .find((version) => version !== EXTENSION_VERSION);
+  const countFields = [
+    "ratingRootCount",
+    "cardCount",
+    "quickGridCount",
+    "staleCardLayoutCount",
+    "radarCount",
+    "processedCellCount",
+    "ratingCellCount",
+    "trailingRatingRootCount",
+    "inlineProcessedRatingRootCount",
+    "selectButtonRatingRootCount",
+    "processedCellLayoutWarningCount",
+    "staleCardLayoutMigrationCount",
+    "processedCellLastRepairCount",
+    "processedCellLastRepairWarningCount",
+    "processedCellLastRepairRemainingWarningCount",
+  ];
+  const aggregate = {
+    ok: true,
+    contentScript: "loaded",
+    version: staleVersion ?? EXTENSION_VERSION,
+    overlayState: loadedResponses.some((response) => response.overlayState === "enabled")
+      ? "enabled"
+      : loadedResponses.every((response) => response.overlayState === "disabled")
+        ? "disabled"
+        : "unknown",
+  };
+  for (const field of countFields) {
+    aggregate[field] = loadedResponses.reduce((total, response) => total + nonNegativeInteger(response[field]), 0);
+  }
+  return aggregate;
 }
 
 function isLoadedContentResponse(response) {

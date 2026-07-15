@@ -639,6 +639,72 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).toHaveBeenCalledTimes(2);
   });
 
+  it("does not let an in-flight lookup repopulate cache after it is cleared", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const pendingLookups = [];
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(() => new Promise((resolve) => {
+      pendingLookups.push(resolve);
+    }));
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    const lookupBeforeClear = service.lookup("Ada Lovelace");
+    await vi.waitFor(() => expect(findProfessorRating).toHaveBeenCalledTimes(1));
+    await expect(service.clearCache()).resolves.toEqual(0);
+
+    const firstLookupAfterClear = service.lookup("Ada Lovelace");
+    const duplicateLookupAfterClear = service.lookup("Ada Lovelace");
+    await vi.waitFor(() => expect(findProfessorRating).toHaveBeenCalledTimes(2));
+
+    pendingLookups[0]({ name: "Ada Lovelace", rating: 1.5 });
+    await expect(lookupBeforeClear).resolves.toMatchObject({ rating: 1.5 });
+    expect(storage.data[professorCacheKey("Ada Lovelace")]).toBeUndefined();
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+
+    pendingLookups[1]({ name: "Ada Lovelace", rating: 4.8 });
+    await expect(Promise.all([firstLookupAfterClear, duplicateLookupAfterClear])).resolves.toEqual([
+      expect.objectContaining({ rating: 4.8 }),
+      expect.objectContaining({ rating: 4.8 }),
+    ]);
+    expect(storage.data[professorCacheKey("Ada Lovelace")]).toMatchObject({
+      value: { name: "Ada Lovelace", rating: 4.8 },
+    });
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not migrate a legacy cache read that finishes after cache clear", async () => {
+    const key = professorCacheKey("Grace Hopper");
+    const legacyRating = { name: "Grace Hopper", rating: 4.8 };
+    const storage = createStorageMock({ [key]: legacyRating });
+    const originalGet = storage.get.bind(storage);
+    let resolveLegacyRead;
+    storage.get = vi.fn((requestedKey) => {
+      if (requestedKey === key) {
+        return new Promise((resolve) => {
+          resolveLegacyRead = () => resolve({ [key]: legacyRating });
+        });
+      }
+      return originalGet(requestedKey);
+    });
+    storage.set = vi.fn(storage.set);
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    const pendingLookup = service.lookup("Grace Hopper");
+    await vi.waitFor(() => expect(resolveLegacyRead).toBeTypeOf("function"));
+    await expect(service.clearCache()).resolves.toEqual(1);
+    resolveLegacyRead();
+
+    await expect(pendingLookup).resolves.toMatchObject(legacyRating);
+    expect(storage.set).not.toHaveBeenCalled();
+    expect(storage.data).toEqual({});
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("treats an empty persisted cache read as nothing to clear", async () => {
     const storage = createStorageMock();
     storage.get = vi.fn(async (key) => (key === null ? null : {}));

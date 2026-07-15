@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
-import { homedir } from "node:os";
 import { basename, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { redactHomePath } from "./redact-sensitive.js";
 
 const EXTENSION_NAME = "NYU Albert RMP Ratings";
 
@@ -33,7 +33,7 @@ export async function verifyChromeProfileExtension({
 
   const installedPath = normalizePath(installed.path);
   if (installedPath !== expectedPath) {
-    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${redactPath(installed.path)}; expected ${redactPath(resolve(extensionPath))}`);
+    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${redactHomePath(installed.path)}; expected ${redactHomePath(resolve(extensionPath))}`);
   }
 
   if (!installed.enabled) {
@@ -71,7 +71,7 @@ export async function verifyChromeUserDataExtension({
       .map((profileDir) => redactedChromeProfileLabel(basename(profileDir), profileLabels))
       .join(", ") || "none";
     throw new Error(
-      `Expected Chrome profile account ${redactAccountName(expectedAccountName)} was not found in scanned Chrome profiles: ${allScanned}\nScanned Chrome user-data folder: ${redactPath(resolvedUserDataDir)}`,
+      `Expected Chrome profile account ${redactAccountName(expectedAccountName)} was not found in scanned Chrome profiles: ${allScanned}\nScanned Chrome user-data folder: ${redactHomePath(resolvedUserDataDir)}`,
     );
   }
   for (const profileDir of profiles) {
@@ -100,7 +100,7 @@ export async function verifyChromeUserDataExtension({
     ? ` for Chrome account ${redactAccountName(expectedAccountName)}`
     : "";
   throw new Error(
-    `${EXTENSION_NAME} is not installed from ${redactPath(resolvedExtensionPath)}${expectedAccountPrefix} in scanned Chrome profile${scanned.length === 1 ? "" : "s"}: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${redactPath(resolvedUserDataDir)}${details}`,
+    `${EXTENSION_NAME} is not installed from ${redactHomePath(resolvedExtensionPath)}${expectedAccountPrefix} in scanned Chrome profile${scanned.length === 1 ? "" : "s"}: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${redactHomePath(resolvedUserDataDir)}${details}`,
   );
 }
 
@@ -151,14 +151,6 @@ function normalizeAccountName(value) {
 
 function redactAccountName(value) {
   return String(value ?? "").trim().replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "<account>");
-}
-
-function redactPath(path) {
-  const value = String(path ?? "");
-  const home = homedir();
-  return home && value.toLowerCase().startsWith(home.toLowerCase())
-    ? `%USERPROFILE%${value.slice(home.length)}`
-    : value;
 }
 
 function uniqueLabelDetails(values) {
@@ -237,6 +229,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     ? await verifyChromeProfileExtension({ profileDir, extensionPath })
     : await verifyChromeUserDataExtension({ extensionPath });
   console.log(
-    `${EXTENSION_NAME} ${result.version} is enabled in ${redactPath(result.profileDir ?? profileDir)} from ${redactPath(result.path)} (${result.id})`,
+    `${EXTENSION_NAME} ${result.version} is enabled in ${redactHomePath(result.profileDir ?? profileDir)} from ${redactHomePath(result.path)} (${result.id})`,
   );
 }

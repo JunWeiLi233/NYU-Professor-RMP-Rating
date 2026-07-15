@@ -1,0 +1,4 @@
+# metric_direction: lower_is_better
+iteration	timestamp	error_type	error_fixed	commit	metric	delta	guard	status	description
+0	2026-07-15T19:31:00+08:00	baseline	-	-	4	0	not_run	baseline	Full Vitest suite exposed four cross-platform path-verification failures; debug audit identified additional behavioral defects.
+1	2026-07-15T19:54:00+08:00	test-and-runtime	path verification plus audited matching, cache, DOM, frame, and verifier defects	-	0	-4	pass	keep (reworked)	632 tests, syntax checks, production build, package verification, release-version verification, and Albert layout smoke verification pass.

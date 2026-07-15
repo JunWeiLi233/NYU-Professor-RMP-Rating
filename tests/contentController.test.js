@@ -19,6 +19,25 @@ describe("content script controller", () => {
     expect(document.documentElement.dataset.nyuRmpOverlayState).toBe("enabled");
   });
 
+  it("does not register duplicate observers or listeners when the script is reinjected", async () => {
+    const document = globalThis.document;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+    const startAlbertRmpEnhancer = vi.fn(() => ({ disconnect: vi.fn() }));
+    const options = {
+      chrome,
+      document,
+      startAlbertRmpEnhancer,
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    };
+
+    await Promise.all([initContentScript(options), initContentScript(options)]);
+
+    expect(startAlbertRmpEnhancer).toHaveBeenCalledTimes(1);
+    expect(chrome.storage.onChanged.addListener).toHaveBeenCalledTimes(1);
+    expect(chrome.runtime.onMessage.addListener).toHaveBeenCalledTimes(1);
+  });
+
   it("responds to popup status pings with overlay state and rendered card counts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `

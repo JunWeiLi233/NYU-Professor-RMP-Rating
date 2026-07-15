@@ -16,6 +16,20 @@ describe("popup diagnostics verifier", () => {
       quickViewCount: 4,
       processedCellCount: 4,
       ratingColumnCount: 4,
+      underButtonRatingCount: 0,
+    });
+  });
+
+  it("passes when copied diagnostics report supported under-button ratings", () => {
+    expect(verifyPopupDiagnostics([
+      "NYU Albert RMP Ratings diagnostics",
+      "Build v0.1.9 | Albert 0.1.9 | 4 cards | 4 quick views | 8 cells | 0 rating columns | 4 under-button ratings",
+      "Page status: Albert connected v0.1.9: 4 rating roots, 4 cards, 4 segmented quick views, 0 radar maps, 8 Albert cells checked, 0 trailing rating columns, 4 under-button ratings, layout OK",
+    ].join("\n"))).toMatchObject({
+      ok: true,
+      cardCount: 4,
+      ratingColumnCount: 0,
+      underButtonRatingCount: 4,
     });
   });
 
@@ -36,7 +50,7 @@ describe("popup diagnostics verifier", () => {
         failures: [
           "Albert content version missing does not match expected 0.1.9",
           "4 Albert RMP cards lack segmented quick views",
-          "4 Albert RMP cards lack a trailing rating column",
+          "Albert RMP cards lack a trailing rating column or under-button rating root",
         ],
       });
     }

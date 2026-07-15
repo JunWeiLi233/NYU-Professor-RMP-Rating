@@ -121,6 +121,61 @@ describe("extension popup controller", () => {
     );
   });
 
+  it("aggregates content status across loaded Albert frames", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: { ok: true, contentScript: "loaded", version: "0.1.9" },
+      frameStatuses: {
+        0: {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.9",
+          overlayState: "enabled",
+          ratingRootCount: 1,
+          cardCount: 1,
+          quickGridCount: 1,
+          processedCellCount: 1,
+          ratingCellCount: 1,
+          trailingRatingRootCount: 1,
+        },
+        3: {
+          ok: true,
+          contentScript: "loaded",
+          version: "0.1.9",
+          overlayState: "enabled",
+          ratingRootCount: 2,
+          cardCount: 2,
+          quickGridCount: 2,
+          radarCount: 1,
+          processedCellCount: 2,
+          ratingCellCount: 2,
+          trailingRatingRootCount: 2,
+        },
+      },
+    });
+    const scripting = {
+      executeScript: vi.fn(async ({ func }) => func
+        ? [{ frameId: 0, result: true }, { frameId: 3, result: true }]
+        : []),
+    };
+
+    await initPopup({ document, storage: createStorageMock(), tabs, scripting });
+
+    expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" }, { frameId: 0 });
+    expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" }, { frameId: 3 });
+    expect(document.getElementById("diagnostic-summary").textContent).toBe(
+      "Build v0.1.9 | Albert 0.1.9 | 3 cards | 3 quick views | 3 cells | 3 rating columns",
+    );
+    expect(document.getElementById("page-status").textContent).toContain("3 rating roots, 3 cards");
+  });
+
   it("summarizes SELECT_BUTTON ratings mounted under buttons without warning", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
@@ -546,7 +601,10 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage: createStorageMock(), tabs, scripting });
 
-    expect(scripting.executeScript).toHaveBeenCalledTimes(1);
+    expect(scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId: 12, allFrames: true },
+      files: ["content.js"],
+    });
     expect(document.getElementById("page-status").textContent).toBe(
       "Albert connected v0.1.9: Current content script rechecked. 4 rating roots, 4 cards, 4 segmented quick views, 1 radar map, 4 Albert cells checked, layout OK",
     );
@@ -757,7 +815,11 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage: createStorageMock(), tabs, scripting });
 
-    expect(scripting.executeScript).toHaveBeenCalledTimes(1);
+    expect(scripting.executeScript).toHaveBeenCalledTimes(2);
+    expect(scripting.executeScript).toHaveBeenCalledWith({
+      target: { tabId: 12, allFrames: true },
+      files: ["content.js"],
+    });
     expect(document.getElementById("page-status").textContent).toBe("Albert not connected. Reload the extension, then refresh Albert.");
     expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
@@ -1038,11 +1100,14 @@ function createRuntimeMock() {
   };
 }
 
-function createTabsMock({ activeTab = null, contentStatus = null, sendError = null, sendResults = null } = {}) {
+function createTabsMock({ activeTab = null, contentStatus = null, sendError = null, sendResults = null, frameStatuses = null } = {}) {
   const queuedResults = [...(sendResults ?? [])];
   return {
     query: vi.fn(async () => (activeTab ? [activeTab] : [])),
-    sendMessage: vi.fn(async () => {
+    sendMessage: vi.fn(async (_tabId, _message, options) => {
+      if (options?.frameId !== undefined && frameStatuses) {
+        return frameStatuses[options.frameId] ?? null;
+      }
       if (queuedResults.length > 0) {
         const next = queuedResults.shift();
         if (next instanceof Error) {

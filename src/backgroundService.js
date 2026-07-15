@@ -14,6 +14,14 @@ export function createProfessorLookupService({
 
   const memoryCache = new Map();
   const inFlightLookups = new Map();
+  const pendingCacheWrites = new Set();
+  let cacheGeneration = 0;
+
+  const writeCache = (items) => {
+    const pendingWrite = Promise.resolve().then(() => storage.set(items));
+    pendingCacheWrites.add(pendingWrite);
+    return pendingWrite.finally(() => pendingCacheWrites.delete(pendingWrite));
+  };
 
   return {
     async lookup(name, { forceRefresh = false, courseCode = "" } = {}) {
@@ -25,6 +33,8 @@ export function createProfessorLookupService({
       const departmentHint = departmentHintForCourseCode(normalizedCourseCode);
       const key = professorCacheKey(normalizedName, normalizedCourseCode);
       const currentTime = now();
+      const lookupGeneration = cacheGeneration;
+      const shouldCache = () => cacheGeneration === lookupGeneration;
       const memoryEntry = memoryCache.get(key);
       let staleFallback = null;
       if (!forceRefresh && memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
@@ -37,17 +47,21 @@ export function createProfessorLookupService({
       if (!forceRefresh) {
         const cached = await readStoredRating(storage, key, currentTime);
         if (cached.status === "fresh") {
-          memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
+          if (shouldCache()) {
+            memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
+          }
           return withCacheMetadata(cached.value, cached.cachedAt);
         }
 
         if (cached.status === "legacy") {
           const migratedEntry = createStoredRating(cached.value, currentTime);
-          memoryCache.set(key, migratedEntry);
-          try {
-            await storage.set({ [key]: migratedEntry });
-          } catch {
-            // Old cache data can still render even if Chrome storage refuses the timestamp migration.
+          if (shouldCache()) {
+            memoryCache.set(key, migratedEntry);
+            try {
+              await writeCache({ [key]: migratedEntry });
+            } catch {
+              // Old cache data can still render even if Chrome storage refuses the timestamp migration.
+            }
           }
           return withCacheMetadata(cached.value, currentTime);
         }
@@ -58,15 +72,31 @@ export function createProfessorLookupService({
 
       const inFlightKey = forceRefresh ? `${key}:force` : key;
       if (!inFlightLookups.has(inFlightKey)) {
-        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage, staleFallback, departmentHint }));
+        inFlightLookups.set(inFlightKey, fetchAndCacheRating({
+          key,
+          name: normalizedName,
+          currentTime,
+          findProfessorRating,
+          memoryCache,
+          staleFallback,
+          departmentHint,
+          shouldCache,
+          writeCache,
+        }));
       }
 
-      return inFlightLookups.get(inFlightKey).finally(() => {
-        inFlightLookups.delete(inFlightKey);
+      const pendingLookup = inFlightLookups.get(inFlightKey);
+      return pendingLookup.finally(() => {
+        if (inFlightLookups.get(inFlightKey) === pendingLookup) {
+          inFlightLookups.delete(inFlightKey);
+        }
       });
     },
     async clearCache() {
+      cacheGeneration += 1;
       memoryCache.clear();
+      inFlightLookups.clear();
+      await Promise.allSettled(Array.from(pendingCacheWrites));
       const items = await storage.get(null);
       const keys = Object.keys(items ?? {}).filter((key) => key.startsWith("professor:"));
       if (keys.length > 0) {
@@ -154,7 +184,7 @@ function isFreshCacheEntry(entry, currentTime) {
   return entry.cachedAt <= currentTime && currentTime - entry.cachedAt <= CACHE_TTL_MS;
 }
 
-async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage, staleFallback = null, departmentHint = "" }) {
+async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, staleFallback = null, departmentHint = "", shouldCache = () => true, writeCache }) {
   let result;
   try {
     result = departmentHint
@@ -162,12 +192,17 @@ async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating
       : await findProfessorRating(name);
   } catch (error) {
     if (staleFallback) {
-      memoryCache.set(key, staleFallback);
+      if (shouldCache()) {
+        memoryCache.set(key, staleFallback);
+      }
       return withCacheMetadata(staleFallback.value, staleFallback.cachedAt, { cacheStatus: "stale-refresh-failed" });
     }
     throw error;
   }
   const storedResult = createStoredRating(result, currentTime);
+  if (!shouldCache()) {
+    return withCacheMetadata(result, currentTime);
+  }
   const existingMemoryEntry = memoryCache.get(key);
   if (existingMemoryEntry && existingMemoryEntry.cachedAt > currentTime) {
     return withCacheMetadata(result, currentTime);
@@ -175,7 +210,7 @@ async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating
 
   memoryCache.set(key, storedResult);
   try {
-    await storage.set({ [key]: storedResult });
+    await writeCache({ [key]: storedResult });
   } catch {
     // Chrome storage can fail transiently; fetched RMP data is still useful for the current Albert card.
   }

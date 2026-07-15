@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { redactHomePath } from "../scripts/redact-sensitive.js";
 import { liveReadinessArgs, verifyLiveReadiness } from "../scripts/verify-live-readiness.js";
 
 describe("live Albert readiness verifier", () => {
@@ -69,12 +70,12 @@ describe("live Albert readiness verifier", () => {
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
-    })).rejects.toThrow("Expected extension folder: %USERPROFILE%");
+    })).rejects.toThrow(`Expected extension folder: ${redactHomePath(resolve(workspace.dist))}`);
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
-    })).rejects.toThrow("Scanned Chrome user-data folder: %USERPROFILE%");
+    })).rejects.toThrow(`Scanned Chrome user-data folder: ${redactHomePath(resolve(workspace.userData))}`);
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,
       userDataDir: workspace.userData,

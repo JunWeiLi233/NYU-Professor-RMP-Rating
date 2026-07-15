@@ -177,7 +177,7 @@ function teacherScore(target, teacher, { departmentHint = "" } = {}) {
   if (initialLastName && initialLastName === target) {
     score += 85;
   }
-  if (isSingleNameTarget(target) && lastName === target) {
+  if (isSingleNameTarget(target) && lastName === target && departmentMatchesHint(teacher.department, departmentHint)) {
     score += 70;
   }
   if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
@@ -185,9 +185,6 @@ function teacherScore(target, teacher, { departmentHint = "" } = {}) {
   }
   if (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName)) {
     score += 90;
-  }
-  if (isComputerScienceDepartment(teacher.department)) {
-    score += 10;
   }
   score += departmentHintScore({ target, teacher, departmentHint });
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
@@ -206,7 +203,7 @@ function departmentHintScore({ target, teacher, departmentHint }) {
   if (departmentMatchesHint(teacher.department, departmentHint)) {
     return 25;
   }
-  return departmentHint === "computer-science" && isSingleNameTarget(target) ? -60 : 0;
+  return isSingleNameTarget(target) ? -60 : 0;
 }
 
 function departmentMatchesHint(department, departmentHint) {

@@ -6,8 +6,9 @@ Chrome extension that displays Rate My Professors ratings and useful comments be
 
 ```powershell
 npm install
+npm run lint
 npm run verify:local
-npm run package:release -- v0.1.5
+npm run package:release -- v0.1.9
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -50,17 +51,18 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 npm run verify:local
 ```
 
-`verify:local` builds `dist` first, then runs tests plus package, release-version, and Albert trailing-column smoke checks in sequence so `dist` is not rebuilt while tests are reading it.
+`verify:local` checks JavaScript syntax, builds `dist`, then runs tests plus package, release-version, and Albert trailing-column smoke checks in sequence so `dist` is not rebuilt while tests are reading it.
 
 For individual checks:
 
 ```powershell
 npm test
+npm run lint
 npm run build
 npm run verify:package
 npm run verify:release
 npm run verify:albert-smoke
-npm run package:release -- v0.1.5
+npm run package:release -- v0.1.9
 npm run verify:chrome-profile
 npm run verify:diagnostics -- .\popup-diagnostics.txt
 npm run verify:live

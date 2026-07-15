@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
-import { homedir } from "node:os";
 import { resolve } from "node:path";
+import { redactHomePath } from "./redact-sensitive.js";
 import { verifyChromeUserDataExtension } from "./verify-chrome-profile-extension.js";
 import { verifyExtensionPackage } from "./verify-extension-package.js";
 
@@ -23,7 +23,7 @@ export async function verifyLiveReadiness({
       chromeProfile,
     };
   } catch (error) {
-    const expectedPath = redactPath(resolve(extensionPath));
+    const expectedPath = redactHomePath(resolve(extensionPath));
     throw new Error([
       error.message,
       "First run npm run verify:local to confirm the built package and local Albert trailing-column smoke test pass.",
@@ -32,7 +32,7 @@ export async function verifyLiveReadiness({
       "Use the same Chrome profile where Albert is already logged in, then reload the Albert tab.",
       `Expected extension folder: ${expectedPath}`,
       ...(expectedAccountName ? [`Expected Chrome account: ${redactAccountName(expectedAccountName)}`] : []),
-      ...(userDataDir ? [`Scanned Chrome user-data folder: ${redactPath(resolve(userDataDir))}`] : []),
+      ...(userDataDir ? [`Scanned Chrome user-data folder: ${redactHomePath(resolve(userDataDir))}`] : []),
       "If browser automation shows the content script loaded on Albert Login, finish signing in and open the shopping-cart or class grid before checking cards.",
       "Then refresh Albert, open the extension popup on Albert, and confirm it reports segmented quick views and trailing rating columns.",
       "If Albert still shows the old squeezed card layout, save an Albert page snapshot and run: npm run verify:albert-shape -- .\\albert-snapshot.html",
@@ -53,14 +53,6 @@ export function liveReadinessArgs(argv = process.argv.slice(2)) {
 
 function redactAccountName(value) {
   return String(value ?? "").trim().replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "<account>");
-}
-
-function redactPath(path) {
-  const value = String(path ?? "");
-  const home = homedir();
-  return home && value.toLowerCase().startsWith(home.toLowerCase())
-    ? `%USERPROFILE%${value.slice(home.length)}`
-    : value;
 }
 
 function normalizeOptionalCliValue(value) {

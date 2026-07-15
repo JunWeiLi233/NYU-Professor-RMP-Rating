@@ -20,6 +20,7 @@ const PROCESSED_CELL_CHILD_GUARD_PROPERTIES = [
   ["width", "100%"],
   ["word-break", "normal"],
 ];
+const CONTENT_SCRIPT_STATE = Symbol.for("nyu-rmp-content-script-state");
 
 export async function initContentScript({
   chrome = globalThis.chrome,
@@ -29,62 +30,117 @@ export async function initContentScript({
   repairAlbertRmpLayoutSafeguards = () => ({ repairedCount: 0 }),
   lookupProfessor,
 } = {}) {
-  markContentScriptLoaded(document);
-  const settings = await readOverlaySettings(chrome);
-  const staleLayoutMigration = migrateStaleCardLayout(document, removeAlbertRmpEnhancements);
-  let observer = null;
-  if (settings["settings:overlayEnabled"] !== false) {
-    markOverlayState(document, "enabled");
-    observer = startOverlay();
-  } else {
-    markOverlayState(document, "disabled");
+  const existingState = document?.[CONTENT_SCRIPT_STATE];
+  if (existingState?.version === EXTENSION_VERSION && existingState.chrome === chrome) {
+    return existingState.ready;
   }
+  existingState?.dispose?.();
 
-  chrome.storage.onChanged?.addListener((changes, areaName) => {
-    if (areaName !== "local" || !changes["settings:overlayEnabled"]) {
-      return;
-    }
-
-    const enabled = changes["settings:overlayEnabled"].newValue !== false;
-    if (enabled && !observer) {
-      markOverlayState(document, "enabled");
-      observer = startOverlay();
-      return;
-    }
-
-    if (!enabled) {
-      markOverlayState(document, "disabled");
+  let observer = null;
+  let storageChangeListener = null;
+  let runtimeMessageListener = null;
+  let resolveReady;
+  let rejectReady;
+  const ready = new Promise((resolve, reject) => {
+    resolveReady = resolve;
+    rejectReady = reject;
+  });
+  void ready.catch(() => {});
+  const state = {
+    chrome,
+    ready,
+    version: EXTENSION_VERSION,
+    disposed: false,
+    dispose() {
+      if (state.disposed) {
+        return;
+      }
+      state.disposed = true;
       observer?.disconnect?.();
       observer = null;
-      removeAlbertRmpEnhancements(document);
+      if (storageChangeListener) {
+        chrome.storage.onChanged?.removeListener?.(storageChangeListener);
+      }
+      if (runtimeMessageListener) {
+        chrome.runtime?.onMessage?.removeListener?.(runtimeMessageListener);
+      }
+      if (document?.[CONTENT_SCRIPT_STATE] === state) {
+        delete document[CONTENT_SCRIPT_STATE];
+      }
+    },
+  };
+  document[CONTENT_SCRIPT_STATE] = state;
+
+  try {
+    markContentScriptLoaded(document);
+    const settings = await readOverlaySettings(chrome);
+    if (state.disposed) {
+      resolveReady();
+      return;
     }
-  });
-  chrome.runtime?.onMessage?.addListener((message, sender, sendResponse) => {
-    if (message?.type === "NYU_RMP_CONTENT_STATUS") {
-      sendResponse(contentStatusResponse(document));
-      return false;
+    migrateStaleCardLayout(document, removeAlbertRmpEnhancements);
+    if (settings["settings:overlayEnabled"] !== false) {
+      markOverlayState(document, "enabled");
+      observer = startOverlay();
+    } else {
+      markOverlayState(document, "disabled");
     }
 
-    if (message?.type === "NYU_RMP_REPAIR_LAYOUT") {
-      const beforeWarningCount = countProcessedCellLayoutWarnings(document);
-      const repairResult = repairAlbertRmpLayoutSafeguards(document) ?? {};
-      const afterWarningCount = countProcessedCellLayoutWarnings(document);
-      markLayoutRepairResult(document, {
-        repairedCount: nonNegativeInteger(repairResult.repairedCount),
-        beforeWarningCount,
-        afterWarningCount,
-      });
-      sendResponse({
-        ok: true,
-        repairedCount: nonNegativeInteger(repairResult.repairedCount),
-        beforeWarningCount,
-        afterWarningCount,
-      });
-      return false;
-    }
+    storageChangeListener = (changes, areaName) => {
+      if (areaName !== "local" || !changes["settings:overlayEnabled"]) {
+        return;
+      }
 
-    return false;
-  });
+      const enabled = changes["settings:overlayEnabled"].newValue !== false;
+      if (enabled && !observer) {
+        markOverlayState(document, "enabled");
+        observer = startOverlay();
+        return;
+      }
+
+      if (!enabled) {
+        markOverlayState(document, "disabled");
+        observer?.disconnect?.();
+        observer = null;
+        removeAlbertRmpEnhancements(document);
+      }
+    };
+    chrome.storage.onChanged?.addListener(storageChangeListener);
+
+    runtimeMessageListener = (message, _sender, sendResponse) => {
+      if (message?.type === "NYU_RMP_CONTENT_STATUS") {
+        sendResponse(contentStatusResponse(document));
+        return false;
+      }
+
+      if (message?.type === "NYU_RMP_REPAIR_LAYOUT") {
+        const beforeWarningCount = countProcessedCellLayoutWarnings(document);
+        const repairResult = repairAlbertRmpLayoutSafeguards(document) ?? {};
+        const afterWarningCount = countProcessedCellLayoutWarnings(document);
+        markLayoutRepairResult(document, {
+          repairedCount: nonNegativeInteger(repairResult.repairedCount),
+          beforeWarningCount,
+          afterWarningCount,
+        });
+        sendResponse({
+          ok: true,
+          repairedCount: nonNegativeInteger(repairResult.repairedCount),
+          beforeWarningCount,
+          afterWarningCount,
+        });
+        return false;
+      }
+
+      return false;
+    };
+    chrome.runtime?.onMessage?.addListener(runtimeMessageListener);
+
+    resolveReady();
+  } catch (error) {
+    state.dispose();
+    rejectReady(error);
+    throw error;
+  }
 
   function startOverlay() {
     return startAlbertRmpEnhancer({
