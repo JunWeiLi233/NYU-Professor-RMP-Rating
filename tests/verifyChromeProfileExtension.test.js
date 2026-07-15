@@ -13,7 +13,7 @@ describe("Chrome profile extension verifier", () => {
     const profile = await createProfile({
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.11" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.12" },
           path: resolve("dist"),
           state: 1,
           from_webstore: false,
@@ -25,7 +25,7 @@ describe("Chrome profile extension verifier", () => {
       id: "abcdefghijklmnopabcdefghijklmnop",
       enabled: true,
       installedFromExpectedPath: true,
-      expectedVersion: "0.1.11",
+      expectedVersion: "0.1.12",
     });
 
     await rm(profile, { recursive: true, force: true });
@@ -44,7 +44,7 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeProfileExtension({ profileDir: profile, extensionPath: "dist" })).rejects.toThrow(
-      "NYU Albert RMP Ratings is installed from the expected path but Chrome reports version 0.1.0; expected 0.1.11. Reload the unpacked extension in chrome://extensions",
+      "NYU Albert RMP Ratings is installed from the expected path but Chrome reports version 0.1.0; expected 0.1.12. Reload the unpacked extension in chrome://extensions",
     );
 
     await rm(profile, { recursive: true, force: true });
@@ -101,7 +101,7 @@ describe("Chrome profile extension verifier", () => {
       profile: join(userData, "Profile 1"),
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.11" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.12" },
           path: resolve("dist"),
           state: 1,
           from_webstore: false,
@@ -130,7 +130,7 @@ describe("Chrome profile extension verifier", () => {
       profile: join(userData, "Default"),
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.11" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.12" },
           path: resolve("dist"),
           state: 1,
           from_webstore: false,
@@ -221,7 +221,7 @@ describe("Chrome profile extension verifier", () => {
       profile: join(userData, "Profile 2"),
       extensions: {
         abcdefghijklmnopabcdefghijklmnop: {
-          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.11" },
+          manifest: { name: "NYU Albert RMP Ratings", version: "0.1.12" },
           path: resolve("dist"),
           state: 0,
           from_webstore: false,
