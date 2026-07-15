@@ -139,7 +139,7 @@ async function createWorkspace({ installedFromDist, profileInfo = null }) {
   await writeFile(join(dist, "manifest.json"), JSON.stringify({
     manifest_version: 3,
     name: "NYU Albert RMP Ratings",
-    version: "0.1.9",
+    version: "0.1.10",
     action: { default_popup: "popup.html" },
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [
@@ -157,7 +157,7 @@ async function createWorkspace({ installedFromDist, profileInfo = null }) {
   await writeFile(join(dist, "background.js"), "", "utf8");
   await writeFile(
     join(dist, "content.js"),
-    '(() => { const version = "0.1.9"; document.documentElement.dataset.nyuRmpVersion = version; })();',
+    '(() => { const version = "0.1.10"; document.documentElement.dataset.nyuRmpVersion = version; })();',
     "utf8",
   );
   await writeFile(join(dist, "popup.html"), '<script src="popup.js"></script>', "utf8");
@@ -167,7 +167,7 @@ async function createWorkspace({ installedFromDist, profileInfo = null }) {
       settings: installedFromDist
         ? {
             abcdefghijklmnopabcdefghijklmnop: {
-              manifest: { name: "NYU Albert RMP Ratings", version: "0.1.9" },
+              manifest: { name: "NYU Albert RMP Ratings", version: "0.1.10" },
               path: resolve(dist),
               state: 1,
               from_webstore: false,

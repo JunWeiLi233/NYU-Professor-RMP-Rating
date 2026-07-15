@@ -11,7 +11,7 @@ The extension source lives in `src/`. Chrome entry points are `background.js`, `
 - `npm test` runs the Vitest suite once.
 - `npm run build` creates the unpacked Chrome extension in `dist/`.
 - `npm run verify:local` builds, tests, and runs package, version, and Albert layout checks; use this before opening a pull request.
-- `npm run package:release -- v0.1.9` validates and packages a tagged release.
+- `npm run package:release -- v0.1.10` validates and packages a tagged release.
 - `npm run verify:albert-shape -- ./snapshot.html` checks a saved Albert page against the current card layout.
 
 Load `dist/` from `chrome://extensions` for manual testing. See `README.md` for profile and live-readiness checks.
