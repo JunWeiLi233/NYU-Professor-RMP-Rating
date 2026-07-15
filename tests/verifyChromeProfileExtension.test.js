@@ -6,6 +6,7 @@ import {
   verifyChromeProfileExtension,
   verifyChromeUserDataExtension,
 } from "../scripts/verify-chrome-profile-extension.js";
+import { redactHomePath } from "../scripts/redact-sensitive.js";
 
 describe("Chrome profile extension verifier", () => {
   it("reports an enabled unpacked NYU RMP extension loaded from the expected dist path", async () => {
@@ -146,7 +147,7 @@ describe("Chrome profile extension verifier", () => {
       extensionPath: "dist",
       expectedAccountName: "student-account@nyu.example",
     })).rejects.toThrow(
-      `NYU Albert RMP Ratings is not installed from ${resolve("dist")} for Chrome account <account> in scanned Chrome profile: Profile 2 (nyu.edu, <account>)`,
+      `NYU Albert RMP Ratings is not installed from ${redactHomePath(resolve("dist"))} for Chrome account <account> in scanned Chrome profile: Profile 2 (nyu.edu, <account>)`,
     );
 
     await rm(userData, { recursive: true, force: true });
@@ -189,10 +190,10 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      `NYU Albert RMP Ratings is not installed from ${resolve("dist")} in scanned Chrome profiles: Default (Your Chrome), Profile 2 (NYU Login, <account>)`,
+      `NYU Albert RMP Ratings is not installed from ${redactHomePath(resolve("dist"))} in scanned Chrome profiles: Default (Your Chrome), Profile 2 (NYU Login, <account>)`,
     );
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      "Scanned Chrome user-data folder: %USERPROFILE%",
+      `Scanned Chrome user-data folder: ${redactHomePath(resolve(userData))}`,
     );
 
     await rm(userData, { recursive: true, force: true });
@@ -229,7 +230,7 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      `Profile details: Default (Old Install, <account>): NYU Albert RMP Ratings is installed from a different path: ${oldDist}; expected ${resolve("dist")}; Profile 2 (Disabled Install): NYU Albert RMP Ratings is installed but disabled`,
+      `Profile details: Default (Old Install, <account>): NYU Albert RMP Ratings is installed from a different path: ${redactHomePath(oldDist)}; expected ${redactHomePath(resolve("dist"))}; Profile 2 (Disabled Install): NYU Albert RMP Ratings is installed but disabled`,
     );
 
     await rm(userData, { recursive: true, force: true });

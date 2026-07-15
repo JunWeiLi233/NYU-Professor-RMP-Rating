@@ -1437,7 +1437,7 @@ describe("Rate My Professors client", () => {
         department: "Comp Sci",
         numRatings: 0,
       },
-    ]);
+    ], { departmentHint: "computer-science" });
 
     expect(bestMatch.department).toBe("Comp Sci");
   });
@@ -1456,7 +1456,7 @@ describe("Rate My Professors client", () => {
         department: "Comp Science",
         numRatings: 0,
       },
-    ]);
+    ], { departmentHint: "computer-science" });
 
     expect(bestMatch.department).toBe("Comp Science");
   });
@@ -1475,7 +1475,7 @@ describe("Rate My Professors client", () => {
         department: "C.S.",
         numRatings: 0,
       },
-    ]);
+    ], { departmentHint: "computer-science" });
 
     expect(bestMatch.department).toBe("C.S.");
   });
@@ -1736,7 +1736,10 @@ describe("Rate My Professors client", () => {
       }),
     }));
 
-    const result = await findProfessorRating("Walfish", { fetchImpl });
+    const result = await findProfessorRating("Walfish", {
+      fetchImpl,
+      departmentHint: "computer-science",
+    });
 
     expect(result.name).toBe("Michael Walfish");
     expect(result.matchConfidence).toBe("fuzzy");
@@ -1788,6 +1791,71 @@ describe("Rate My Professors client", () => {
     }));
 
     await expect(findProfessorRating("Meyers", { fetchImpl, departmentHint: "computer-science" })).resolves.toBeNull();
+  });
+
+  it("does not accept a surname-only professor from the wrong hinted department", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [{
+                node: {
+                  id: "wrong-math-department",
+                  legacyId: 1234,
+                  firstName: "Michael",
+                  lastName: "Walfish",
+                  department: "Mathematics",
+                  avgRating: 4.9,
+                  avgDifficulty: 1.2,
+                  numRatings: 200,
+                  wouldTakeAgainPercent: 99,
+                  teacherRatingTags: [],
+                  ratings: { edges: [] },
+                },
+              }],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Walfish", {
+      fetchImpl,
+      departmentHint: "computer-science",
+    })).resolves.toBeNull();
+  });
+
+  it("does not auto-match a surname-only result without a department hint", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [{
+                node: {
+                  id: "unhinted-surname",
+                  legacyId: 5678,
+                  firstName: "Michael",
+                  lastName: "Walfish",
+                  department: "Computer Science",
+                  avgRating: 4.2,
+                  avgDifficulty: 3.8,
+                  numRatings: 18,
+                  wouldTakeAgainPercent: 79,
+                  teacherRatingTags: [],
+                  ratings: { edges: [] },
+                },
+              }],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Walfish", { fetchImpl })).resolves.toBeNull();
   });
 
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {

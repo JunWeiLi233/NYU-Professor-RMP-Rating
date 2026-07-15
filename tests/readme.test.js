@@ -7,7 +7,8 @@ describe("README", () => {
 
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
     expect(readme).toContain("npm run verify:local");
-    expect(readme).toContain("builds `dist` first");
+    expect(readme).toContain("checks JavaScript syntax, builds `dist`");
+    expect(readme).toContain("npm run lint");
     expect(readme).toContain("npm run verify:chrome-profile");
     expect(readme).toContain("npm run verify:albert-smoke");
     expect(readme).toContain("npm run verify:albert-shape");

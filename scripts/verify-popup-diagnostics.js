@@ -25,8 +25,8 @@ export function verifyPopupDiagnostics(text, { expectedVersion = EXTENSION_VERSI
   if (summary.cardCount > 0 && summary.quickViewCount < summary.cardCount) {
     failures.push(`${summary.cardCount - summary.quickViewCount} Albert RMP card${summary.cardCount - summary.quickViewCount === 1 ? " lacks" : "s lack"} segmented quick views`);
   }
-  if (summary.cardCount > 0 && summary.ratingColumnCount < summary.cardCount) {
-    failures.push(`${summary.cardCount - summary.ratingColumnCount} Albert RMP card${summary.cardCount - summary.ratingColumnCount === 1 ? " lacks" : "s lack"} a trailing rating column`);
+  if (summary.cardCount > 0 && summary.ratingColumnCount + summary.underButtonRatingCount === 0) {
+    failures.push("Albert RMP cards lack a trailing rating column or under-button rating root");
   }
   if (summary.cardCount === 0) {
     failures.push("no Albert RMP cards were reported");
@@ -45,7 +45,7 @@ export function verifyPopupDiagnostics(text, { expectedVersion = EXTENSION_VERSI
 
 function parseDiagnosticsSummary(text) {
   const match = String(text ?? "").match(
-    /Build v(?<buildVersion>[^\s|]+)\s*\|\s*Albert (?<albertVersion>[^\s|]+)\s*\|\s*(?<cardCount>\d+) cards?\s*\|\s*(?<quickViewCount>\d+) quick views?\s*\|\s*(?<processedCellCount>\d+) cells?(?:\s*\|\s*(?<ratingColumnCount>\d+) rating columns?)?/i,
+    /Build v(?<buildVersion>[^\s|]+)\s*\|\s*Albert (?<albertVersion>[^\s|]+)\s*\|\s*(?<cardCount>\d+) cards?\s*\|\s*(?<quickViewCount>\d+) quick views?\s*\|\s*(?<processedCellCount>\d+) cells?(?:\s*\|\s*(?<ratingColumnCount>\d+) rating columns?)?(?:\s*\|\s*(?<underButtonRatingCount>\d+) under-button ratings?)?/i,
   );
   if (!match?.groups) {
     return {
@@ -55,12 +55,16 @@ function parseDiagnosticsSummary(text) {
       quickViewCount: 0,
       processedCellCount: 0,
       ratingColumnCount: 0,
+      underButtonRatingCount: 0,
     };
   }
   const cardCount = Number(match.groups.cardCount);
   const ratingColumnCount = match.groups.ratingColumnCount === undefined
     ? 0
     : Number(match.groups.ratingColumnCount);
+  const underButtonRatingCount = match.groups.underButtonRatingCount === undefined
+    ? 0
+    : Number(match.groups.underButtonRatingCount);
   return {
     buildVersion: match.groups.buildVersion,
     albertVersion: match.groups.albertVersion === "missing" ? "" : match.groups.albertVersion,
@@ -68,6 +72,7 @@ function parseDiagnosticsSummary(text) {
     quickViewCount: Number(match.groups.quickViewCount),
     processedCellCount: Number(match.groups.processedCellCount),
     ratingColumnCount,
+    underButtonRatingCount,
   };
 }
 

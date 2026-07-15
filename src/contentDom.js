@@ -1362,7 +1362,9 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
   const isCellMount = isTableCell(element);
   const mountElement = isCellMount ? ratingMountElementForCell(element, document, { mountInSourceCell }) : element;
-  const existingContainer = isCellMount ? existingRatingContainerForCell(element, mountElement) : null;
+  const existingContainer = isCellMount
+    ? existingRatingContainerForCell(element, mountElement)
+    : adjacentRatingContainerForElement(element);
   const container = existingContainer ?? document.createElement("div");
   if (!existingContainer) {
     container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
@@ -1408,42 +1410,128 @@ function mountRatings({ element, names, processedElements = [], document, lookup
 
 function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
   return Array.from(document.querySelectorAll("[data-nyu-rmp-processed='true']"))
-    .filter((element) => isTableCell(element) && isElementVisible(element))
-    .flatMap((element) => {
-      applyProcessedCellLayoutSafeguards(element);
-      const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
-      const directContainer = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted, :scope > .${ROOT_CLASS}`);
-      if (!originalContent && !directContainer && element.dataset.nyuRmpSelectButtonRating !== "true") {
-        return [];
-      }
-      const mountElement = ratingMountElementForCell(element, document);
-      const container = existingRatingContainerForCell(element, mountElement);
-      if (!container || !originalContent) {
-        if (container && isStaleRatingRoot(container)) {
-          const staleNames = mountedProfessorNames(container);
-          return staleNames.length > 0 ? [{ element, names: staleNames }] : [];
-        }
-        return [];
-      }
+    .filter(isElementVisible)
+    .flatMap((element) => updatedProcessedInstructorTargetsForElement(element, document));
+}
 
-      if (element.dataset.nyuRmpSelectButtonRating === "true") {
-        if (isStaleRatingRoot(container)) {
-          const staleNames = mountedProfessorNames(container);
-          return staleNames.length > 0 ? [{ element, names: staleNames, mountInSourceCell: true }] : [];
-        }
-        return [];
-      }
+function updatedProcessedInstructorTargetsForElement(element, document) {
+  if (element.dataset.nyuRmpProcessed !== "true") {
+    return [];
+  }
+  if (!isTableCell(element)) {
+    const container = adjacentRatingContainerForElement(element);
+    if (!container) {
+      delete element.dataset.nyuRmpProcessed;
+      return [];
+    }
+    const peopleSoftTarget = updatedPeopleSoftClassSearchTarget(element);
+    if (peopleSoftTarget) {
+      return synchronizeUpdatedInstructorTarget(peopleSoftTarget, container, document);
+    }
+    return synchronizeUpdatedInstructorTarget({ element, names: namesFromOriginalAlbertContent(element) }, container, document);
+  }
 
-      const currentNames = namesFromOriginalAlbertContent(originalContent);
-      const currentNameKeys = new Set(currentNames.map(compactName).filter(Boolean));
-      pruneStaleMountedProfessorCards(container, currentNameKeys);
-      if (isStaleRatingRoot(container)) {
-        return currentNames.length > 0 ? [{ element, names: currentNames }] : [];
-      }
-      const names = currentNames
-        .filter((name) => !mountedProfessorNameKeys(container).has(compactName(name)));
-      return names.length > 0 ? [{ element, names }] : [];
-    });
+  applyProcessedCellLayoutSafeguards(element);
+  const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+  const directContainer = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted, :scope > .${ROOT_CLASS}`);
+  if (!originalContent && !directContainer && element.dataset.nyuRmpSelectButtonRating !== "true") {
+    return updatedSelectButtonSourceTargets(element, document);
+  }
+
+  const mountElement = ratingMountElementForCell(element, document);
+  const container = existingRatingContainerForCell(element, mountElement);
+  if (!container || !originalContent) {
+    if (container && isStaleRatingRoot(container)) {
+      const staleNames = mountedProfessorNames(container);
+      return staleNames.length > 0 ? [{ element, names: staleNames }] : [];
+    }
+    return [];
+  }
+
+  if (element.dataset.nyuRmpSelectButtonRating === "true") {
+    if (isStaleRatingRoot(container)) {
+      const staleNames = mountedProfessorNames(container);
+      return staleNames.length > 0 ? [{ element, names: staleNames, mountInSourceCell: true }] : [];
+    }
+    return [];
+  }
+
+  return synchronizeUpdatedInstructorTarget({ element, names: namesFromOriginalAlbertContent(originalContent) }, container, document);
+}
+
+function updatedPeopleSoftClassSearchTarget(element) {
+  if (!element.matches?.("[id^='win0divSELECT_BUTTON$'], .ps_box-button")) {
+    return null;
+  }
+  const resultContainer = closestPeopleSoftClassSearchResultContainer(element);
+  if (!resultContainer) {
+    return null;
+  }
+  const detailsElement = peopleSoftClassSearchDetailsElement(resultContainer) ?? resultContainer;
+  return {
+    element,
+    processedElements: [element],
+    names: instructorNamesFromPeopleSoftClassSearchText(visibleTextSegments(detailsElement).join(" ")),
+    preferContainer: true,
+    mountInSourceCell: true,
+  };
+}
+
+function updatedSelectButtonSourceTargets(element, document) {
+  const row = closestAlbertRow(element);
+  if (!row) {
+    return [];
+  }
+  const selectButtonCell = selectButtonCellForRow(visibleRowCells(row));
+  if (!selectButtonCell || selectButtonCell === element || selectButtonCell.dataset.nyuRmpSelectButtonRating !== "true") {
+    return [];
+  }
+  const target = selectButtonRatingTarget(element, selectButtonCell);
+  const container = existingRatingContainerForCell(target.element, target.element);
+  return container ? synchronizeUpdatedInstructorTarget(target, container, document) : [];
+}
+
+function synchronizeUpdatedInstructorTarget(target, container, document) {
+  const currentNames = uniqueNames(target.names
+    .flatMap(splitInstructorList)
+    .map(normalizeInstructorName)
+    .filter(Boolean));
+  const currentNameKeys = new Set(currentNames.map(compactName).filter(Boolean));
+  pruneStaleMountedProfessorCards(container, currentNameKeys);
+  if (currentNames.length === 0) {
+    removeEmptyInstructorRating(target, container, document);
+    return [];
+  }
+  if (isStaleRatingRoot(container)) {
+    return [{ ...target, names: currentNames }];
+  }
+  const mountedNameKeys = mountedProfessorNameKeys(container);
+  const names = currentNames.filter((name) => !mountedNameKeys.has(compactName(name)));
+  return names.length > 0 ? [{ ...target, names }] : [];
+}
+
+function removeEmptyInstructorRating(target, container, document) {
+  const ratingCell = container.closest?.("[data-nyu-rmp-rating-cell='true']");
+  const headerId = ratingCell?.getAttribute("headers") ?? "";
+  container.remove();
+  if (ratingCell && ratingCell.querySelectorAll(`.${ROOT_CLASS}`).length === 0 && !ratingCell.textContent.trim()) {
+    ratingCell.remove();
+  }
+  if (headerId && !document.querySelector(`[headers~='${cssEscape(headerId)}']`)) {
+    document.getElementById(headerId)?.remove();
+  }
+
+  for (const processedElement of new Set([target.element, ...(target.processedElements ?? [])])) {
+    const originalContent = processedElement.querySelector?.(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+    if (originalContent) {
+      unwrapOriginalAlbertContent(originalContent);
+    }
+    if (isTableCell(processedElement)) {
+      removeProcessedCellLayoutSafeguards(processedElement);
+    }
+    delete processedElement.dataset.nyuRmpProcessed;
+    delete processedElement.dataset.nyuRmpSelectButtonRating;
+  }
 }
 
 function namesFromOriginalAlbertContent(element) {
@@ -1456,6 +1544,12 @@ function namesFromOriginalAlbertContent(element) {
 
 function mountedProfessorNameKeys(container) {
   return new Set(mountedProfessorNames(container).map(compactName).filter(Boolean));
+}
+
+function adjacentRatingContainerForElement(element) {
+  return element.nextElementSibling?.classList?.contains(ROOT_CLASS)
+    ? element.nextElementSibling
+    : null;
 }
 
 function mountedProfessorNames(container) {
@@ -1629,6 +1723,7 @@ function isStaleRatingRoot(container) {
     .some((card) => card.dataset.nyuRmpVersion !== EXTENSION_VERSION
       || (!card.classList.contains("is-loading")
         && !card.classList.contains("is-empty")
+        && !card.classList.contains("is-error")
         && !card.querySelector(":scope > .nyu-rmp-quick-grid")));
 }
 

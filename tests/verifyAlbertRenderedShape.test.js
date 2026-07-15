@@ -36,6 +36,31 @@ describe("Albert rendered shape verifier", () => {
     });
   });
 
+  it("passes when SELECT_BUTTON ratings use the supported under-button mount", () => {
+    expect(verifyAlbertRenderedShape(`
+      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.9">
+        <body>
+          <table>
+            <tr>
+              <td data-nyu-rmp-processed="true" data-nyu-rmp-select-button-rating="true">
+                <button>Select</button>
+                <div class="nyu-rmp-rating-root">
+                  <div class="nyu-rmp-card"><div class="nyu-rmp-quick-grid"></div></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `)).toMatchObject({
+      ok: true,
+      cardCount: 1,
+      ratingCellCount: 0,
+      inlineProcessedRatingRootCount: 1,
+      selectButtonRatingRootCount: 1,
+    });
+  });
+
   it("fails when Albert is still rendering old squeezed card markup", () => {
     expect(() => verifyAlbertRenderedShape(`
       <html data-nyu-rmp-content-script="loaded">
@@ -89,7 +114,7 @@ describe("Albert rendered shape verifier", () => {
           </div>
         </body>
       </html>
-    `)).toThrow("RMP rating root is still mounted inside processed Albert cells");
+    `)).toThrow("RMP rating root is still mounted unexpectedly inside processed Albert cells");
   });
 
   it("fails when a trailing Albert rating column has no rating root", () => {

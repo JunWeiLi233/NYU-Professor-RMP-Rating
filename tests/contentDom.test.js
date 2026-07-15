@@ -4669,6 +4669,19 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Recovered.");
   });
 
+  it("does not retry error cards automatically during later Albert rescans", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => {
+      throw new Error("RMP lookup failed");
+    });
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(document.querySelectorAll(".nyu-rmp-card.is-error")).toHaveLength(1);
+  });
+
   it("links error cards to an RMP professor search for manual fallback", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => {
@@ -9760,6 +9773,33 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("updates an under-button rating when Albert changes the SELECT_BUTTON row instructor", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="updated-select-row">
+            <td><button name="SSR_CLSRCH_WRK_SELECT_BUTTON$0">Select</button></td>
+            <td>CSCI-UA 101 Introduction to Computer Science</td>
+            <td id="updated-select-instructor">Ada Lovelace</td>
+            <td>Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.getElementById("updated-select-instructor").textContent = "Grace Hopper";
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const cards = Array.from(document.querySelectorAll("#updated-select-row > td:first-child > .nyu-rmp-rating-root .nyu-rmp-card"));
+    expect(cards).toHaveLength(1);
+    expect(cards[0].dataset.nyuRmpRequestedName).toBe("Grace Hopper");
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace", { courseCode: "CSCI-UA 101" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper", { courseCode: "CSCI-UA 101" });
+  });
+
   it("moves an existing trailing SELECT_BUTTON row rating under the button on rescan", async () => {
     document.body.innerHTML = `
       <table>
@@ -10462,6 +10502,44 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(2);
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
+  it("removes the trailing rating column when a processed gridcell changes to TBA", async () => {
+    document.body.innerHTML = `
+      <div role="row" id="tba-row">
+        <div role="gridcell" id="tba-instructor" aria-label="Instructor">Ada Lovelace</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.querySelector("#tba-instructor .nyu-rmp-albert-original").textContent = "TBA";
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector("#tba-row [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(document.querySelector("#tba-row .nyu-rmp-rating-root")).toBeNull();
+    expect(document.getElementById("tba-instructor").dataset.nyuRmpProcessed).toBeUndefined();
+    expect(document.getElementById("tba-instructor").textContent).toBe("TBA");
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+  });
+
+  it("updates and removes adjacent ratings when a generic instructor element changes", async () => {
+    document.body.innerHTML = `<div id="dynamic-instructor">Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.getElementById("dynamic-instructor").textContent = "Instructor: Grace Hopper";
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelectorAll(".nyu-rmp-rating-root .nyu-rmp-card")).toHaveLength(1);
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Grace Hopper");
+
+    document.getElementById("dynamic-instructor").textContent = "Instructor: TBA";
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(document.getElementById("dynamic-instructor").dataset.nyuRmpProcessed).toBeUndefined();
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
   });
 
   it("ignores pending stale lookup updates after Albert replaces a processed gridcell instructor", async () => {

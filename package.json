@@ -3,11 +3,15 @@
   "version": "0.1.9",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+  },
   "scripts": {
+    "lint": "node scripts/check-source.js",
     "test": "vitest run",
     "build": "node scripts/build-extension.js",
     "package:release": "node scripts/package-release.js dist",
-    "verify:local": "npm run build && npm test && npm run verify:package && npm run verify:release && npm run verify:albert-smoke",
+    "verify:local": "npm run lint && npm run build && npm test && npm run verify:package && npm run verify:release && npm run verify:albert-smoke",
     "verify:package": "node scripts/verify-extension-package.js dist",
     "verify:release": "node scripts/verify-release-version.js dist",
     "verify:chrome-profile": "node scripts/verify-chrome-profile-extension.js",

@@ -15,6 +15,8 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
   const ratingCellCount = document?.querySelectorAll?.("[data-nyu-rmp-rating-cell='true']").length ?? 0;
   const trailingRatingRootCount = document?.querySelectorAll?.("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root").length ?? 0;
   const inlineProcessedRatingRootCount = document?.querySelectorAll?.("[data-nyu-rmp-processed='true'] > .nyu-rmp-rating-root").length ?? 0;
+  const selectButtonRatingRootCount = document?.querySelectorAll?.("[data-nyu-rmp-processed='true'][data-nyu-rmp-select-button-rating='true'] > .nyu-rmp-rating-root").length ?? 0;
+  const unexpectedInlineRatingRootCount = Math.max(0, inlineProcessedRatingRootCount - selectButtonRatingRootCount);
   const migrationCount = nonNegativeInteger(document?.documentElement?.dataset?.nyuRmpStaleCardLayoutMigrationCount);
   const staleVisibleChildClasses = firstVisibleCardChildClasses(document);
   const result = {
@@ -28,6 +30,7 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
     ratingCellCount,
     trailingRatingRootCount,
     inlineProcessedRatingRootCount,
+    selectButtonRatingRootCount,
     staleCardLayoutMigrationCount: migrationCount,
     firstCardVisibleChildClasses: staleVisibleChildClasses,
   };
@@ -43,14 +46,14 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
     const staleCardCount = cardCount - quickGridCount;
     failures.push(`${staleCardCount} rendered RMP card${staleCardCount === 1 ? " still lacks" : "s still lack"} segmented quick views`);
   }
-  if (cardCount > 0 && processedCellCount > 0 && ratingCellCount === 0) {
-    failures.push("rendered Albert RMP cards are missing the trailing rating column");
+  if (cardCount > 0 && processedCellCount > 0 && ratingCellCount === 0 && selectButtonRatingRootCount === 0) {
+    failures.push("rendered Albert RMP cards are missing a trailing rating column or under-button rating root");
   }
   if (cardCount > 0 && ratingCellCount > 0 && trailingRatingRootCount < ratingCellCount) {
     failures.push("one or more trailing rating columns do not contain an RMP rating root");
   }
-  if (inlineProcessedRatingRootCount > 0) {
-    failures.push(`${inlineProcessedRatingRootCount} RMP rating root${inlineProcessedRatingRootCount === 1 ? " is" : "s are"} still mounted inside processed Albert cells`);
+  if (unexpectedInlineRatingRootCount > 0) {
+    failures.push(`${unexpectedInlineRatingRootCount} RMP rating root${unexpectedInlineRatingRootCount === 1 ? " is" : "s are"} still mounted unexpectedly inside processed Albert cells`);
   }
   if (failures.length > 0) {
     const error = new Error([
