@@ -249,7 +249,9 @@
       .toggle-track {
         background: #d5cde0;
         border-radius: 999px;
+        display: block;
         height: 100%;
+        position: relative;
         transition: background 200ms ease;
         width: 100%;
       }
@@ -318,15 +320,13 @@
         <p id="diagnostic-summary" class="diagnostic-summary" aria-label="Privacy-safe Albert diagnostic summary">Diagnostics pending</p>
         <p class="notice">Refresh Albert after loading or updating the extension.</p>
         <ul class="feature-list" aria-label="Albert rating overlay features">
-          <li>Rating, difficulty, and take-again metrics</li>
-          <li>Radar fit score and pick recommendation</li>
-          <li>Most useful RMP comments from a 20-rating sample</li>
-          <li>Course-aware matching for Albert surname rows</li>
-          <li>Course comment risk/support highlighting</li>
+          <li>Rating, difficulty, take-again, and fit recommendation</li>
+          <li>Course-aware matching with risk/support context</li>
+          <li>Recent RMP comments and radar map on demand</li>
         </ul>
         <div class="button-row">
-          <button id="copy-diagnostics" class="secondary-button" type="button">Copy diagnostics</button>
-          <button id="clear-cache" type="button">Clear cache</button>
+          <button id="copy-diagnostics" type="button">Copy diagnostics</button>
+          <button id="clear-cache" class="secondary-button" type="button">Clear cache</button>
         </div>
       </section>
     </main>

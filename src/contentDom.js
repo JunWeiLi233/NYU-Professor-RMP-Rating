@@ -335,6 +335,7 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
   for (const element of document.querySelectorAll("[data-nyu-rmp-processed]")) {
     removeProcessedCellLayoutSafeguards(element);
     delete element.dataset.nyuRmpProcessed;
+    delete element.dataset.nyuRmpInlineRating;
     delete element.dataset.nyuRmpSelectButtonRating;
   }
 }
@@ -1357,11 +1358,14 @@ function mountRatings({ element, names, processedElements = [], document, lookup
       applyProcessedCellLayoutSafeguards(processedElement);
     }
   }
+  const isCellMount = isTableCell(element);
+  const useSourceCell = mountInSourceCell || (isCellMount && shouldMountRatingInSourceCell(element));
   if (mountInSourceCell) {
     element.dataset.nyuRmpSelectButtonRating = "true";
+  } else if (useSourceCell) {
+    element.dataset.nyuRmpInlineRating = "true";
   }
-  const isCellMount = isTableCell(element);
-  const mountElement = isCellMount ? ratingMountElementForCell(element, document, { mountInSourceCell }) : element;
+  const mountElement = isCellMount ? ratingMountElementForCell(element, document, { mountInSourceCell: useSourceCell }) : element;
   const existingContainer = isCellMount
     ? existingRatingContainerForCell(element, mountElement)
     : adjacentRatingContainerForElement(element);
@@ -1530,6 +1534,7 @@ function removeEmptyInstructorRating(target, container, document) {
       removeProcessedCellLayoutSafeguards(processedElement);
     }
     delete processedElement.dataset.nyuRmpProcessed;
+    delete processedElement.dataset.nyuRmpInlineRating;
     delete processedElement.dataset.nyuRmpSelectButtonRating;
   }
 }
@@ -1567,7 +1572,10 @@ function pruneStaleMountedProfessorCards(container, currentNameKeys) {
   }
 }
 
-function ratingMountElementForCell(element, document, { mountInSourceCell = element.dataset.nyuRmpSelectButtonRating === "true" } = {}) {
+function ratingMountElementForCell(element, document, {
+  mountInSourceCell = element.dataset.nyuRmpSelectButtonRating === "true"
+    || element.dataset.nyuRmpInlineRating === "true",
+} = {}) {
   if (mountInSourceCell) {
     return element;
   }
@@ -1586,6 +1594,21 @@ function ratingMountElementForCell(element, document, { mountInSourceCell = elem
   const ratingCell = createRatingCellForRow(row, document, { headerId });
   row.append(ratingCell);
   return ratingCell;
+}
+
+function shouldMountRatingInSourceCell(element) {
+  if (element.dataset.nyuRmpInlineRating === "true") {
+    return true;
+  }
+  const table = element.closest?.("table");
+  if (!table) {
+    return false;
+  }
+  try {
+    return element.ownerDocument?.defaultView?.getComputedStyle(table)?.tableLayout === "fixed";
+  } catch {
+    return false;
+  }
 }
 
 function existingRatingContainerForCell(sourceElement, mountElement) {

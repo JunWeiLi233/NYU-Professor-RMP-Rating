@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.12 - 2026-07-15
+
+### Fixed
+
+- Prevented RMP cards from collapsing into an unreadable trailing column when Albert uses fixed table layout.
+- Restored the popup overlay switch track so its enabled and disabled states are visible.
+
+### Changed
+
+- Shortened the popup feature summary and made cache clearing visually secondary to copying diagnostics.
+
 ## 0.1.11 - 2026-07-15
 
 ### Fixed
