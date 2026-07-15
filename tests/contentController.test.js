@@ -41,10 +41,10 @@ describe("content script controller", () => {
   it("responds to popup status pings with overlay state and rendered card counts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
-      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.10">
+      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.11">
         <div class="nyu-rmp-quick-grid"></div>
       </div>
-      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.10">
+      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.11">
         <div class="nyu-rmp-quick-grid"></div>
       </div>
       <div class="nyu-rmp-rating-root"></div>
@@ -70,7 +70,7 @@ describe("content script controller", () => {
     expect(sendResponse).toHaveBeenCalledWith({
       ok: true,
       contentScript: "loaded",
-      version: "0.1.10",
+      version: "0.1.11",
       overlayState: "enabled",
       ratingRootCount: 3,
       cardCount: 2,
@@ -133,8 +133,8 @@ describe("content script controller", () => {
   it("keeps current segmented card markup when the content script restarts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
-      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.10">
-        <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.10">
+      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.11">
+        <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.11">
           <div class="nyu-rmp-quick-grid"></div>
         </div>
       </div>
@@ -157,10 +157,10 @@ describe("content script controller", () => {
   it("keeps current loading, empty, and error cards when the content script restarts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
-      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.10">
-        <div class="nyu-rmp-card is-loading" data-nyu-rmp-version="0.1.10"></div>
-        <div class="nyu-rmp-card is-empty" data-nyu-rmp-version="0.1.10"></div>
-        <div class="nyu-rmp-card is-error" data-nyu-rmp-version="0.1.10"></div>
+      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.11">
+        <div class="nyu-rmp-card is-loading" data-nyu-rmp-version="0.1.11"></div>
+        <div class="nyu-rmp-card is-empty" data-nyu-rmp-version="0.1.11"></div>
+        <div class="nyu-rmp-card is-error" data-nyu-rmp-version="0.1.11"></div>
       </div>
     `;
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
@@ -270,7 +270,7 @@ describe("content script controller", () => {
         <div role="gridcell" data-nyu-rmp-processed="true">Ada Lovelace</div>
         <div role="gridcell" data-nyu-rmp-rating-cell="true">
           <div class="nyu-rmp-rating-root">
-            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.10">
+            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.11">
               <div class="nyu-rmp-quick-grid"></div>
             </div>
           </div>
@@ -309,7 +309,7 @@ describe("content script controller", () => {
         <div role="gridcell" data-nyu-rmp-processed="true" data-nyu-rmp-select-button-rating="true">
           <div class="nyu-rmp-albert-original"><button>Select</button></div>
           <div class="nyu-rmp-rating-root">
-            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.10">
+            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.11">
               <div class="nyu-rmp-quick-grid"></div>
             </div>
           </div>
