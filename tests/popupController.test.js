@@ -923,6 +923,67 @@ describe("extension popup controller", () => {
     expect(storage.set).toHaveBeenCalledWith({ "settings:overlayEnabled": true });
   });
 
+  it("refreshes Albert diagnostics after the overlay setting changes", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const contentStatus = {
+      ok: true,
+      contentScript: "loaded",
+      version: "0.1.10",
+      overlayState: "disabled",
+      ratingRootCount: 0,
+      cardCount: 0,
+      quickGridCount: 0,
+      radarCount: 0,
+      processedCellCount: 0,
+      ratingCellCount: 0,
+      trailingRatingRootCount: 0,
+    };
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus,
+    });
+    const storage = createStorageMock({
+      "settings:overlayEnabled": false,
+    });
+    storage.set.mockImplementation(async function set(items) {
+      Object.assign(this.data, items);
+      const enabled = items["settings:overlayEnabled"] !== false;
+      Object.assign(contentStatus, {
+        overlayState: enabled ? "enabled" : "disabled",
+        ratingRootCount: enabled ? 4 : 0,
+        cardCount: enabled ? 4 : 0,
+        quickGridCount: enabled ? 2 : 0,
+        radarCount: enabled ? 2 : 0,
+        processedCellCount: enabled ? 4 : 0,
+        ratingCellCount: enabled ? 4 : 0,
+        trailingRatingRootCount: enabled ? 4 : 0,
+      });
+    });
+
+    await initPopup({ document, storage, tabs });
+    const checkbox = document.getElementById("enable-overlay");
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+    await vi.waitFor(() => {
+      expect(document.getElementById("page-status").textContent).toContain("4 rating roots");
+      expect(document.getElementById("diagnostic-summary").textContent).toContain("4 cards");
+    });
+
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event("change"));
+    await vi.waitFor(() => {
+      expect(document.getElementById("page-status").textContent).toContain("overlay disabled");
+      expect(document.getElementById("diagnostic-summary").textContent).toContain("0 cards");
+    });
+  });
+
   it("keeps the overlay switch ARIA checked state synchronized", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
