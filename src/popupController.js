@@ -57,6 +57,13 @@ export async function initPopup({
       try {
         await storage.set({ "settings:overlayEnabled": nextValue });
         status.textContent = nextValue ? "Ratings overlay enabled" : "Ratings overlay disabled";
+        await refreshAlbertPageStatus({
+          pageStatus,
+          diagnosticSummary,
+          tabs,
+          scripting,
+          expectedOverlayState: nextValue ? "enabled" : "disabled",
+        });
       } catch (error) {
         enableOverlay.checked = !nextValue;
         syncSwitchState(enableOverlay);
@@ -168,7 +175,13 @@ function nonNegativeInteger(value) {
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
 }
 
-async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, scripting }) {
+async function refreshAlbertPageStatus({
+  pageStatus,
+  diagnosticSummary,
+  tabs,
+  scripting,
+  expectedOverlayState = "",
+}) {
   if (!pageStatus) {
     return;
   }
@@ -186,7 +199,14 @@ async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, sc
       return;
     }
 
-    const response = await pingAlbertContentScript(tabs, activeTab.id, scripting);
+    let response = await pingAlbertContentScript(tabs, activeTab.id, scripting);
+    response = await waitForExpectedOverlayState({
+      tabs,
+      scripting,
+      tabId: activeTab.id,
+      response,
+      expectedOverlayState,
+    });
     if (isLoadedContentResponse(response)) {
       const refreshedResponse = await refreshAlbertContentScriptIfStale({
         tabs,
@@ -214,6 +234,27 @@ async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, sc
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
     setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
   }
+}
+
+async function waitForExpectedOverlayState({ tabs, scripting, tabId, response, expectedOverlayState }) {
+  if (!expectedOverlayState || response?.overlayState === expectedOverlayState) {
+    return response;
+  }
+  let latestResponse = response;
+  for (const delayMs of [0, 50, 100]) {
+    if (delayMs > 0) {
+      await delay(delayMs);
+    }
+    latestResponse = await pingAlbertContentScript(tabs, tabId, scripting);
+    if (latestResponse?.overlayState === expectedOverlayState) {
+      break;
+    }
+  }
+  return latestResponse;
+}
+
+function delay(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 async function refreshAlbertContentScriptIfStale({ tabs, scripting, tabId, response }) {

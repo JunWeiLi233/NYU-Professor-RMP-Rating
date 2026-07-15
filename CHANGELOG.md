@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.11 - 2026-07-15
+
+### Fixed
+
+- Recovered exact full-name professor ratings when RMP requires a department-scoped surname fallback, without accepting different first names.
+- Prevented browser-normalized CSS zero lengths from producing false Albert layout warnings.
+- Refreshed Albert connection diagnostics immediately after enabling or disabling the rating overlay.
+
 ## 0.1.10 - 2026-07-15
 
 ### Fixed

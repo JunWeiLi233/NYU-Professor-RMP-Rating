@@ -283,6 +283,9 @@ function normalizeInlineStyleValue(property, value) {
   if ((property === "min-inline-size" || property === "min-width") && normalized === "0px") {
     return "0";
   }
+  if (property === "grid-template-columns") {
+    return normalized.replace(/\b0px\b/g, "0");
+  }
   return normalized;
 }
 

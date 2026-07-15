@@ -46,10 +46,10 @@ export async function findProfessorRating(name, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? DEFAULT_LOOKUP_TIMEOUT_MS;
   const departmentHint = normalizeDepartmentHint(options.departmentHint);
-  for (const queryText of searchNameVariants(name)) {
+  for (const queryText of searchNameVariants(name, { departmentHint })) {
     const teachers = await searchTeachers(queryText, fetchImpl, timeoutMs);
     const bestMatch = pickBestTeacher(name, teachers, { departmentHint });
-    if (bestMatch && teacherScore(compactName(name), bestMatch, { departmentHint }) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
+    if (bestMatch && isAcceptableTeacherMatch(name, bestMatch, { departmentHint })) {
       return toProfessorRating(bestMatch, name);
     }
   }
@@ -177,7 +177,7 @@ function teacherScore(target, teacher, { departmentHint = "" } = {}) {
   if (initialLastName && initialLastName === target) {
     score += 85;
   }
-  if (isSingleNameTarget(target) && lastName === target && departmentMatchesHint(teacher.department, departmentHint)) {
+  if (lastName === target && departmentMatchesHint(teacher.department, departmentHint)) {
     score += 70;
   }
   if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
@@ -189,6 +189,29 @@ function teacherScore(target, teacher, { departmentHint = "" } = {}) {
   score += departmentHintScore({ target, teacher, departmentHint });
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
+}
+
+function isAcceptableTeacherMatch(requestedName, teacher, { departmentHint = "" } = {}) {
+  const target = compactName(requestedName);
+  if (teacherScore(target, teacher, { departmentHint }) < MIN_ACCEPTABLE_TEACHER_SCORE) {
+    return false;
+  }
+  return isSingleRequestedName(requestedName) || hasConfidentFullNameMatch(target, teacher);
+}
+
+function hasConfidentFullNameMatch(target, teacher) {
+  const firstName = compactName(teacher.firstName ?? "");
+  const lastName = compactName(teacher.lastName ?? "");
+  const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
+  const nameWithoutMiddleParts = compactFirstLastWithoutMiddleParts(teacher.firstName, teacher.lastName);
+  const nameWithoutSuffix = compactNameWithoutSuffix(teacher.firstName, teacher.lastName);
+  const initialLastName = compactInitialLastName(teacher.firstName, teacher.lastName);
+  return name === target
+    || (nameWithoutSuffix && nameWithoutSuffix === target)
+    || (nameWithoutMiddleParts && nameWithoutMiddleParts === target)
+    || (initialLastName && initialLastName === target)
+    || (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name))
+    || (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName));
 }
 
 function isComputerScienceDepartment(value) {
@@ -203,7 +226,7 @@ function departmentHintScore({ target, teacher, departmentHint }) {
   if (departmentMatchesHint(teacher.department, departmentHint)) {
     return 25;
   }
-  return isSingleNameTarget(target) ? -60 : 0;
+  return compactName(teacher.lastName ?? "") === target ? -60 : 0;
 }
 
 function departmentMatchesHint(department, departmentHint) {
@@ -343,8 +366,8 @@ function compactInitialLastName(firstName, lastName) {
   return `${firstParts[0].charAt(0)}${last}`;
 }
 
-function isSingleNameTarget(target) {
-  return /^[a-z]{2,}$/.test(target);
+function isSingleRequestedName(value) {
+  return nameParts(value).length === 1;
 }
 
 function nameParts(value) {
@@ -416,7 +439,7 @@ function nonNegativeCount(value) {
   return number == null ? 0 : Math.floor(number);
 }
 
-function searchNameVariants(name) {
+function searchNameVariants(name, { departmentHint = "" } = {}) {
   const normalized = String(name).trim().replace(/\s+/g, " ");
   const parts = normalized.split(" ").filter((part) => part && !NAME_SUFFIXES.has(part.toLowerCase()));
   const variants = [normalized];
@@ -434,6 +457,10 @@ function searchNameVariants(name) {
 
   if (parts.length > 2) {
     variants.push(`${parts[0]} ${parts[parts.length - 1]}`);
+  }
+
+  if (departmentHint && parts.length > 1) {
+    variants.push(parts[parts.length - 1]);
   }
 
   return Array.from(new Set(variants));

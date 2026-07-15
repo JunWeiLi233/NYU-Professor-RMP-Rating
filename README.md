@@ -10,7 +10,7 @@ See [CHANGELOG.md](CHANGELOG.md) for release notes.
 npm install
 npm run lint
 npm run verify:local
-npm run package:release -- v0.1.10
+npm run package:release -- v0.1.11
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -64,7 +64,7 @@ npm run build
 npm run verify:package
 npm run verify:release
 npm run verify:albert-smoke
-npm run package:release -- v0.1.10
+npm run package:release -- v0.1.11
 npm run verify:chrome-profile
 npm run verify:diagnostics -- .\popup-diagnostics.txt
 npm run verify:live
