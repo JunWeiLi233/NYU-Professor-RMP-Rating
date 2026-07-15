@@ -209,6 +209,60 @@ describe("content script controller", () => {
     expect(sendResponse.mock.calls[0][0].processedCellLayoutWarningCount).toBe(1);
   });
 
+  it("accepts browser-normalized zero lengths in processed Albert layout safeguards", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div role="gridcell" data-nyu-rmp-processed="true">
+        <div class="nyu-rmp-albert-original">Ada Lovelace</div>
+        <div class="nyu-rmp-rating-root is-cell-mounted"></div>
+      </div>
+    `;
+    const cell = document.querySelector("[data-nyu-rmp-processed='true']");
+    const children = Array.from(cell.children);
+    const cellStyles = {
+      "align-items": "flex-start",
+      "flex-wrap": "wrap",
+      "grid-template-columns": "minmax(0px, 1fr)",
+      "min-inline-size": "0px",
+      "min-width": "0px",
+      "overflow-wrap": "normal",
+      "white-space": "normal",
+      "word-break": "normal",
+    };
+    const childStyles = {
+      flex: "0 0 100%",
+      "grid-column": "1 / -1",
+      "min-inline-size": "0px",
+      "min-width": "0px",
+      "overflow-wrap": "normal",
+      "white-space": "normal",
+      width: "100%",
+      "word-break": "normal",
+    };
+    for (const [property, value] of Object.entries(cellStyles)) {
+      cell.style.setProperty(property, value, "important");
+    }
+    for (const child of children) {
+      for (const [property, value] of Object.entries(childStyles)) {
+        child.style.setProperty(property, value, "important");
+      }
+    }
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+
+    expect(sendResponse.mock.calls[0][0].processedCellLayoutWarningCount).toBe(0);
+  });
+
   it("reports when ratings are mounted in generated trailing Albert columns", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
