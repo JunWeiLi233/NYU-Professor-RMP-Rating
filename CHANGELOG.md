@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.13 - 2026-07-15
+
+### Fixed
+
+- Kept compact rating badges on their own grid row so labels remain readable in Albert's constrained rating column.
+
+### Changed
+
+- Reworked injected cards and the extension popup with Albert's flat teal control language, NYU Violet branding, square geometry, and restrained motion.
+- Added a measured public-NYU website design specification covering responsive layouts, typography, color, components, imagery, and animation.
+
 ## 0.1.12 - 2026-07-15
 
 ### Fixed
