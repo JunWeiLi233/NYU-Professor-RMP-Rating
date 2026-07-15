@@ -1547,6 +1547,123 @@ describe("Rate My Professors client", () => {
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Chee Yap");
   });
 
+  it("falls back to a department-scoped surname search when RMP misses an exact two-part name", async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: { edges: [] },
+            },
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: {
+                edges: [
+                  {
+                    node: {
+                      id: "wrong-department",
+                      legacyId: 4441,
+                      firstName: "Sam",
+                      lastName: "Walfish",
+                      department: "Mathematics",
+                      avgRating: 4.8,
+                      avgDifficulty: 2.2,
+                      numRatings: 80,
+                      wouldTakeAgainPercent: 92,
+                      teacherRatingTags: [],
+                      ratings: { edges: [] },
+                    },
+                  },
+                  {
+                    node: {
+                      id: "cs-professor",
+                      legacyId: 4442,
+                      firstName: "Michael",
+                      lastName: "Walfish",
+                      department: "Computer Science",
+                      avgRating: 3.5,
+                      avgDifficulty: 4.7,
+                      numRatings: 60,
+                      wouldTakeAgainPercent: 56,
+                      teacherRatingTags: [],
+                      ratings: { edges: [] },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      });
+
+    const result = await findProfessorRating("Michael Walfish", {
+      fetchImpl,
+      departmentHint: "computer-science",
+    });
+
+    expect(result).toMatchObject({
+      name: "Michael Walfish",
+      rating: 3.5,
+      matchConfidence: "exact",
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Walfish");
+  });
+
+  it("does not accept a different first name from a department-scoped surname fallback", async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: { edges: [] },
+            },
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: {
+                edges: [
+                  {
+                    node: {
+                      id: "different-professor",
+                      legacyId: 4443,
+                      firstName: "Michelle",
+                      lastName: "Walfish",
+                      department: "Computer Science",
+                      avgRating: 4.9,
+                      avgDifficulty: 1.8,
+                      numRatings: 120,
+                      wouldTakeAgainPercent: 98,
+                      teacherRatingTags: [],
+                      ratings: { edges: [] },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      });
+
+    await expect(findProfessorRating("Michael Walfish", {
+      fetchImpl,
+      departmentHint: "computer-science",
+    })).resolves.toBeNull();
+  });
+
   it("matches RMP professor names that include a middle initial when Albert omits it", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
